@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Metadata -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Portal</title>
+  <!-- Imports -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="scripts.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="components" id="header"></div>
+<button onclick="loginWithOAuth('google')">Login with Google</button>
+<hr>
+<h3>Login</h3>
+<input type="email" id="loginEmail" placeholder="Email">
+<input type="password" id="loginPassword" placeholder="Password">
+<button onclick="login()">Login</button>
+
+<h3>Signup</h3>
+<input type="email" id="signupEmail" placeholder="Email">
+<input type="password" id="signupPassword" placeholder="Password">
+<button onclick="signup()">Signup</button>
+<div class="components" id="footer"></div>
+
+</body>
+<script>
+  // Configure and load all Components
+  var headerInfo = { name: "Login or Signup", url: "login.html" };
+  loadAllComponents();
+
+  // Signup
+  async function signup() {
+    const email = document.getElementById('signupEmail').value;
+    const password = document.getElementById('signupPassword').value;
+    const { user, error } = await supabase.auth.signUp({ email, password });
+    if (error) alert(error.message);
+    else alert('Signup successful! Please verify your email.');
+  }
+
+  // Login
+  async function login() {
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    const { session, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) alert(error.message);
+  }
+
+  // Login with OAuth
+  async function loginWithOAuth(provider) {
+    const { error } = await supabase.auth.signInWithOAuth({ provider });
+    if (error) alert(error.message);
+  }
+</script>
+</html>

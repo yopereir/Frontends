@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Metadata -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Portal</title>
+  <!-- Imports -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="scripts.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="components" id="header"></div>
+<input type="text" id="jobTitle" placeholder="Job Title">
+<textarea id="jobDescription" placeholder="Job Description"></textarea>
+<button onclick="createJob()">Create Job</button>
+<div class="components" id="footer"></div>
+
+</body>
+<script>
+  // Check if User is logged in. If not, re-direct to Login page.
+  checkAuth();
+
+  // Configure and load all Components
+  var headerInfo = { name: "Create a Job", url: "createJob.html" };
+  loadAllComponents();
+
+  // Create a Job listing based on form data
+  async function createJob() {
+    const title = document.getElementById('jobTitle').value;
+    const description = document.getElementById('jobDescription').value;
+    const { error } = await supabase.from('jobs').insert([{ title, description }]);
+    if (error) alert('Error creating job');
+    else {
+      alert('Job created successfully!');
+      fetchJobs();
+      showPage('jobsListPage');
+    }
+  }
+</script>
+</html>

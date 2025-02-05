@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Metadata -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Portal</title>
+  <!-- Imports -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="scripts.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="components" id="header"></div>
+<input type="text" id="profileName" placeholder="Name">
+<input type="email" id="profileEmail" placeholder="Email" disabled>
+<button onclick="updateProfile()">Update Profile</button>
+<div class="components" id="footer"></div>
+
+</body>
+<script>
+  // Configure and load all Components
+  var headerInfo = { name: "User Profile", url: "userProfile.html" };
+  loadAllComponents();
+
+  async function updateProfile() {
+      const name = document.getElementById('profileName').value;
+      const user = supabase.auth.user();
+      const { error } = await supabase.from('profiles').upsert({ id: user.id, name });
+      if (error) alert('Error updating profile');
+      else alert('Profile updated!');
+  }
+</script>
+</html>

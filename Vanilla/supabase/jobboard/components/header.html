@@ -1,0 +1,10 @@
+<header id="headerMain">
+    <h1 id="headerTitle">Job Portal</h1>
+</header>
+
+<script>
+    // Check if headerInfo is defined, otherwise use defaults
+    var headerInfo = headerInfo || { name: "Home", url: "index.html" };
+    document.getElementById("headerTitle").innerHTML = headerInfo.name;
+    document.getElementById("headerTitle").addEventListener('click', () => location.href=headerInfo.url);
+</script>
