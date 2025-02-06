@@ -34,8 +34,9 @@ function loadComponent(id, file) {
         .catch(error => console.error(`Error loading ${file}:`, error));
 }
 
-function loadAllComponents() {
-  Array.from(document.getElementsByClassName("components")).forEach(element => {
+function loadAllComponents(scopedContainer) {
+  var scopedContainer = scopedContainer || document;
+  Array.from(scopedContainer.getElementsByClassName("components")).forEach(element => {
     loadComponent(element.id, "./components/"+element.id+".html");
   });
 }

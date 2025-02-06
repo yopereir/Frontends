@@ -1,4 +1,4 @@
-<div class="container">
+<div id="containerComponent">
   <!-- Login Page -->
   <div id="loginPage"></div>
 
@@ -11,3 +11,16 @@
   <!-- Profile Page -->
   <div id="profilePage" class="hidden"></div>
 </div>
+<script>
+  var componentIdsToLoad = componentIdsToLoad || [
+    "container-login",
+    "banner"
+  ];
+  Array.from(componentIdsToLoad).forEach(componentId => {
+    let newComponent = document.createElement('div');
+    newComponent.className = 'components';
+    newComponent.id = componentId;
+    document.getElementById("containerComponent").appendChild(newComponent);
+  });
+  loadAllComponents(document.getElementById("containerComponent"));
+</script>
