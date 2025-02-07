@@ -29,6 +29,7 @@
 <script>
   // Configure and load all Components
   var headerInfo = { name: "Login or Signup", url: "login.html" };
+  var redirectLink = redirectLink || "/";
   loadAllComponents();
 
   // Signup
@@ -37,7 +38,10 @@
     const password = document.getElementById('signupPassword').value;
     const { user, error } = await supabase.auth.signUp({ email, password });
     if (error) alert(error.message);
-    else alert('Signup successful! Please verify your email.');
+    else {
+      alert('Signup successful! An email was sent to verify your email address.');
+      //window.location.replace(redirectLink);
+    }
   }
 
   // Login
@@ -46,12 +50,15 @@
     const password = document.getElementById('loginPassword').value;
     const { session, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) alert(error.message);
+    //else window.location.replace(redirectLink);
   }
 
   // Login with OAuth
   async function loginWithOAuth(provider) {
-    const { error } = await supabase.auth.signInWithOAuth({ provider });
+    const { data, error } = await supabase.auth.signInWithOAuth({ provider });
+    console.log(data);
     if (error) alert(error.message);
+    //else window.location.replace(redirectLink);
   }
 </script>
 </html>
