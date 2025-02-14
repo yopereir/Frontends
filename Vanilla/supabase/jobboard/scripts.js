@@ -1,7 +1,21 @@
-const SUPABASE_URL = "http://example.com";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyAgCiAgICAicm9sZSI6ICJhbm9uIiwKICAgICJpc3MiOiAic3VwYWJhc2UtZGVtbyIsCiAgICAiaWF0IjogMTY0MTc2OTIwMCwKICAgICJleHAiOiAxNzk5NTM1NjAwCn0.dc_X5iR_VP_qT0zsiyj_I_OZ2T9FtRU2BBNWN8Bu4GE";
-//const SUPABASE_URL = "https://ygeccegzvqppczfzuixq.supabase.co";
-//const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlnZWNjZWd6dnFwcGN6Znp1aXhxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzU4NzEwODcsImV4cCI6MjA1MTQ0NzA4N30.F2RbqrSlHSloFsSGHut2m-3XTBy-DmORyUuEuJlub7Q";
+////////////////////////////////////////////////////////////////////////////////////////
+// Define Project specific variables
+
+const SUPABASE_URL = "http://localhost:54321";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0";
+const GOOGLE_RECAPTCHA = "SITE_KEY";
+
+var navigationLinks = [
+  { name: "Create Job", url: "createJob.html" },
+  { name: "Job List", url: "jobList.html" },
+  { name: "Login", url: "login.html" },
+  { name: "User Profile", url: "userProfile.html" }
+];
+var headerInfo = { name: "Job Board", url: "index.html" };
+
+////////////////////////////////////////////////////////////////////////////////////////
+// General functions
+
 supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 async function checkAuth() {
@@ -40,12 +54,3 @@ function loadAllComponents(scopedContainer) {
     loadComponent(element.id, "./components/"+element.id+".html");
   });
 }
-
-// Define default global variables
-var navigationLinks = [
-  { name: "Create Job", url: "createJob.html" },
-  { name: "Job List", url: "jobList.html" },
-  { name: "Login", url: "login.html" },
-  { name: "User Profile", url: "userProfile.html" }
-];
-var headerInfo = { name: "Job Board", url: "index.html" };
