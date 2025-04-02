@@ -1,3 +1,13 @@
+:root{
+    --light-background-color: white;
+    --light-header-color: black;
+    --light-text-color: black;
+    --light-highlight-color: #333;
+    --dark-background-color: black;
+    --dark-header-color: #337;
+    --dark-text-color: white;
+    --dark-highlight-color: #347;
+}
 body {
 font-family: Arial, sans-serif;
 margin: 0;
