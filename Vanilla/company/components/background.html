@@ -1,38 +1,31 @@
 <style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+    #background body {
+        background: black; /* White background */
+        overflow: hidden; /* Prevent scrollbars */
+    }
 
-body {
-    background: white; /* White background */
-    overflow: hidden; /* Prevent scrollbars */
-}
+    #background canvas {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        z-index: -1;
+        width: 100vw;
+        height: 100vh;
+        display: block;
+        background-color: black;
+        position: fixed;
+        top: 0;
+        left: 0;
+    }
 
-canvas {
-    display: block;
-    position: absolute;
-    top: 0;
-    left: 0;
-}
+    .light-mode #background canvas {
+        background-color: white;
+    }
 
 </style>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Network Nodes Background</title>
-    <link rel="stylesheet" href="styles.css">
-</head>
 <body>
     <canvas id="networkCanvas"></canvas>
-    <script src="script.js"></script>
 </body>
-</html>
-
-
 <script>
     const canvas = document.getElementById("networkCanvas");
     const ctx = canvas.getContext("2d");
@@ -67,7 +60,7 @@ canvas {
     
                 if (distance < maxDistance) {
                     ctx.beginPath();
-                    ctx.strokeStyle = "black"; // Black connecting lines
+                    ctx.strokeStyle = body.classList.contains("light-mode")? "black":"white";
                     ctx.lineWidth = 1;
                     ctx.moveTo(nodes[i].x, nodes[i].y);
                     ctx.lineTo(nodes[j].x, nodes[j].y);
@@ -79,7 +72,7 @@ canvas {
         // Draw nodes
         for (let i = 0; i < nodes.length; i++) {
             ctx.beginPath();
-            ctx.fillStyle = "black"; // Black nodes
+            ctx.fillStyle = body.classList.contains("light-mode")? "black":"white";
             ctx.arc(nodes[i].x, nodes[i].y, 5, 0, Math.PI * 2);
             ctx.fill();
     
@@ -105,4 +98,3 @@ canvas {
     drawNetwork();
     
 </script>
-</html>
