@@ -1,9 +1,4 @@
 <style>
-    #background body {
-        background: black; /* White background */
-        overflow: hidden; /* Prevent scrollbars */
-    }
-
     #background canvas {
         margin: 0;
         padding: 0;
@@ -23,9 +18,9 @@
     }
 
 </style>
-<body>
+<div>
     <canvas id="networkCanvas"></canvas>
-</body>
+</div>
 <script>
     const canvas = document.getElementById("networkCanvas");
     const ctx = canvas.getContext("2d");
