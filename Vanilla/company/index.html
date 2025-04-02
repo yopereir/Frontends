@@ -11,7 +11,6 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <style>
-  
         .content {
             color: white;
             flex-grow: 1;
@@ -66,8 +65,10 @@
   <div class="content">
     <h1>Hello World</h1>
     <p>We provide innovative solutions for your business needs.</p>
-    <button class="learn-more">Learn More</button>
+    <button class="learn-more" onclick="window.location.hash = 'contentContainer'">Learn More</button>
   </div>
+  <div class="components" id="contentContainer" style="display:flex;justify-content: center;align-items: center;"></div>
+  <br>
   <div class="components" id="contactForm" style="display:flex;justify-content: center;align-items: center;"></div>
   <br>
   <div class="components" id="footer"></div>

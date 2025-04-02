@@ -1,0 +1,50 @@
+<style>
+    .content-container {
+        background-color: #fff;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        width: 80%;
+        max-width: 600px;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #contentContainer .content-container h1 {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #333;
+    }
+
+    #contentContainer .submit-button {
+        display: block;
+        width: 160px;
+        padding: 12px;
+        background-color: #63b3ed;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 18px;
+        transition: background-color 0.3s ease;
+        margin: 0 auto;
+    }
+
+    #contentContainer .submit-button:hover {
+        background-color: #63b3ed;
+    }
+
+    @media (max-width: 768px) {
+        .content-container {
+            width: 95%;
+        }
+    }
+</style>
+<div class="content-container">
+    <h1>About Us</h1>
+    <p>We are a company dedicated to providing innovative solutions for your business needs. Our team of experts is committed to delivering high-quality services that exceed your expectations.</p>
+    <p>Contact us to learn more about how we can help you achieve your goals.</p>
+    <button class="submit-button" onclick="window.location.hash = 'contactForm'">Learn More</button>
+</div>
+<script>
+</script>
