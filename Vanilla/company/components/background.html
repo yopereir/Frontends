@@ -55,7 +55,7 @@
     
                 if (distance < maxDistance) {
                     ctx.beginPath();
-                    ctx.strokeStyle = body.classList.contains("light-mode")? "black":"white";
+                    ctx.strokeStyle = body.classList.contains("light-mode")? "#0005":"#fff5";
                     ctx.lineWidth = 1;
                     ctx.moveTo(nodes[i].x, nodes[i].y);
                     ctx.lineTo(nodes[j].x, nodes[j].y);
@@ -67,7 +67,7 @@
         // Draw nodes
         for (let i = 0; i < nodes.length; i++) {
             ctx.beginPath();
-            ctx.fillStyle = body.classList.contains("light-mode")? "black":"white";
+            ctx.fillStyle = body.classList.contains("light-mode")? "#0005":"#fff5";
             ctx.arc(nodes[i].x, nodes[i].y, 5, 0, Math.PI * 2);
             ctx.fill();
     
