@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Metadata -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Portal</title>
+  <!-- Imports -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="scripts.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="components" id="header"></div>
+  <div class="components" id="navigationBar"></div>
+  <div class="components" id="profileButton"></div>
+
+  <div class="components" id="footer"></div>
+
+</body>
+<script>
+  // Configure and load all Components
+  var headerInfo = { name: "Job Board", url: "/" };
+  loadAllComponents();
+
+  // Show specific page
+  function showPage(pageId) {
+    document.querySelectorAll('.container > div').forEach(page => page.classList.add('hidden'));
+    document.getElementById(pageId).classList.remove('hidden');
+  }
+
+  // Check authentication state
+  supabase.auth.onAuthStateChange(async (event, session) => {
+    if (session) {
+      document.getElementById('loginPage').classList.add('hidden');
+      showPage('jobsListPage');
+      fetchJobs();
+    } else {
+      showPage('loginPage');
+    }
+  });
+
+  // Logout
+  async function logout() {
+    await supabase.auth.signOut();
+    showPage('loginPage');
+  }
+</script>
+</html>

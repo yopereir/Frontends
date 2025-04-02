@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Metadata -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Job Portal</title>
+  <!-- Imports -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+  <script src="scripts.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<style>
+  
+  .content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+
+        .content h1 {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+        }
+
+        .content p {
+            font-size: 1.2em;
+            margin-bottom: 30px;
+        }
+
+        .learn-more {
+            background-color: #4299e1; /* Blue button */
+            color: #ffffff;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            cursor: pointer;
+        }
+        .light-mode .dropdown-content {
+            background-color: #e2e8f0;
+        }
+
+        .light-mode .learn-more {
+            background-color: #63b3ed;
+        }
+</style>
+<body>
+  <div class="components" id="header"></div>
+
+  <div class="content">
+    <h1>Welcome to Our Company</h1>
+    <p>We provide innovative solutions for your business needs.</p>
+    <button class="learn-more">Learn More</button>
+  </div>
+
+  <div class="components" id="footer"></div>
+
+</body>
+<script>
+  // Configure and load all Components
+  var headerInfo = { name: "Job Board", url: "/" };
+  loadAllComponents();
+
+  const body = document.body;
+
+  const currentTheme = localStorage.getItem('theme');
+  if (currentTheme) {
+      body.classList.add(currentTheme);
+  }
+
+  // Show specific page
+  function showPage(pageId) {
+    document.querySelectorAll('.container > div').forEach(page => page.classList.add('hidden'));
+    document.getElementById(pageId).classList.remove('hidden');
+  }
+
+
+  // Logout
+  async function logout() {
+    await supabase.auth.signOut();
+    showPage('loginPage');
+  }
+</script>
+</html>
