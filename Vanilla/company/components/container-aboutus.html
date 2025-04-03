@@ -1,22 +1,22 @@
 <style>
-    .content-container {
+    .container-aboutus {
         background-color: #fff;
         padding: 40px;
         border-radius: 12px;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-        width: 80%;
+        width: 100%;
         max-width: 600px;
         justify-content: center;
         align-items: center;
     }
 
-    #contentContainer .content-container h1 {
+    #container-aboutus .container-aboutus h1 {
         text-align: center;
         margin-bottom: 30px;
         color: #333;
     }
 
-    #contentContainer .submit-button {
+    #container-aboutus .submit-button {
         display: block;
         width: 160px;
         padding: 12px;
@@ -30,21 +30,24 @@
         margin: 0 auto;
     }
 
-    #contentContainer .submit-button:hover {
-        background-color: #63b3ed;
+    #container-aboutus .submit-button:hover {
+        background-color: oklch(0.488 0.243 264.376);
     }
 
     @media (max-width: 768px) {
-        .content-container {
+        .container-aboutus {
             width: 95%;
         }
     }
 </style>
-<div class="content-container">
+<div class="container-aboutus">
     <h1>About Us</h1>
     <p>We are a company dedicated to providing innovative solutions for your business needs. Our team of experts is committed to delivering high-quality services that exceed your expectations.</p>
     <p>Contact us to learn more about how we can help you achieve your goals.</p>
-    <button class="submit-button" onclick="window.location.hash = 'contactForm'">Learn More</button>
+    <button id="container-aboutus-button" class="submit-button" onclick="window.location.hash = 'contactForm'">Learn More</button>
 </div>
 <script>
+    if (document.getElementById("container").dataset.showContactPage) {
+        document.getElementById("container-aboutus-button").onclick = function(){window.location.href = 'contact.html'}
+    }
 </script>
