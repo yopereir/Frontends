@@ -11,60 +11,60 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <style>
-        .content {
-            color: white;
-            flex-grow: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            text-align: center;
-            height: 100vh;
-        }
+  .content {
+      color: white;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      height: 100vh;
+  }
 
-        .content h1 {
-            font-size: 2.5em;
-            margin-bottom: 20px;
-        }
+  .content h1 {
+      font-size: 2.5em;
+      margin-bottom: 20px;
+  }
 
-        .content p {
-            font-size: 1.2em;
-            margin-bottom: 30px;
-        }
+  .content p {
+      font-size: 1.2em;
+      margin-bottom: 30px;
+  }
 
-        .learn-more {
-            background-color: #4299e1; /* Blue button */
-            width: 10em;
-            color: #ffffff;
-            padding: 15px 30px;
-            border: none;
-            border-radius: 5px;
-            font-size: 1.1em;
-            cursor: pointer;
-        }
+  .learn-more {
+      background-color: #4299e1; /* Blue button */
+      width: 10em;
+      color: #ffffff;
+      padding: 15px 30px;
+      border: none;
+      border-radius: 5px;
+      font-size: 1.1em;
+      cursor: pointer;
+  }
 
-        .learn-more:hover {
-          background-color: oklch(0.488 0.243 264.376);
-        }
+  .learn-more:hover {
+    background-color: oklch(0.488 0.243 264.376);
+  }
 
-        .light-mode .content {
-          color: black;
-        }
+  .light-mode .content {
+    color: black;
+  }
 
-        .light-mode .dropdown-content {
-            background-color: #e2e8f0;
-        }
+  .light-mode .dropdown-content {
+      background-color: #e2e8f0;
+  }
 
-        .light-mode .learn-more {
-            background-color: #63b3ed;
-        }
+  .light-mode .learn-more {
+      background-color: #63b3ed;
+  }
 </style>
 <body>
   <div class="components" id="header"></div>
   <div class="components" id="background"></div>
   <div class="content">
-    <h1>Hello World</h1>
-    <p>We provide innovative solutions for your business needs.</p>
+    <h1>Grasent</h1>
+    <p>committed to resolving bottlenecks for businesses and raising capital.</p>
     <button class="learn-more" onclick="window.location.hash = 'container'">Learn More</button>
   </div>
   <div class="components" id="container" style="display:flex;justify-content: center;align-items: center;" data-show-contact-page='false'></div>

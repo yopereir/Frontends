@@ -42,12 +42,17 @@
 </style>
 <div class="container-aboutus">
     <h1>About Us</h1>
-    <p>We are a company dedicated to providing innovative solutions for your business needs. Our team of experts is committed to delivering high-quality services that exceed your expectations.</p>
+    <p>We are a group of engineers, investors and entrepreneurs dedicated to resolving bottlenecks and raising capital for businesses.</p>
+    <p>Our core principles are:</p>
+    <ul><li>Value based consulting</li>
+    <li>Autonomy boosts productivity</li>
+    <li>Zero vendor lock-in</li></ul>
+    <br>
     <p>Contact us to learn more about how we can help you achieve your goals.</p>
-    <button id="container-aboutus-button" class="submit-button" onclick="window.location.hash = 'contactForm'">Learn More</button>
+    <button id="container-aboutus-button" class="submit-button" onclick="window.location.hash = 'contactForm'">Contact Us</button>
 </div>
 <script>
-    if (document.getElementById("container").dataset.showContactPage) {
+    if (document.getElementById("container").dataset.showContactPage == 'true') {
         document.getElementById("container-aboutus-button").onclick = function(){window.location.href = 'contact.html'}
     }
 </script>
