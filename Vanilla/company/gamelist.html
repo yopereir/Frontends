@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Metadata -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grasent- About us</title>
+  <!-- Imports -->
+  <script src="scripts.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<style>
+  .gamelist {
+      margin-left: auto;
+      margin-right: auto;
+      padding-left: 1rem;
+      padding-right: 1rem;
+      padding-top: 2rem;
+      padding-bottom: 2rem;
+      max-width: 1200px;
+  }
+
+  .heading {
+      font-size: 1.875rem;
+      font-weight: 600;
+      color: var(--dark-text-color);
+      text-align: center;
+      margin-bottom: 1.5rem;
+  }
+
+  .light-mode .heading {
+    color: var(--light-text-color);
+  }
+
+  .game-card {
+      position: relative;
+      overflow: hidden;
+      height: 70vh;
+      border-radius: 0.5rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      cursor: pointer;
+  }
+
+  .game-card:hover {
+      transform: translateY(-0.5rem) scale(1.03);
+      box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.15), 0 3px 6px -1px rgba(0, 0, 0, 0.08);
+  }
+
+  .game-card img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: opacity 0.3s ease;
+  }
+
+  .game-card:hover img {
+      opacity: 0.5;
+  }
+
+  .game-card-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 90%;
+      height: 70vh;
+      background-color: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      backdrop-filter: blur(5px);
+  }
+
+  .game-card:hover .game-card-overlay {
+      opacity: 1;
+  }
+
+  .game-card-overlay p {
+      color: white;
+      font-size: 1rem;
+      text-align: center;
+  }
+
+  .game-grid {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1.5rem;
+  }
+
+  .game-grid > div {
+      flex: 1;
+      min-width: 200px;
+      max-width: 300px;
+  }
+
+  .game-grid > div:nth-child(4) {
+      margin-left: auto;
+      margin-right: auto;
+      flex: 1 0 100%;
+      max-width: 300px;
+  }
+
+  @media (min-width: 768px) {
+      .game-grid > div:nth-child(3) {
+          flex: 1;
+      }
+  }
+</style>
+<body>
+  <div class="components" id="header"></div>
+  <div class="components" id="background"></div>
+  <br>
+  <br>
+  <div class="gamelist">
+    <h1 class="heading">Discover New Games</h1>
+    <div class="game-grid">
+        <div class="game-card" data-url="gameinfo.html?gameID=road-rage">
+            <img src="assets/road-rage.png" alt="Road Rage">
+            <div class="game-card-overlay">
+                <p>Explore the mystical world of Eldoria in this epic adventure. Uncover ancient secrets and battle mythical creatures.</p>
+            </div>
+        </div>
+        <div class="game-card" data-url="https://www.example.com/game4">
+            <img src="https://placehold.co/400x200/EEE/31343C?text=Game+4&font=Montserrat" alt="Game 4">
+            <div class="game-card-overlay">
+                <p>Build and manage your own city in this immersive simulation. Balance resources, economy, and the needs of your citizens.</p>
+            </div>
+        </div>
+    </div>
+  </div>
+  <br>
+  <br>
+  <div class="components" id="footer" style="display:flex;justify-content: center;align-items: center;"></div>
+</body>
+<script>
+  // Configure and load all Components
+  var headerInfo = { name: "Grasent- Games", url: "/" };
+  var gameID = (new URLSearchParams((new URL( window.location.href)).search)).get('gameID');
+  console.log(gameID);
+  var componentIdsToLoad = [];
+  (typeof gameID !== null)? componentIdsToLoad = ["content-game-"+gameID]:"";
+  loadAllComponents();
+  const body = document.body;
+  // Apply theme
+  const currentTheme = localStorage.getItem('theme');
+  if (currentTheme) {
+      body.classList.add(currentTheme);
+  }
+
+  const gameCards = document.querySelectorAll('.game-card');
+
+  gameCards.forEach(card => {
+      card.addEventListener('click', () => {
+          const url = card.dataset.url;
+          if (url) {
+              window.open(url, '_blank');
+          }
+      });
+  });
+</script>
+</html>
