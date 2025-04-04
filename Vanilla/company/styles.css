@@ -1,6 +1,7 @@
 :root{
     --light-background-color: white;
     --light-header-color: black;
+    --light-header-text-color: white;
     --light-text-color: black;
     --light-highlight-color: #333;
     --dark-background-color: black;
