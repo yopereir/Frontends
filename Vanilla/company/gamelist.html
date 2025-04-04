@@ -32,6 +32,18 @@
     color: var(--light-text-color);
   }
 
+  .subheading {
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--dark-text-color);
+    text-align: center;
+    margin-bottom: 1.5rem;
+  }
+
+  .light-mode .subheading {
+    color: var(--light-text-color);
+  }
+
   .game-card {
       position: relative;
       overflow: hidden;
@@ -117,7 +129,7 @@
   <br>
   <div class="gamelist">
     <h1 class="heading">Our Projects</h1>
-    <p class="heading">Our Projects</p>
+    <h2 class="subheading"></h2>
     <div class="game-grid">
         <div class="game-card" data-url="gameinfo.html?gameID=road-rage">
             <img src="assets/road-rage.png" alt="Road Rage">
