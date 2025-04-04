@@ -1,5 +1,5 @@
 <style>
-    .container-aboutus {
+    .content-aboutus {
         background-color: #fff;
         padding: 40px;
         border-radius: 12px;
@@ -10,13 +10,13 @@
         align-items: center;
     }
 
-    #container-aboutus .container-aboutus h1 {
+    #content-aboutus .content-aboutus h1 {
         text-align: center;
         margin-bottom: 30px;
         color: #333;
     }
 
-    #container-aboutus .submit-button {
+    #content-aboutus .submit-button {
         display: block;
         width: 160px;
         padding: 12px;
@@ -30,17 +30,17 @@
         margin: 0 auto;
     }
 
-    #container-aboutus .submit-button:hover {
+    #content-aboutus .submit-button:hover {
         background-color: oklch(0.488 0.243 264.376);
     }
 
     @media (max-width: 768px) {
-        .container-aboutus {
+        .content-aboutus {
             width: 95%;
         }
     }
 </style>
-<div class="container-aboutus">
+<div class="content-aboutus">
     <h1>About Us</h1>
     <p>We are a group of engineers, investors and entrepreneurs dedicated to resolving bottlenecks and raising capital for businesses.</p>
     <p>Our core principles are:</p>
@@ -49,10 +49,10 @@
     <li>Zero vendor lock-in</li></ul>
     <br>
     <p>Contact us to learn more about how we can help you achieve your goals.</p>
-    <button id="container-aboutus-button" class="submit-button" onclick="window.location.hash = 'contactForm'">Contact Us</button>
+    <button id="content-aboutus-button" class="submit-button" onclick="window.location.hash = 'contactForm'">Contact Us</button>
 </div>
 <script>
     if (document.getElementById("container").dataset.showContactPage == 'true') {
-        document.getElementById("container-aboutus-button").onclick = function(){window.location.href = 'contact.html'}
+        document.getElementById("content-aboutus-button").onclick = function(){window.location.href = 'contact.html'}
     }
 </script>
