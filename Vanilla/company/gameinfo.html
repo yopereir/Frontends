@@ -96,12 +96,5 @@
     document.querySelectorAll('.container > div').forEach(page => page.classList.add('hidden'));
     document.getElementById(pageId).classList.remove('hidden');
   }
-
-
-  // Logout
-  async function logout() {
-    await supabase.auth.signOut();
-    showPage('loginPage');
-  }
 </script>
 </html>

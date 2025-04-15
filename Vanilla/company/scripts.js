@@ -1,8 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////////////
 // Define Project specific variables
 
-const SUPABASE_URL = "http://localhost:54321";
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0";
 const GOOGLE_RECAPTCHA = "SITE_KEY";
 
 var navigationLinks = [
@@ -15,16 +13,6 @@ var headerInfo = { name: "Job Board", url: "index.html" };
 
 ////////////////////////////////////////////////////////////////////////////////////////
 // General functions
-
-supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-async function checkAuth() {
-    const { data: { user } } = await supabase.auth.getUser();
-    console.log(user);
-    if (!user) {
-        window.location.href = "login.html"; // Redirect to login page if not logged in
-    }
-}
 
 function loadComponent(id, file) {
     fetch(file)
