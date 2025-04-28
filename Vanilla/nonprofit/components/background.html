@@ -1,0 +1,220 @@
+<style>
+    #background canvas {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        z-index: -1;
+        width: 100vw;
+        height: 100vh;
+        display: block;
+        background-color: black;
+        position: fixed;
+        top: 0;
+        left: 0;
+    }
+
+    .light-mode #background canvas {
+        background-color: white;
+    }
+
+</style>
+<div>
+    <canvas id="networkCanvas"></canvas>
+</div>
+<script>
+    // Get DOM elements
+    const canvas = document.getElementById('networkCanvas');
+    const ctx = canvas.getContext('2d');
+
+    // --- Configuration ---
+    const STAR_COUNT = 150; // Number of stars
+    const STAR_RADIUS_MAX = 2; // Max size of a star
+    const STAR_FADE_SPEED = 0.01; // How fast stars fade in/out
+    const STAR_LIFETIME_MAX = 200; // Max frames a star exists
+    const CROSS_THICKNESS = 10; // Thickness of the cross lines
+    const CROSS_LENGTH_H_RATIO = 0.3; // Horizontal length relative to canvas width
+    const CROSS_LENGTH_V_RATIO = 0.7; // Vertical length relative to canvas height
+    const CROSS_INTERSECTION_HEIGHT = .3; // Offset of horizontal beam from center of cross to make it like a crucifix
+
+    let stars = []; // Array to hold star objects
+    let canvasWidth, canvasHeight; // Canvas dimensions
+    let bgColor, elementColor; // Theme colors
+
+    // --- Star Class ---
+    // Represents a single star with position, appearance, and lifecycle
+    class Star {
+            constructor() {
+            // Initialize properties needed before reset() is called
+            this.x = 0;
+            this.y = 0;
+            this.radius = 0;
+            this.opacity = 0;
+            this.maxOpacity = 0;
+            this.life = 0;
+            this.fadingIn = true;
+            // Set actual initial values
+            this.reset();
+            // Override some reset values for initial state
+            this.opacity = 0; // Start invisible
+            this.life = Math.random() * STAR_LIFETIME_MAX; // Start at random point in life
+        }
+
+        // Reset star properties (position, size, lifespan)
+        reset() {
+            // Ensure canvas dimensions are available, fallback to window size
+            const effectiveWidth = canvasWidth || window.innerWidth;
+            const effectiveHeight = canvasHeight || window.innerHeight;
+            this.x = Math.random() * effectiveWidth;
+            this.y = Math.random() * effectiveHeight;
+            this.radius = Math.random() * STAR_RADIUS_MAX + 0.5; // Min radius 0.5
+            this.maxOpacity = Math.random() * 0.7 + 0.3; // Random max brightness (0.3 to 1.0)
+            this.life = STAR_LIFETIME_MAX;
+            this.opacity = 0; // Reset opacity to 0 when resetting
+            this.fadingIn = true; // Start fading in again
+        }
+
+        // Update star state (fade, life) each frame
+        update() {
+            this.life--;
+
+            // If life is over, reset the star for reuse
+            if (this.life <= 0) {
+                this.reset();
+                return;
+            }
+
+            // Handle fading in
+            if (this.fadingIn) {
+                this.opacity += STAR_FADE_SPEED;
+                // Once max opacity reached, start fading out
+                if (this.opacity >= this.maxOpacity) {
+                    this.opacity = this.maxOpacity;
+                    this.fadingIn = false;
+                }
+            }
+            // Handle fading out
+            else {
+                // Fade out faster as life depletes for a twinkling effect
+                const fadeOutSpeed = (1 - (this.life / STAR_LIFETIME_MAX)) * STAR_FADE_SPEED * 5 + STAR_FADE_SPEED;
+                    this.opacity -= fadeOutSpeed;
+                    // Reset if faded out completely before life ends (optional)
+                    if (this.opacity < 0) {
+                        this.opacity = 0;
+                        // Could reset here: this.reset();
+                    }
+            }
+            // Ensure opacity stays within bounds [0, maxOpacity]
+                this.opacity = Math.max(0, Math.min(this.maxOpacity, this.opacity));
+        }
+
+        // Draw the star on the canvas
+        draw() {
+            // Don't draw if invisible or color is not yet defined
+            if (this.opacity <= 0 || !elementColor) return;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+            // Use rgba with the current elementColor and calculated opacity
+            ctx.fillStyle = `rgba(${hexToRgb(elementColor)}, ${this.opacity})`;
+            ctx.fill();
+        }
+    }
+
+    // --- Helper Functions ---
+
+    // Convert hex color string (#RRGGBB) to RGB components string ("R, G, B")
+    function hexToRgb(hex) {
+        if (!hex) return '0,0,0'; // Fallback for safety
+        hex = hex.replace('#', '');
+        const r = parseInt(hex.substring(0, 2), 16);
+        const g = parseInt(hex.substring(2, 4), 16);
+        const b = parseInt(hex.substring(4, 6), 16);
+        return `${r}, ${g}, ${b}`;
+    }
+
+    // Adjust canvas size to fill window and update dimensions
+    function resizeCanvas() {
+        canvasWidth = window.innerWidth;
+        canvasHeight = window.innerHeight;
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+        // Optional: Re-initialize stars on resize if density needs to be maintained
+        // initializeStars();
+    }
+
+    // Set background and element colors based on body class
+    function setColorScheme() {
+        const isLightMode = document.body.classList.contains('light-mode');
+        if (isLightMode) {
+            bgColor = '#ffffff7f'; // White background
+            elementColor = '#0000007f'; // Black elements (stars, cross)
+        } else {
+            bgColor = '#0000007f'; // Black background
+            elementColor = '#ffffff7f'; // White elements
+        }
+    }
+
+    // Create the initial population of stars
+    function initializeStars() {
+        // Ensure dimensions are set before creating stars
+        if (!canvasWidth || !canvasHeight) {
+                resizeCanvas(); // Set dimensions if not already set
+        }
+        stars = []; // Clear any existing stars
+        for (let i = 0; i < STAR_COUNT; i++) {
+            stars.push(new Star());
+        }
+    }
+
+    // Draw the centered cross on the canvas
+    function drawCross() {
+            if (!elementColor || !canvasWidth || !canvasHeight) return; // Don't draw if color/dimensions not set
+
+        const crossWidth = canvasWidth * CROSS_LENGTH_H_RATIO;
+        const crossHeight = canvasHeight * CROSS_LENGTH_V_RATIO;
+        const centerX = canvasWidth / 2;
+        const centerY = canvasHeight / 2;
+
+        ctx.fillStyle = elementColor; // Use the current theme color
+        // Draw horizontal bar
+        ctx.fillRect(centerX - crossWidth / 2, centerY - CROSS_THICKNESS / 2 - centerY * CROSS_INTERSECTION_HEIGHT, crossWidth, CROSS_THICKNESS);
+        // Draw vertical bar
+        ctx.fillRect(centerX - CROSS_THICKNESS / 2, centerY - crossHeight / 2, CROSS_THICKNESS, crossHeight);
+    }
+
+    // --- Animation Loop ---
+    // Clears canvas, updates elements, and redraws each frame
+    function animate() {
+        // Determine colors for this frame based on current mode
+        setColorScheme();
+
+        // Clear the entire canvas with the background color
+        ctx.fillStyle = bgColor;
+        ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+        // Draw the central cross
+        drawCross();
+
+        // Update and draw each star
+        stars.forEach(star => {
+            star.update();
+            star.draw();
+        });
+
+        // Request the next frame to continue the animation
+        requestAnimationFrame(animate);
+    }
+
+    // --- Initialization ---
+    // Set initial canvas size
+    resizeCanvas();
+    // Set initial color scheme based on default body class (no .light-mode)
+    setColorScheme();
+    // Create the stars
+    initializeStars();
+    // Start the animation loop
+    animate();
+
+    // Add listener to resize canvas when window size changes
+    window.addEventListener('resize', resizeCanvas);
+
+</script>

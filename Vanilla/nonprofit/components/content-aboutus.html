@@ -1,0 +1,58 @@
+<style>
+    .content-aboutus {
+        background-color: #fff;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 600px;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #content-aboutus .content-aboutus h1 {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #333;
+    }
+
+    #content-aboutus .submit-button {
+        display: block;
+        width: 160px;
+        padding: 12px;
+        background-color: #63b3ed;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 18px;
+        transition: background-color 0.3s ease;
+        margin: 0 auto;
+    }
+
+    #content-aboutus .submit-button:hover {
+        background-color: oklch(0.488 0.243 264.376);
+    }
+
+    @media (max-width: 768px) {
+        .content-aboutus {
+            width: 95%;
+        }
+    }
+</style>
+<div class="content-aboutus">
+    <h1>About Us</h1>
+    <p>We are a group of engineers, investors and entrepreneurs dedicated to resolving bottlenecks and raising capital for businesses.</p>
+    <p>Our core principles are:</p>
+    <ul><li>Value based consulting</li>
+    <li>Autonomy boosts productivity</li>
+    <li>Zero vendor lock-in</li></ul>
+    <br>
+    <p>Contact us to learn more about how we can help you achieve your goals.</p>
+    <button id="content-aboutus-button" class="submit-button" onclick="window.location.hash = 'contactForm'">Contact Us</button>
+</div>
+<script>
+    if (document.getElementById("container").dataset.showContactPage == 'true') {
+        document.getElementById("content-aboutus-button").onclick = function(){window.location.href = 'contact.html'}
+    }
+</script>

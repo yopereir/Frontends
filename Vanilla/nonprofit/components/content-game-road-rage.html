@@ -1,0 +1,57 @@
+<style>
+    .content-game-road-rage {
+        background-color: #fff;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 600px;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #content-game-road-rage .content-game-road-rage h1 {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #333;
+    }
+
+    #content-game-road-rage .submit-button {
+        display: block;
+        width: 160px;
+        padding: 12px;
+        background-color: #63b3ed;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 18px;
+        transition: background-color 0.3s ease;
+        margin: 0 auto;
+    }
+
+    #content-game-road-rage .submit-button:hover {
+        background-color: oklch(0.488 0.243 264.376);
+    }
+
+    @media (max-width: 768px) {
+        .content-game-road-rage {
+            width: 95%;
+        }
+    }
+</style>
+<div class="content-game-road-rage">
+    <h1>Road Rage</h1>
+    <p>Inspired by the classic Road Rash game of the 90s, this project aims to keep the same gameplay mechanics, the same humor and the same Grudge theme, while adding modern features like 4K resolution sprites, multiplayer and cloud-saving.</p>
+    <p>Leveraging the power of modern technologies, 1000x more in-game objects including bikes, cars and buildings can be added, making the racing more chaotic than ever.</p>
+    <p>At least 20 unique tracks will be made, each being longer than the longest track from Road Rash.</p>
+    <p>New weapons and bike models will be available, each having their own game mechanics, requiring players strategically choose their weapon and bike for the track.</p>
+    <br>
+    <p>Contact us to learn more about how we can help you achieve your goals.</p>
+    <button id="content-game-road-rage-button" class="submit-button" onclick="window.location.hash = 'contactForm'">Contact Us</button>
+</div>
+<script>
+    if (document.getElementById("container").dataset.showContactPage == 'true') {
+        document.getElementById("content-game-road-rage-button").onclick = function(){window.location.href = 'contact.html'}
+    }
+</script>

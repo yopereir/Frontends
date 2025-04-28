@@ -1,0 +1,57 @@
+<style>
+    .content-game-elf-bowling {
+        background-color: #fff;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 600px;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #content-game-elf-bowling .content-game-elf-bowling h1 {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #333;
+    }
+
+    #content-game-elf-bowling .submit-button {
+        display: block;
+        width: 160px;
+        padding: 12px;
+        background-color: #63b3ed;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 18px;
+        transition: background-color 0.3s ease;
+        margin: 0 auto;
+    }
+
+    #content-game-elf-bowling .submit-button:hover {
+        background-color: oklch(0.488 0.243 264.376);
+    }
+
+    @media (max-width: 768px) {
+        .content-game-elf-bowling {
+            width: 95%;
+        }
+    }
+</style>
+<div class="content-game-elf-bowling">
+    <h1>Elf Bowling</h1>
+    <p>Inspired by the classic Elf Bowling game of the 90s, this project aims to keep the same gameplay mechanics and humor, while adding modern features like 4K resolution models, multiplayer and cloud-saving.</p>
+    <p>Leveraging the power of modern technologies, the levels, Elfs and balls are much more detailed than before, making bowling more chaotic than ever.</p>
+    <p>At least 20 unique bowling lanes will be made, each having their own theme for the elves, lane and scenery.</p>
+    <p>New bowling balls, buffs/debuffs and Elf models will be available, each having their own game mechanics, requiring players strategically choose their ball and buffs/debuffs for the right Elfs and track.</p>
+    <br>
+    <p>Contact us to learn more about how we can help you achieve your goals.</p>
+    <button id="content-game-elf-bowling-button" class="submit-button" onclick="window.location.hash = 'contactForm'">Contact Us</button>
+</div>
+<script>
+    if (document.getElementById("container").dataset.showContactPage == 'true') {
+        document.getElementById("content-game-elf-bowling-button").onclick = function(){window.location.href = 'contact.html'}
+    }
+</script>
