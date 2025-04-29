@@ -1,0 +1,60 @@
+<style>
+    .content-project-christian-boardgames {
+        background-color: #fff;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 600px;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #content-project-christian-boardgames .content-project-christian-boardgames h1 {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #333;
+    }
+
+    #content-project-christian-boardgames .content-project-christian-boardgames img {
+        width:100%;
+    }
+
+    #content-project-christian-boardgames .submit-button {
+        display: block;
+        width: 160px;
+        padding: 12px;
+        background-color: #63b3ed;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 18px;
+        transition: background-color 0.3s ease;
+        margin: 0 auto;
+    }
+
+    #content-project-christian-boardgames .submit-button:hover {
+        background-color: oklch(0.488 0.243 264.376);
+    }
+
+    @media (max-width: 768px) {
+        .content-project-christian-boardgames {
+            width: 95%;
+        }
+    }
+</style>
+<div class="content-project-christian-boardgames">
+    <h1>Christian Boardgames</h1>     
+    <img src="assets/christian-boardgames.png" alt="Chrisitan Boardgames">       
+    <p>The goal of this project is to sponsor and develop board games that are Christian themed. The board game would be an informative tool to learn more about the Bible and the Gospel.</p>
+    <p>Popular core mechanics from existing board games would be blended with a Christian theme to keep the same fun gameplay.</p>
+    <br>
+    <p>Contact us to learn more about how we can help you achieve your goals.</p>
+    <button id="content-project-christian-boardgames-button" class="submit-button" onclick="window.location.hash = 'contactForm'">Contact Us</button>
+</div>
+<script>
+    if (document.getElementById("container").dataset.showContactPage == 'true') {
+        document.getElementById("content-project-christian-boardgames-button").onclick = function(){window.location.href = 'contact.html'}
+    }
+</script>

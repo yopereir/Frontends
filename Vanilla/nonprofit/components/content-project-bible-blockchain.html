@@ -1,0 +1,59 @@
+<style>
+    .content-project-bible-blockchain {
+        background-color: #fff;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 600px;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #content-project-bible-blockchain .content-project-bible-blockchain h1 {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #333;
+    }
+
+    #content-project-bible-blockchain .submit-button {
+        display: block;
+        width: 160px;
+        padding: 12px;
+        background-color: #63b3ed;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 18px;
+        transition: background-color 0.3s ease;
+        margin: 0 auto;
+    }
+
+    #content-project-bible-blockchain .submit-button:hover {
+        background-color: oklch(0.488 0.243 264.376);
+    }
+
+    @media (max-width: 768px) {
+        .content-project-bible-blockchain {
+            width: 95%;
+        }
+    }
+</style>
+<div class="content-project-bible-blockchain">
+    <h1>Bible Blockchain</h1>
+    <p>The goal of this project is to preserve the exact text of the Bible on the Blockchain and provide unrestricted, unaltered access.</p>
+    <p>Leveraging the power of the blockchain, the entire bible including its language translations can be stored on the Blockchain. This creates an immutable and publicly accessible version of the bible free from government censorship.</p>
+    <p>The goal is to have every major language translation and at least one main line version like KFJ for English to be uploaded to the Blockchain.</p>
+    <p>This project will be publicly sourced where anyone will be able to push or update a verse on the blockchain.</p>
+    <p>Once the admin locks the verse, no one can change the verse.</p>
+    <p>Since the blockchain is publicly visible, anyone can make a frontend App or Website to easily view the bible for a general audience. This will make accessing the bible in banned areas more easier as there is no organization a regime can target.</p>
+    <br>
+    <p>Contact us to learn more about how we can help you achieve your goals.</p>
+    <button id="content-project-bible-blockchain-button" class="submit-button" onclick="window.location.hash = 'contactForm'">Contact Us</button>
+</div>
+<script>
+    if (document.getElementById("container").dataset.showContactPage == 'true') {
+        document.getElementById("content-project-bible-blockchain-button").onclick = function(){window.location.href = 'contact.html'}
+    }
+</script>

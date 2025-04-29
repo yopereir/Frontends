@@ -4,7 +4,7 @@
   <!-- Metadata -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Grasent- About us</title>
+  <title>Grace Sent- About us</title>
   <!-- Imports -->
   <script src="scripts.js"></script>
   <link rel="stylesheet" href="styles.css">
@@ -77,11 +77,11 @@
 </body>
 <script>
   // Configure and load all Components
-  var headerInfo = { name: "Grasent- Games", url: "/" };
-  var gameID = (new URLSearchParams((new URL( window.location.href)).search)).get('gameID');
-  console.log(gameID);
+  var headerInfo = { name: "Grace Sent- Projects", url: "/" };
+  var projectID = (new URLSearchParams((new URL( window.location.href)).search)).get('projectID');
+  console.log(projectID);
   var componentIdsToLoad = [];
-  (typeof gameID !== null)? componentIdsToLoad = ["content-game-"+gameID]:"";
+  (typeof projectID !== null)? componentIdsToLoad = ["content-project-"+projectID]:"";
   loadAllComponents();
 
   const body = document.body;

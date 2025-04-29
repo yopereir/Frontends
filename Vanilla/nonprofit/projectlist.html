@@ -4,13 +4,13 @@
   <!-- Metadata -->
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Grasent- About us</title>
+  <title>Grace Sent- About us</title>
   <!-- Imports -->
   <script src="scripts.js"></script>
   <link rel="stylesheet" href="styles.css">
 </head>
 <style>
-  .gamelist {
+  .projectlist {
       margin-left: auto;
       margin-right: auto;
       padding-left: 1rem;
@@ -44,7 +44,7 @@
     color: var(--light-text-color);
   }
 
-  .game-card {
+  .project-card {
       position: relative;
       overflow: hidden;
       height: 70vh;
@@ -54,23 +54,23 @@
       cursor: pointer;
   }
 
-  .game-card:hover {
+  .project-card:hover {
       transform: translateY(-0.5rem) scale(1.03);
       box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.15), 0 3px 6px -1px rgba(0, 0, 0, 0.08);
   }
 
-  .game-card img {
+  .project-card img {
       width: 100%;
       height: 100%;
       object-fit: cover;
       transition: opacity 0.3s ease;
   }
 
-  .game-card:hover img {
+  .project-card:hover img {
       opacity: 0.5;
   }
 
-  .game-card-overlay {
+  .project-card-overlay {
       position: absolute;
       top: 0;
       left: 0;
@@ -86,30 +86,30 @@
       backdrop-filter: blur(5px);
   }
 
-  .game-card:hover .game-card-overlay {
+  .project-card:hover .project-card-overlay {
       opacity: 1;
   }
 
-  .game-card-overlay p {
+  .project-card-overlay p {
       color: white;
       font-size: 1rem;
       text-align: center;
   }
 
-  .game-grid {
+  .project-grid {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       gap: 1.5rem;
   }
 
-  .game-grid > div {
+  .project-grid > div {
       flex: 1;
       min-width: 200px;
       max-width: 300px;
   }
 
-  .game-grid > div:nth-child(4) {
+  .project-grid > div:nth-child(4) {
       margin-left: auto;
       margin-right: auto;
       flex: 1 0 100%;
@@ -117,7 +117,7 @@
   }
 
   @media (min-width: 768px) {
-      .game-grid > div:nth-child(3) {
+      .project-grid > div:nth-child(3) {
           flex: 1;
       }
   }
@@ -127,26 +127,26 @@
   <div class="components" id="background"></div>
   <br>
   <br>
-  <div class="gamelist">
+  <div class="projectlist">
     <h1 class="heading">Our Projects</h1>
     <h2 class="subheading"></h2>
-    <div class="game-grid">
-        <div class="game-card" data-url="gameinfo.html?gameID=road-rage">
-            <img src="assets/road-rage.png" alt="Road Rage">
-            <div class="game-card-overlay">
-                <p>Inspired by the classic Road Rash game of the 90s, this project aims to keep the same gameplay mechanics, the same humor and the same Grudge theme, while adding modern features like 4K resolution sprites, multiplayer and cloud-saving.</p>
+    <div class="project-grid">
+        <div class="project-card" data-url="projectinfo.html?projectID=bible-blockchain">
+            <img src="assets/bible-blockchain.png" alt="Bible Blockchain">
+            <div class="project-card-overlay">
+                <p>The goal of this project is to preserve the exact text of the Bible on the Blockchain and provide unrestricted, unaltered access.</p>
             </div>
         </div>
-        <div class="game-card" data-url="gameinfo.html?gameID=socratic-discussion">
-            <img src="assets/socratic-discussion.png" alt="Socratic Discussion">
-            <div class="game-card-overlay">
-                <p>This innovative project aims to create a new sub-genre in gaming, specifically focused on Debating.</p>
+        <div class="project-card" data-url="projectinfo.html?projectID=christian-boardgames">
+            <img src="assets/christian-boardgames.png" alt="Chrisitan Boardgames">
+            <div class="project-card-overlay">
+                <p>The goal of this project is to sponsor and develop board games that are Christian themed. The board game would be an informative tool to learn more about the Bible and the Gospel.</p>
             </div>
         </div>
-        <div class="game-card" data-url="gameinfo.html?gameID=elf-bowling">
-            <img src="assets/elf-bowling.png" alt="Elf Bowling">
-            <div class="game-card-overlay">
-                <p>Inspired by the classic Elf Bowling game of the 90s, this project aims to keep the same gameplay mechanics and humor, while adding modern features like 4K resolution models, multiplayer and cloud-saving.</p>
+        <div class="project-card" data-url="projectinfo.html?projectID=light-pictures">
+            <img src="assets/light-pictures.png" alt="The Light Pictures">
+            <div class="project-card-overlay">
+                <p>Inspired by the Cinematic Horror genre games like The Dark Pictures Anthology, Walking Dead, this Game aims to be a Cinematic story and choice driven game based on the Acts of the Apostles.</p>
             </div>
         </div>
     </div>
@@ -157,11 +157,11 @@
 </body>
 <script>
   // Configure and load all Components
-  var headerInfo = { name: "Grasent- Games", url: "/" };
-  var gameID = (new URLSearchParams((new URL( window.location.href)).search)).get('gameID');
-  console.log(gameID);
+  var headerInfo = { name: "Grace Sent- Projects", url: "/" };
+  var projectID = (new URLSearchParams((new URL( window.location.href)).search)).get('projectID');
+  console.log(projectID);
   var componentIdsToLoad = [];
-  (typeof gameID !== null)? componentIdsToLoad = ["content-game-"+gameID]:"";
+  (typeof projectID !== null)? componentIdsToLoad = ["content-project-"+projectID]:"";
   loadAllComponents();
   const body = document.body;
   // Apply theme
@@ -170,9 +170,9 @@
       body.classList.add(currentTheme);
   }
 
-  const gameCards = document.querySelectorAll('.game-card');
+  const projectCards = document.querySelectorAll('.project-card');
 
-  gameCards.forEach(card => {
+  projectCards.forEach(card => {
       card.addEventListener('click', () => {
           const url = card.dataset.url;
           if (url) {

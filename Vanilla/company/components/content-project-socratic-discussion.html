@@ -1,5 +1,5 @@
 <style>
-    .content-game-socratic-discussion {
+    .content-project-socratic-discussion {
         background-color: #fff;
         padding: 40px;
         border-radius: 12px;
@@ -10,13 +10,13 @@
         align-items: center;
     }
 
-    #content-game-socratic-discussion .content-game-socratic-discussion h1 {
+    #content-project-socratic-discussion .content-project-socratic-discussion h1 {
         text-align: center;
         margin-bottom: 30px;
         color: #333;
     }
 
-    #content-game-socratic-discussion .submit-button {
+    #content-project-socratic-discussion .submit-button {
         display: block;
         width: 160px;
         padding: 12px;
@@ -30,17 +30,17 @@
         margin: 0 auto;
     }
 
-    #content-game-socratic-discussion .submit-button:hover {
+    #content-project-socratic-discussion .submit-button:hover {
         background-color: oklch(0.488 0.243 264.376);
     }
 
     @media (max-width: 768px) {
-        .content-game-socratic-discussion {
+        .content-project-socratic-discussion {
             width: 95%;
         }
     }
 </style>
-<div class="content-game-socratic-discussion">
+<div class="content-project-socratic-discussion">
     <h1>Socratic Discussion</h1>            
     <p>This innovative project aims to create a new sub-genre in gaming, specifically focused on Debating.</p>
     <p>Think VR Chat, but for debates. In this game, people join an Agora(a large open space where Athenians debated), vote on a topic and vote on the people to debate the topic.</p>
@@ -50,10 +50,10 @@
     <p>People get XP points for engaging in voting or performing Actions. This XP adds to their level and can be used to unlock cosmetic items or Actions.</p>
     <br>
     <p>Contact us to learn more about how we can help you achieve your goals.</p>
-    <button id="content-game-socratic-discussion-button" class="submit-button" onclick="window.location.hash = 'contactForm'">Contact Us</button>
+    <button id="content-project-socratic-discussion-button" class="submit-button" onclick="window.location.hash = 'contactForm'">Contact Us</button>
 </div>
 <script>
     if (document.getElementById("container").dataset.showContactPage == 'true') {
-        document.getElementById("content-game-socratic-discussion-button").onclick = function(){window.location.href = 'contact.html'}
+        document.getElementById("content-project-socratic-discussion-button").onclick = function(){window.location.href = 'contact.html'}
     }
 </script>
