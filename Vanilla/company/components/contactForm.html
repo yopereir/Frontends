@@ -79,31 +79,41 @@
             width: 95%;
         }
     }
+
+    .thank-you-message {
+        text-align: center;
+        font-size: 1.2em;
+        padding: 20px;
+    }
 </style>
 <div class="contact-form-container">
     <h1>Contact Us</h1>
     <form id="contactForm">
-        <div class="form-group">
-            <label for="name">Name:</label>
-            <input type="text" id="name" name="name" placeholder="Enter your name">
-            <div id="name-error" class="error-message">Please enter your name</div>
+        <div id="formContentDiv">
+            <div class="form-group">
+                <label for="name">Name:</label>
+                <input type="text" id="name" name="name" placeholder="Enter your name">
+                <div id="name-error" class="error-message">Please enter your name</div>
+            </div>
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="text" id="email" name="email" placeholder="Enter your email">
+                <div id="email-error" class="error-message">Please enter a valid email</div>
+            </div>
+            <div class="form-group">
+                <label for="message">Message:</label>
+                <textarea id="message" name="message" placeholder="Enter your message"></textarea>
+                <div id="message-error" class="error-message">Please enter your message</div>
+            </div>
+            <button type="submit" class="submit-button">Submit</button>
         </div>
-        <div class="form-group">
-            <label for="email">Email:</label>
-            <input type="text" id="email" name="email" placeholder="Enter your email">
-            <div id="email-error" class="error-message">Please enter a valid email</div>
-        </div>
-        <div class="form-group">
-            <label for="message">Message:</label>
-            <textarea id="message" name="message" placeholder="Enter your message"></textarea>
-            <div id="message-error" class="error-message">Please enter your message</div>
-        </div>
-        <button type="submit" class="submit-button">Submit</button>
     </form>
 </div>
 <script>
-    const contactForm = document.getElementById('contactForm');
+    // Check if headerInfo is defined, otherwise use defaults
+    var showThankYouButton = document.getElementById("contactForm").dataset.showThankYouButton || true;
 
+    const contactForm = document.getElementById('contactForm');
     contactForm.addEventListener('submit', function(event) {
         event.preventDefault();
 
@@ -143,10 +153,34 @@
         }
 
         if (isValid) {
-            alert('Form submitted successfully!');
-            contactForm.reset();
+            document.getElementById("formContentDiv").innerHTML = '';
+            const thankYouDiv = document.createElement('div');
+            thankYouDiv.classList.add('thank-you-message');
+            thankYouDiv.innerHTML = 'Thank you for reaching out<br>We will get back to you soon!'+((showThankYouButton === true)?'<br><br><button class="submit-button" onclick="window.location.href=\'/\'">Homepage</button>':'');
+            document.getElementById("formContentDiv").appendChild(thankYouDiv);
+            //alert('Thank you for reaching out, we will get back to you as soon as possible!');
+            //contactForm.reset();
         }
     });
+
+    const allowOnlyValidCharacters = (subjectString) => {
+        let parsedString = ""
+        for (let x = 0; x < subjectString.length; x++)
+        {
+            parsedString = parsedString.concat(("abcdefghijklmnopqrstuvwxyz.,;:!- 1234567890@".includes(subjectString.charAt(x).toLowerCase()))?subjectString.charAt(x):"")
+        }
+        return parsedString
+    }
+
+    async function sendEmail() {
+        await fetch("https://script.google.com/macros/s/SCRIPT_LINK/exec",{
+          "headers": {"content-type": "application/x-www-form-urlencoded"},
+          "body": "familyName="+encodeURIComponent(allowOnlyValidCharacters(event.target.nameInput.value))
+          +"&headcount="+encodeURIComponent(allowOnlyValidCharacters(event.target.emailInput.value))
+          +"&event_roce="+encodeURIComponent(allowOnlyValidCharacters(event.target.messageInput.value)),
+          "method": "POST"
+        })
+    }
 
     function isValidEmail(email) {
         const emailRegex = /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/;
