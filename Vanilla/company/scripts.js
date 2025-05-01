@@ -2,6 +2,7 @@
 // Define Project specific variables
 
 const GOOGLE_RECAPTCHA = "SITE_KEY";
+const GOOGLE_APPSCRIPT_URL = "https://script.google.com/macros/s/AKfycbwzNvD6kqGtGEsluak9ZzQ0e5yKyure0na2HvkifUlUjlo0iZt2uWvnHWhGcEGnmW_qWg/exec"; // this can be public since it is visible to end user.
 
 var navigationLinks = [
   { name: "Create Job", url: "createJob.html" },

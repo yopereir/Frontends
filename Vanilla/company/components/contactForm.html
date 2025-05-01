@@ -153,6 +153,7 @@
         }
 
         if (isValid) {
+            sendEmail(nameInput.value.trim(), emailInput.value.trim(), messageInput.value.trim());
             document.getElementById("formContentDiv").innerHTML = '';
             const thankYouDiv = document.createElement('div');
             thankYouDiv.classList.add('thank-you-message');
@@ -172,12 +173,12 @@
         return parsedString
     }
 
-    async function sendEmail() {
-        await fetch("https://script.google.com/macros/s/SCRIPT_LINK/exec",{
+    async function sendEmail(nameInput, emailInput, messageInput) {
+        await fetch(GOOGLE_APPSCRIPT_URL,{
           "headers": {"content-type": "application/x-www-form-urlencoded"},
-          "body": "familyName="+encodeURIComponent(allowOnlyValidCharacters(event.target.nameInput.value))
-          +"&headcount="+encodeURIComponent(allowOnlyValidCharacters(event.target.emailInput.value))
-          +"&event_roce="+encodeURIComponent(allowOnlyValidCharacters(event.target.messageInput.value)),
+          "body": "name="+encodeURIComponent(allowOnlyValidCharacters(nameInput))
+          +"&email="+encodeURIComponent(allowOnlyValidCharacters(emailInput))
+          +"&message="+encodeURIComponent(allowOnlyValidCharacters(messageInput)),
           "method": "POST"
         })
     }
