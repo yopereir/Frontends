@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <!-- Homepage -->
+  <url>
+    <loc>https://www.grasent.com/index.html</loc>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Static Pages -->
+  <url>
+    <loc>https://www.grasent.com/about.html</loc>
+  </url>
+
+  <url>
+    <loc>https://www.grasent.com/contact.html</loc>
+  </url>
+
+  <url>
+    <loc>https://www.grasent.com/projectlist.html</loc>
+  </url>
+
+  <url>
+    <loc>https://www.grasent.com/jobrequest.html</loc>
+  </url>
+
+  <url>
+    <loc>https://www.grasent.com/projectinfo.html</loc>
+  </url>
+
+  <!-- Dynamic URL for a Specific Project -->
+  <url>
+    <loc>https://www.grasent.com/projectinfo.html?projectID=elf-bowling</loc>
+  </url>
+  <url>
+    <loc>https://www.grasent.com/projectinfo.html?projectID=road-rage</loc>
+  </url>
+  <url>
+    <loc>https://www.grasent.com/projectinfo.html?projectID=socratic-discussion</loc>
+  </url>
+
+</urlset>

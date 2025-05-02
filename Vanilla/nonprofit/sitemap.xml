@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+
+  <!-- Homepage -->
+  <url>
+    <loc>https://www.gracesent.com/index.html</loc>
+    <priority>1.0</priority>
+  </url>
+
+  <!-- Static Pages -->
+  <url>
+    <loc>https://www.gracesent.com/about.html</loc>
+  </url>
+
+  <url>
+    <loc>https://www.gracesent.com/contact.html</loc>
+  </url>
+
+  <url>
+    <loc>https://www.gracesent.com/projectlist.html</loc>
+  </url>
+
+  <url>
+    <loc>https://www.gracesent.com/jobrequest.html</loc>
+  </url>
+
+  <url>
+    <loc>https://www.gracesent.com/projectinfo.html</loc>
+  </url>
+
+  <!-- Dynamic URL for a Specific Project -->
+  <url>
+    <loc>https://www.gracesent.com/projectinfo.html?projectID=bible-blockchain</loc>
+  </url>
+  <url>
+    <loc>https://www.gracesent.com/projectinfo.html?projectID=christian-boardgames</loc>
+  </url>
+  <url>
+    <loc>https://www.gracesent.com/projectinfo.html?projectID=light-pictures</loc>
+  </url>
+
+</urlset>
