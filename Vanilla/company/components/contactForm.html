@@ -60,7 +60,7 @@
         display: block;
         width: 160px;
         padding: 12px;
-        background-color: #63b3ed;
+        background-color: var(--dark-button-color);
         color: white;
         border: none;
         border-radius: 5px;
@@ -68,6 +68,10 @@
         font-size: 18px;
         transition: background-color 0.3s ease;
         margin: 0 auto;
+    }
+
+    .light-mode #contactForm .submit-button {
+        background-color: var(--light-button-color);
     }
 
     #contactForm .submit-button:hover {
