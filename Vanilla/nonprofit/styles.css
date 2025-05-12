@@ -4,10 +4,12 @@
     --light-header-text-color: white;
     --light-text-color: black;
     --light-highlight-color: #333;
+    --light-button-color: #5020FF;
     --dark-background-color: black;
     --dark-header-color: #337;
     --dark-text-color: white;
     --dark-highlight-color: #347;
+    --dark-button-color: #5020FF;
 }
 body {
 font-family: Arial, sans-serif;

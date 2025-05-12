@@ -178,7 +178,7 @@
     }
 
     async function sendEmail(nameInput, emailInput, messageInput) {
-        await fetch(GOOGLE_APPSCRIPT_URL,{
+        await fetch(GOOGLE_APPSCRIPT_CONTACT_URL,{
           "headers": {"content-type": "application/x-www-form-urlencoded"},
           "body": "name="+encodeURIComponent(allowOnlyValidCharacters(nameInput))
           +"&email="+encodeURIComponent(allowOnlyValidCharacters(emailInput))
