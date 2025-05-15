@@ -62,7 +62,7 @@
         display: block;
         width: 160px;
         padding: 12px;
-        background-color: #63b3ed;
+        background-color: var(--light-button-color);
         color: white;
         border: none;
         border-radius: 5px;
@@ -70,6 +70,10 @@
         font-size: 18px;
         transition: background-color 0.3s ease;
         margin: 0 auto;
+    }
+
+    .light-mode #jobForm .submit-button {
+        background-color: var(--light-button-color);
     }
 
     #jobForm .submit-button:hover {
@@ -81,12 +85,18 @@
             width: 95%;
         }
     }
+
+    .thank-you-message {
+        text-align: center;
+        font-size: 1.2em;
+        padding: 20px;
+    }
 </style>
 <div class="job-form-container">
     <h1>Employee Sourcing</h1>
+    <div id="formContentDiv">
     <h3>We work with a netowrk of Subject Matter Experts instead of Recruiters to source qualified Candidates and guarantee Candidate retention for at least 6 months.</h3>
     <form id="jobForm">
-        <div id="formContentDiv">
             <div class="form-group">
                 <label for="companyname">Company Name:</label>
                 <input type="text" id="companyname" name="companyname" placeholder="Enter your comapny's name">
@@ -124,13 +134,15 @@
                 <textarea id="salary" name="salary" placeholder="Enter the total compensation for the role. Example: $60/hr or $100,000 USD annually or 5 Ethereum per month"></textarea>
                 <div id="salary-error" class="error-message">Please enter the total compensation for the role.</div>
             </div>
-        </div>
         <button type="submit" class="submit-button">Submit</button>
     </form>
 </div>
+</div>
 <script>
-    const jobForm = document.getElementById('jobForm');
+    // Check if headerInfo is defined, otherwise use defaults
+    var showThankYouButton = document.getElementById("jobForm").dataset.showThankYouButton || true;
 
+    const jobForm = document.getElementById('jobForm');
     jobForm.addEventListener('submit', function(event) {
         event.preventDefault();
 

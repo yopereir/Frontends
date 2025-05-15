@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <!-- Metadata -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grace Sent- Business Intelligence</title>
+  <!-- Imports -->
+  <script src="scripts.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<style>
+  .content {
+      color: white;
+      flex-grow: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      height: 100vh;
+  }
+
+  .content h1 {
+      font-size: 2.5em;
+      margin-bottom: 20px;
+  }
+
+  .content p {
+      font-size: 1.2em;
+      margin-bottom: 30px;
+  }
+
+  .learn-more {
+      background-color: #2277e1; /* Blue button */
+      width: 10em;
+      color: #ffffff;
+      padding: 15px 30px;
+      border: none;
+      border-radius: 5px;
+      font-size: 1.1em;
+      cursor: pointer;
+  }
+
+  .learn-more:hover {
+    background-color: oklch(0.488 0.243 264.376);
+  }
+
+  .light-mode .content {
+    color: black;
+  }
+
+  .light-mode .dropdown-content {
+      background-color: #e2e8f0;
+  }
+
+  .light-mode .learn-more {
+      background-color: #63b3ed;
+  }
+</style>
+<body>
+  <div class="components" id="header"></div>
+  <div class="components" id="background"></div>
+  <br>
+  <br>
+  <br>
+  <div class="components" id="container" style="display:flex;justify-content: center;align-items: center;" data-show-contact-page='true'></div>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <br>
+  <div class="components" id="footer" style="display:flex;justify-content: center;align-items: center;"></div>
+</body>
+<script>
+  // Configure and load all Components
+  var headerInfo = { name: "Job Board", url: "/" };
+  var componentIdsToLoad = ["content-businessintelligence"];
+  loadAllComponents();
+
+  const body = document.body;
+
+  const currentTheme = localStorage.getItem('theme');
+  if (currentTheme) {
+      body.classList.add(currentTheme);
+  }
+
+  // Show specific page
+  function showPage(pageId) {
+    document.querySelectorAll('.container > div').forEach(page => page.classList.add('hidden'));
+    document.getElementById(pageId).classList.remove('hidden');
+  }
+</script>
+</html>

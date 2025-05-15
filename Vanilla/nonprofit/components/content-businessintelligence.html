@@ -1,0 +1,62 @@
+<style>
+    .content-businessintelligence {
+        background-color: #fff;
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        width: 100%;
+        max-width: 600px;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #content-businessintelligence .content-businessintelligence h1 {
+        text-align: center;
+        margin-bottom: 30px;
+        color: #333;
+    }
+
+    #content-businessintelligence .submit-button {
+        display: block;
+        width: 160px;
+        padding: 12px;
+        background-color: var(--light-button-color);
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 18px;
+        transition: background-color 0.3s ease;
+        margin: 0 auto;
+    }
+
+    .light-mode #content-businessintelligence .submit-button {
+        background-color: var(--light-button-color);
+    }
+
+    #content-businessintelligence .submit-button:hover {
+        background-color: oklch(0.488 0.243 264.376);
+    }
+
+    @media (max-width: 768px) {
+        .content-businessintelligence {
+            width: 95%;
+        }
+    }
+</style>
+<div class="content-businessintelligence">
+    <h1>Business Intelligence</h1>
+    <p>We build data collection frameworks to analyze data in business operations to find inefficiencies and bring value to organizations.</p>
+    <p>Our general workflow consists of:</p>
+    <ul><li>Upgrading existing devices within the supply chain to track more data.</li>
+    <li>Using the collected data to create dashboards for clients and management to get further insights in to their operations.</li>
+    <li>Providing data-driven insights using Artificial Intelligence and Business Analyst recommendations.</li></ul>
+    <br>
+    <p>Contact us to learn more about how we can help you achieve your goals.</p>
+    <button id="content-businessintelligence-button" class="submit-button" onclick="window.location.hash = 'contactForm'">Contact Us</button>
+</div>
+<script>
+    if (document.getElementById("container").dataset.showContactPage == 'true') {
+        document.getElementById("content-businessintelligence-button").onclick = function(){window.location.href = 'contact.html'}
+    }
+</script>

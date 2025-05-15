@@ -3,7 +3,7 @@
 
 const GOOGLE_RECAPTCHA = "SITE_KEY";
 const GOOGLE_APPSCRIPT_CONTACT_URL = "https://script.google.com/macros/s/AKfycbwzNvD6kqGtGEsluak9ZzQ0e5yKyure0na2HvkifUlUjlo0iZt2uWvnHWhGcEGnmW_qWg/exec"; // this can be public since it is visible to end user.
-const GOOGLE_APPSCRIPT_JOB_URL = "https://script.google.com/macros/s/AKfycbzRu0wRIdtn5qdYyEMgYN5XjaOnGi8JJkVXIGm8OO0So_zY9pFP1GLe9Za1HfiaI410sg/exec"; // this can be public since it is visible to end user.
+const GOOGLE_APPSCRIPT_JOB_URL = "https://script.google.com/macros/s/AKfycbwKI_63iPjoV6rTpsKVXP-xnWvxsZzV3wRIXyglkt7gcf8f67zG8T8TNG3_MfDHSIeI4w/exec"; // this can be public since it is visible to end user.
 
 var navigationLinks = [
   { name: "Create Job", url: "createJob.html" },

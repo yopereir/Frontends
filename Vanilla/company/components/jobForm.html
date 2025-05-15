@@ -62,7 +62,7 @@
         display: block;
         width: 160px;
         padding: 12px;
-        background-color: #63b3ed;
+        background-color: var(--light-button-color);
         color: white;
         border: none;
         border-radius: 5px;
@@ -70,6 +70,10 @@
         font-size: 18px;
         transition: background-color 0.3s ease;
         margin: 0 auto;
+    }
+
+    .light-mode #jobForm .submit-button {
+        background-color: var(--light-button-color);
     }
 
     #jobForm .submit-button:hover {
@@ -81,56 +85,64 @@
             width: 95%;
         }
     }
+
+    .thank-you-message {
+        text-align: center;
+        font-size: 1.2em;
+        padding: 20px;
+    }
 </style>
 <div class="job-form-container">
     <h1>Employee sourcing</h1>
+    <div id="formContentDiv">
     <h3>We work with a netowrk of Subject Matter Experts instead of Recruiters to source qualified Candidates and guarantee Candidate retention for at least 6 months.</h3>
     <form id="jobForm">
-        <div id="formContentDiv">
-            <div class="form-group">
-                <label for="companyname">Company Name:</label>
-                <input type="text" id="companyname" name="companyname" placeholder="Enter your comapny's name">
-                <div id="companyname-error" class="error-message">Please enter your comapny's name</div>
-            </div>
-            <div class="form-group">
-                <label for="name">Name:</label>
-                <input type="text" id="name" name="name" placeholder="Enter your name">
-                <div id="name-error" class="error-message">Please enter your name</div>
-            </div>
-            <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="text" id="email" name="email" placeholder="Enter your email">
-                <div id="email-error" class="error-message">Please enter a valid email</div>
-            </div>
-            <div class="form-group">
-                <label for="jobtype">Job Type:</label>
-                <select id="jobtype" name="jobtype">
-                    <option value="in-office">In-Office</option>
-                    <option value="hybrid">Hybrid</option>
-                    <option value="remote" selected>Remote</option>
-                </select>
-            </div>
-            <div class="form-group">
-                <label for="location">Job Location (optional):</label>
-                <input type="text" id="location" name="location" placeholder="Enter the expected job location or timezone of the job.">
-            </div>
-            <div class="form-group">
-                <label for="jobdescription">Job Description:</label>
-                <textarea id="jobdescription" name="jobdescription" placeholder="Enter the Job Description including any Requirements."></textarea>
-                <div id="jobdescription-error" class="error-message">Please enter the Job Description</div>
-            </div>
-            <div class="form-group">
-                <label for="salary">Salary:</label>
-                <textarea id="salary" name="salary" placeholder="Enter the total compensation for the role. Example: $60/hr or $100,000 USD annually or 5 Ethereum per month"></textarea>
-                <div id="salary-error" class="error-message">Please enter the total compensation for the role.</div>
-            </div>
+        <div class="form-group">
+            <label for="companyname">Company Name:</label>
+            <input type="text" id="companyname" name="companyname" placeholder="Enter your comapny's name">
+            <div id="companyname-error" class="error-message">Please enter your comapny's name</div>
+        </div>
+        <div class="form-group">
+            <label for="name">Name:</label>
+            <input type="text" id="name" name="name" placeholder="Enter your name">
+            <div id="name-error" class="error-message">Please enter your name</div>
+        </div>
+        <div class="form-group">
+            <label for="email">Email:</label>
+            <input type="text" id="email" name="email" placeholder="Enter your email">
+            <div id="email-error" class="error-message">Please enter a valid email</div>
+        </div>
+        <div class="form-group">
+            <label for="jobtype">Job Type:</label>
+            <select id="jobtype" name="jobtype">
+                <option value="in-office">In-Office</option>
+                <option value="hybrid">Hybrid</option>
+                <option value="remote" selected>Remote</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="location">Job Location (optional):</label>
+            <input type="text" id="location" name="location" placeholder="Enter the expected job location or timezone of the job.">
+        </div>
+        <div class="form-group">
+            <label for="jobdescription">Job Description:</label>
+            <textarea id="jobdescription" name="jobdescription" placeholder="Enter the Job Description including any Requirements."></textarea>
+            <div id="jobdescription-error" class="error-message">Please enter the Job Description</div>
+        </div>
+        <div class="form-group">
+            <label for="salary">Salary:</label>
+            <textarea id="salary" name="salary" placeholder="Enter the total compensation for the role. Example: $60/hr or $100,000 USD annually or 5 Ethereum per month"></textarea>
+            <div id="salary-error" class="error-message">Please enter the total compensation for the role.</div>
         </div>
         <button type="submit" class="submit-button">Submit</button>
     </form>
 </div>
+</div>
 <script>
-    const jobForm = document.getElementById('jobForm');
+    // Check if headerInfo is defined, otherwise use defaults
+    var showThankYouButton = document.getElementById("jobForm").dataset.showThankYouButton || true;
 
+    const jobForm = document.getElementById('jobForm');
     jobForm.addEventListener('submit', function(event) {
         event.preventDefault();
 
