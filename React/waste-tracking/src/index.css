@@ -119,3 +119,63 @@ a:hover {
   margin: 1em 0;
   border-radius: 100%;
 }
+.header-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background-color: var(--header-bg, #2a2a2a);
+  color: var(--header-color, white);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  color: inherit;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.user-menu {
+  position: relative;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background-color: var(--menu-bg, #2a2a2a);
+  border: 1px solid var(--menu-border, #4a4a4a);
+  border-radius: 4px;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.dropdown-menu a,
+.dropdown-menu button {
+  color: var(--menu-text, white);
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+}
+
+.dropdown-menu a:hover,
+.dropdown-menu button:hover {
+  text-decoration: underline;
+}
+
+/* Dark mode styles */
+:root.dark {
+  --header-bg: #1c1c1c;
+  --header-color: white;
+  --menu-bg: #1c1c1c;
+  --menu-border: #333;
+  --menu-text: white;
+}
