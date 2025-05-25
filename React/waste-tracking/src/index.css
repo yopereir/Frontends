@@ -36,13 +36,14 @@ a {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 1rem;
+  padding: 0.5rem 1rem;
   background-color: var(--header-bg, #2a2a2a);
   color: var(--header-color, white);
   position: fixed;
   top: 0;
   width: 100%;
   z-index: 1000;
+  height: 3.5rem; /* fixed height for consistency */
 }
 .main-container {
   display: flex;
@@ -179,6 +180,29 @@ a:hover {
 .dropdown-menu a:hover,
 .dropdown-menu button:hover {
   text-decoration: underline;
+}
+
+.center-section {
+  width: 80vw; /* 80% of viewport width */
+  text-align: center;
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.icon-button {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  font-size: 1.5rem;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 /* Dark mode styles */

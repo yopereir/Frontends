@@ -7,11 +7,13 @@ const HeaderBar = () => {
   const { session } = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
   const [theme, setTheme] = useState("system");
+
   const toggleTheme = () => {
     setTheme((prev) =>
       prev === "dark" ? "light" : prev === "light" ? "system" : "dark"
     );
   };
+
   useEffect(() => {
     const root = document.documentElement;
     if (
@@ -26,11 +28,20 @@ const HeaderBar = () => {
 
   return (
     <header className="header-bar">
-      <button className="icon-button" onClick={toggleTheme}>
-        🌗
-      </button>
+      {/* Left: User menu */}
+
+      {/* Right: Theme toggle */}
+      <div className="header-section">
+        <button className="icon-button" onClick={toggleTheme}>
+          🌗
+        </button>
+      </div>
+      {/* Center: User name or placeholder */}
+      <div className="header-section center-section">
+        {session?.user?.email || "Guest"}
+      </div>
       <div
-        className="user-menu"
+        className="user-menu header-section"
         onMouseEnter={() => setMenuOpen(true)}
         onMouseLeave={() => setMenuOpen(false)}
       >
@@ -48,6 +59,7 @@ const HeaderBar = () => {
           </div>
         )}
       </div>
+
     </header>
   );
 };
