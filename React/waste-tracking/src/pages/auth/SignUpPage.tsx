@@ -15,6 +15,8 @@ const SignUpPage = () => {
   const [status, setStatus] = useState("");
   const [formValues, setFormValues] = useState({
     email: "",
+    name: "",
+    location: "",
     password: "",
   });
 
@@ -28,6 +30,12 @@ const SignUpPage = () => {
     const { error } = await supabase.auth.signUp({
       email: formValues.email,
       password: formValues.password,
+      options: {
+        data: {
+          name: formValues.name,
+          location: formValues.location,
+        }
+      },
     });
     if (error) {
       alert(error.message);
@@ -56,6 +64,18 @@ const SignUpPage = () => {
           onChange={handleInputChange}
           type="email"
           placeholder="Email"
+        />
+        <input
+          name="name"
+          onChange={handleInputChange}
+          type="text"
+          placeholder="Full Name"
+        />
+        <input
+          name="location"
+          onChange={handleInputChange}
+          type="address"
+          placeholder="Address"
         />
         <input
           name="password"
