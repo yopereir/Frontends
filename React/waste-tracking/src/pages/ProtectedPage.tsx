@@ -1,10 +1,12 @@
 import { Link } from "react-router-dom";
 import { useSession } from "../context/SessionContext";
+import HeaderBar from "../components/HeaderBar";
 
 const ProtectedPage = () => {
   const { session } = useSession();
   return (
     <main>
+      <HeaderBar />
       <Link className="home-link" to="/">
         ◄ Home
       </Link>
