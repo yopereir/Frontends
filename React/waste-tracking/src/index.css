@@ -63,6 +63,13 @@ a {
   border-style: solid;
   border-color: #3ecf8e; /* Supabase green */
 }
+.main-container > * {
+  flex-grow: 1;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 #github-repo-link {
   display: flex;
   gap: 0.5em;
@@ -135,7 +142,8 @@ a:hover {
   text-decoration: underline;
 }
 #divider {
-  width: 70%;
+  flex-grow: 0;
+  width: 100%;
   height: 2px;
   background-color: #3ecf8e; /* Supabase green */
   margin: 1em 0;

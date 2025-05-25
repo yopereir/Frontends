@@ -15,6 +15,8 @@ const HomePage = () => {
         {session ? (
           <>
           <Link to="/dashboard">Dashboard</Link>
+          <Link to="/items">Add Items</Link>
+          <Link to="/labels">Print Labels</Link>
           <Link to="/settings">Settings</Link>
           <div id="divider"></div>
           <button onClick={() => supabase.auth.signOut()}>Sign Out</button>
