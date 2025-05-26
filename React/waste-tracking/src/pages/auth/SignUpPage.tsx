@@ -57,7 +57,7 @@ const SignUpPage = () => {
             color: "#777",
           }}
         >
-          Demo app, please don't use your real email or password
+          Please fill in the details below to create a new account.
         </p>
         <input
           name="email"

@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import HomePage from "../pages/HomePage.tsx";
 import SignInPage from "../pages/auth/SignInPage.tsx";
 import SignUpPage from "../pages/auth/SignUpPage.tsx";
+import ConfirmPage from "../pages/ConfirmPage.tsx";
 import DashboardPage from "../pages/DashboardPage.tsx";
 import ItemsPage from "../pages/ItemsPage.tsx";
 import LabelsPage from "../pages/LabelsPage.tsx";
@@ -28,6 +29,10 @@ const router = createBrowserRouter([
       {
         path: "/auth/sign-up",
         element: <SignUpPage />,
+      },
+      {
+        path: "/confirm",
+        element: <ConfirmPage />,
       },
       // Auth Protected routes
       {

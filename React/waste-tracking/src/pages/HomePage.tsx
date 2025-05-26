@@ -5,25 +5,24 @@ import HeaderBar from "../components/HeaderBar";
 
 const HomePage = () => {
   const { session } = useSession();
+  const contentChildren = session ? [
+          <Link to="/dashboard">Dashboard</Link>,
+          <Link to="/items">Add Items</Link>,
+          <Link to="/labels">Print Labels</Link>,
+          <Link to="/settings">Settings</Link>,
+          <div id="divider"></div>,
+          <button onClick={() => supabase.auth.signOut()}>Sign Out</button>
+   ] : [
+          <Link to="/auth/sign-in">Sign In</Link>
+   ]
 
   return (
     <div className="home-page">
       <HeaderBar />
-      <main className="main-container">
+      <main className={`main-container ${contentChildren.length > 4 ? "many-children" : ""}`}>
         <h1 className="header-text">Waste Tracking</h1>
         <p>Current User : {session?.user.email || "None"}</p>
-        {session ? (
-          <>
-          <Link to="/dashboard">Dashboard</Link>
-          <Link to="/items">Add Items</Link>
-          <Link to="/labels">Print Labels</Link>
-          <Link to="/settings">Settings</Link>
-          <div id="divider"></div>
-          <button onClick={() => supabase.auth.signOut()}>Sign Out</button>
-          </>
-        ) : (
-          <Link to="/auth/sign-in">Sign In</Link>
-        )}
+        {contentChildren.map((child, index) => <div key={index}>{child}</div>)}
       </main>
     </div>
   );
