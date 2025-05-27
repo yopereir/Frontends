@@ -37,7 +37,7 @@ const SignInPage = () => {
   return (
     <main>
       <Link className="home-link" to="/">
-        ◄ Home
+        Home
       </Link>
       <form className="main-container" onSubmit={handleSubmit}>
         <h1 className="header-text">Sign In</h1>
