@@ -38,9 +38,9 @@ const HeaderBar = () => {
     <header className="header-bar">
       <div className="header-left" />
 
-      <div className="header-section center-section">
-        {session?.user?.email || "Guest"}
-      </div>
+      <Link className="home-link" to="/">
+        Home
+      </Link>
 
       <div className="header-section right-section">
         {/* Theme menu */}
