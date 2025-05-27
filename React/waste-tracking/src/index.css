@@ -101,7 +101,7 @@ input {
   border-radius: 4px;
   outline: none;
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
-  background-color: #3a3a3a; /* Slightly lighter than container background */
+  background-color: var(--input-bg, #3a3a3a); /* Slightly lighter than container background */
   border: 1px solid #4a4a4a;
   font-size: 1rem;
   color: white;
@@ -235,6 +235,7 @@ a:hover {
   --menu-border: #333;
   --menu-text: white;
   --main-bg: #1c1c1c;
+  --input-bg:#3a3a3a;
 }
 
 /* Light mode styles */
@@ -247,6 +248,7 @@ a:hover {
   --main-bg: #ffffff;
   --body-bg: #fafafa;
   --text-color: #000;
+  --input-bg:white;
 }
 
 @media (max-width: 768px) {
