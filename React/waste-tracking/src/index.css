@@ -104,7 +104,7 @@ input {
   background-color: var(--input-bg, #3a3a3a); /* Slightly lighter than container background */
   border: 1px solid #4a4a4a;
   font-size: 1rem;
-  color: white;
+  color: var(--input-color, white);
   margin-top: 7px;
   width: 300px;
 }
@@ -241,6 +241,7 @@ a:hover {
   --menu-border: #333;
   --menu-text: white;
   --main-bg: #1c1c1c;
+  --input-color: white;
   --input-bg:#3a3a3a;
 }
 
@@ -253,7 +254,7 @@ a:hover {
   --menu-text: #000;
   --main-bg: #ffffff;
   --body-bg: #fafafa;
-  --text-color: #000;
+  --input-color: #000;
   --input-bg:white;
 }
 
