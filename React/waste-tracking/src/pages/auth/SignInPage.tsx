@@ -13,6 +13,7 @@ const SignInPage = () => {
   // just like the ./router/AuthProtectedRoute.tsx? up to you.
   // ==============================
   const [status, setStatus] = useState("");
+  const [supabaseError, setSupabaseError] = useState("");
   const [formValues, setFormValues] = useState({
     email: "",
     password: "",
@@ -24,6 +25,10 @@ const SignInPage = () => {
     // Clear field error when user starts typing
     if (errors[e.target.name as keyof typeof errors]) {
       setErrors((prev) => ({ ...prev, [e.target.name]: "" }));
+    }
+    // Clear global supabase error on input change
+    if (supabaseError) {
+      setSupabaseError("");
     }
   };
 
@@ -38,12 +43,14 @@ const SignInPage = () => {
       return;
     }
     setStatus("Logging in...");
+    setSupabaseError("");
     const { error } = await supabase.auth.signInWithPassword({
       email: formValues.email,
       password: formValues.password,
     });
     if (error) {
-      alert(error.message);
+      setStatus("");
+      setSupabaseError(error.message);
     }
     setStatus("");
   };
@@ -81,6 +88,9 @@ const SignInPage = () => {
           </p>
         )}
         <button type="submit">Login</button>
+        {supabaseError && (
+          <p style={{ color: "red", marginTop: "0.5rem" }}>{supabaseError}</p>
+        )}
         <Link className="auth-link" to="/auth/sign-up">
           Don't have an account? Sign Up
         </Link>
