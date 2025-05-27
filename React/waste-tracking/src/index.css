@@ -45,6 +45,11 @@ a {
   z-index: 1000;
   height: 3.5rem; /* fixed height for consistency */
 }
+.header-left {
+  width: 10%; /* placeholder to balance center alignment */
+  min-width: 3rem;
+  max-width: 10vw;
+}
 .main-container {
   display: flex;
   flex-direction: column;
@@ -166,6 +171,7 @@ a:hover {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  z-index: 999;
 }
 
 .dropdown-menu a,
@@ -176,6 +182,8 @@ a:hover {
   border: none;
   cursor: pointer;
   text-align: left;
+  font-size: 14px;
+  padding: 0.25rem 0.5rem;
 }
 
 .dropdown-menu a:hover,
@@ -183,13 +191,26 @@ a:hover {
   text-decoration: underline;
 }
 
+.dropdown-menu .active {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
 .center-section {
   width: 80vw; /* 80% of viewport width */
-  text-align: center;
+  text-align: justify;
   font-weight: bold;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+}
+.right-section {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  width: 10%; /* theme + user menu together = 20% (10% left + 10% right) */
+  min-width: 3rem;
+  max-width: 10vw;
 }
 
 .icon-button {
@@ -198,12 +219,12 @@ a:hover {
   color: inherit;
   cursor: pointer;
   font-size: 1.5rem;
-  padding: 0;
-  width: 100%;
-  height: 100%;
   display: flex;
   justify-content: center;
   align-items: center;
+  width: 2rem;
+  height: 2rem;
+  flex-shrink: 0;
 }
 
 /* Dark mode styles */
@@ -233,5 +254,25 @@ a:hover {
     width: 90%;
     height: 85%;
     padding: 1.5em;
+  }
+
+  .header-left,
+  .right-section {
+    width: 10%;
+    max-width: 20vw;
+    min-width: 3rem;
+  }
+
+  .center-section {
+    font-size: 0.9rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .dropdown-menu {
+    right: 0;
+    width: max-content;
+    min-width: 8rem;
   }
 }
