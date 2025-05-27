@@ -6,6 +6,7 @@ import ConfirmPage from "../pages/ConfirmPage.tsx";
 import DashboardPage from "../pages/DashboardPage.tsx";
 import ItemsPage from "../pages/ItemsPage.tsx";
 import LabelsPage from "../pages/LabelsPage.tsx";
+import ThankYouPage from "../pages/ThankYouPage.tsx";
 import SettingsPage from "../pages/SettingsPage.tsx";
 import NotFoundPage from "../pages/404Page.tsx";
 import AuthProtectedRoute from "./AuthProtectedRoute.tsx";
@@ -33,6 +34,10 @@ const router = createBrowserRouter([
       {
         path: "/confirm",
         element: <ConfirmPage />,
+      },
+      {
+        path: "/thankyou",
+        element: <ThankYouPage />,
       },
       // Auth Protected routes
       {

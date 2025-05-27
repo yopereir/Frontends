@@ -1,12 +1,16 @@
 import { useState } from "react";
-import { Link, Navigate } from "react-router-dom";
+import { Link, Navigate, useNavigate } from "react-router-dom";
 import { useSession } from "../../context/SessionContext";
 import supabase from "../../supabase";
 
 const SignUpPage = () => {
   const { session } = useSession();
+  const navigate = useNavigate();
+
   if (session) return <Navigate to="/" />;
+
   const [status, setStatus] = useState("");
+  const [supabaseError, setSupabaseError] = useState("");
   const [formValues, setFormValues] = useState({
     email: "",
     name: "",
@@ -17,9 +21,15 @@ const SignUpPage = () => {
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormValues({ ...formValues, [e.target.name]: e.target.value });
+
     // Clear field error when user starts typing
     if (errors[e.target.name as keyof typeof errors]) {
       setErrors((prev) => ({ ...prev, [e.target.name]: "" }));
+    }
+
+    // Clear global supabase error on input change
+    if (supabaseError) {
+      setSupabaseError("");
     }
   };
 
@@ -36,6 +46,8 @@ const SignUpPage = () => {
     }
 
     setStatus("Creating account...");
+    setSupabaseError("");
+
     const { error } = await supabase.auth.signUp({
       email: formValues.email,
       password: formValues.password,
@@ -46,10 +58,16 @@ const SignUpPage = () => {
         },
       },
     });
+
     if (error) {
-      setStatus(error.message);
+      setStatus("");
+      setSupabaseError(error.message);
     } else {
-      setStatus("Check your email to confirm your account.");
+      navigate("/thankyou", {
+        state: {
+          message: "Your account has been created. Please check your email to confirm your account.",
+        }
+      });
     }
   };
 
@@ -63,6 +81,7 @@ const SignUpPage = () => {
         <p style={{ textAlign: "center", fontSize: "0.8rem", color: "#777" }}>
           Please fill in the details below to create a new account.
         </p>
+
         <input
           name="email"
           onChange={handleInputChange}
@@ -72,10 +91,11 @@ const SignUpPage = () => {
           aria-describedby="email-error"
         />
         {errors.email && (
-          <p id="email-error" style={{ justifyContent: "left", color: "red", marginTop: "0.25rem" }}>
+          <p id="email-error" style={{ color: "red", marginTop: "0.25rem" }}>
             {errors.email}
           </p>
         )}
+
         <input
           name="name"
           onChange={handleInputChange}
@@ -88,6 +108,7 @@ const SignUpPage = () => {
           type="address"
           placeholder="Address"
         />
+
         <input
           name="password"
           onChange={handleInputChange}
@@ -97,11 +118,16 @@ const SignUpPage = () => {
           aria-describedby="password-error"
         />
         {errors.password && (
-          <p id="password-error" style={{ justifyContent: "left", color: "red", marginTop: "0.25rem" }}>
+          <p id="password-error" style={{ color: "red", marginTop: "0.25rem" }}>
             {errors.password}
           </p>
         )}
+
         <button type="submit">Create Account</button>
+
+        {supabaseError && (
+          <p style={{ color: "red", marginTop: "0.5rem" }}>{supabaseError}</p>
+        )}
 
         <Link className="auth-link" to="/auth/sign-in">
           Already have an account? Sign In
