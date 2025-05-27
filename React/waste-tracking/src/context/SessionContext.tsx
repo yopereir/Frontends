@@ -3,10 +3,16 @@ import supabase from "../supabase";
 import LoadingPage from "../pages/LoadingPage";
 import { Session } from "@supabase/supabase-js";
 
+type Theme = "light" | "dark" | "system";
+
 const SessionContext = createContext<{
   session: Session | null;
+  theme: Theme;
+  setTheme: (theme: Theme) => void;
 }>({
   session: null,
+  theme: "system",
+  setTheme: () => {},
 });
 
 export const useSession = () => {
@@ -22,6 +28,29 @@ export const SessionProvider = ({ children }: Props) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const [theme, setThemeState] = useState<Theme>(
+    () => (localStorage.getItem("theme") as Theme) || "system"
+  );
+
+  const setTheme = (newTheme: Theme) => {
+    setThemeState(newTheme);
+    localStorage.setItem("theme", newTheme);
+
+    const isDark =
+      newTheme === "dark" ||
+      (newTheme === "system" &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches);
+    document.documentElement.classList.toggle("dark", isDark);
+  };
+
+  useEffect(() => {
+    const isDark =
+      theme === "dark" ||
+      (theme === "system" &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches);
+    document.documentElement.classList.toggle("dark", isDark);
+  }, [theme]);
+
   useEffect(() => {
     const authStateListener = supabase.auth.onAuthStateChange(
       async (_, session) => {
@@ -29,14 +58,13 @@ export const SessionProvider = ({ children }: Props) => {
         setIsLoading(false);
       }
     );
-
     return () => {
       authStateListener.data.subscription.unsubscribe();
     };
-  }, [supabase]);
+  }, []);
 
   return (
-    <SessionContext.Provider value={{ session }}>
+    <SessionContext.Provider value={{ session, theme, setTheme }}>
       {isLoading ? <LoadingPage /> : children}
     </SessionContext.Provider>
   );

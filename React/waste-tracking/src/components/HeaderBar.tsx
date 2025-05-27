@@ -4,27 +4,12 @@ import { useSession } from "../context/SessionContext";
 import supabase from "../supabase";
 
 const HeaderBar = () => {
-  const { session } = useSession();
+  const { session, theme, setTheme } = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
-  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "system");
 
   const themeRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
-
-  const applyTheme = (themeValue: string) => {
-    localStorage.setItem("theme", themeValue);
-    setTheme(themeValue);
-    setThemeMenuOpen(false);
-  };
-
-  useEffect(() => {
-    const root = document.documentElement;
-    const isDark =
-      theme === "dark" ||
-      (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
-    root.classList.toggle("dark", isDark);
-  }, [theme]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -66,19 +51,19 @@ const HeaderBar = () => {
           {themeMenuOpen && (
             <div className="dropdown-menu">
               <button
-                onClick={() => applyTheme("light")}
+                onClick={() => setTheme("light")}
                 className={theme === "light" ? "active" : ""}
               >
                 Light
               </button>
               <button
-                onClick={() => applyTheme("dark")}
+                onClick={() => setTheme("dark")}
                 className={theme === "dark" ? "active" : ""}
               >
                 Dark
               </button>
               <button
-                onClick={() => applyTheme("system")}
+                onClick={() => setTheme("system")}
                 className={theme === "system" ? "active" : ""}
               >
                 System
