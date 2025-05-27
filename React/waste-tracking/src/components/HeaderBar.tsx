@@ -6,20 +6,21 @@ import supabase from "../supabase";
 const HeaderBar = () => {
   const { session } = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
-  const [theme, setTheme] = useState("system");
+  const [themeMenuOpen, setThemeMenuOpen] = useState(false);
+  const [theme, setTheme] = useState(() => localStorage.getItem("theme") || "system");
 
-  const toggleTheme = () => {
-    setTheme((prev) =>
-      prev === "dark" ? "light" : prev === "light" ? "system" : "dark"
-    );
+  const applyTheme = (themeValue: string) => {
+    localStorage.setItem("theme", themeValue);
+    setTheme(themeValue);
   };
 
   useEffect(() => {
     const root = document.documentElement;
-    if (
+    const isDark =
       theme === "dark" ||
-      (theme === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches)
-    ) {
+      (theme === "system" &&
+        window.matchMedia("(prefers-color-scheme: dark)").matches);
+    if (isDark) {
       root.classList.add("dark");
     } else {
       root.classList.remove("dark");
@@ -28,18 +29,26 @@ const HeaderBar = () => {
 
   return (
     <header className="header-bar">
-      {/* Left: User menu */}
-
-      {/* Right: Theme toggle */}
-      <div className="header-section">
-        <button className="icon-button" onClick={toggleTheme}>
-          🌗
-        </button>
-      </div>
       {/* Center: User name or placeholder */}
       <div className="header-section center-section">
         {session?.user?.email || "Guest"}
       </div>
+      {/* Left: Theme toggle */}
+      <div
+        className="header-section user-menu"
+        onMouseEnter={() => setThemeMenuOpen(true)}
+        onMouseLeave={() => setThemeMenuOpen(false)}
+      >
+        <button className="icon-button">🌗</button>
+        {themeMenuOpen && (
+          <div className="dropdown-menu">
+            <button onClick={() => applyTheme("light")}>Light</button>
+            <button onClick={() => applyTheme("dark")}>Dark</button>
+            <button onClick={() => applyTheme("system")}>System</button>
+          </div>
+        )}
+      </div>
+      {/* Right: User menu */}
       <div
         className="user-menu header-section"
         onMouseEnter={() => setMenuOpen(true)}
