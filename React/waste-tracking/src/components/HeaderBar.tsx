@@ -51,19 +51,19 @@ const HeaderBar = () => {
           {themeMenuOpen && (
             <div className="dropdown-menu">
               <button
-                onClick={() => setTheme("light")}
+                onClick={() => {setTheme("light");setThemeMenuOpen((prev)=>!prev);}}
                 className={theme === "light" ? "active" : ""}
               >
                 Light
               </button>
               <button
-                onClick={() => setTheme("dark")}
+                onClick={() => {setTheme("dark");setThemeMenuOpen((prev)=>!prev);}}
                 className={theme === "dark" ? "active" : ""}
               >
                 Dark
               </button>
               <button
-                onClick={() => setTheme("system")}
+                onClick={() => {setTheme("system");setThemeMenuOpen((prev)=>!prev);}}
                 className={theme === "system" ? "active" : ""}
               >
                 System

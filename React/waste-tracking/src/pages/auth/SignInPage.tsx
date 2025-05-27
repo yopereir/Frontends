@@ -17,13 +17,26 @@ const SignInPage = () => {
     email: "",
     password: "",
   });
+  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormValues({ ...formValues, [e.target.name]: e.target.value });
+    // Clear field error when user starts typing
+    if (errors[e.target.name as keyof typeof errors]) {
+      setErrors((prev) => ({ ...prev, [e.target.name]: "" }));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    const newErrors: { email?: string; password?: string } = {};
+    if (!formValues.email.trim()) newErrors.email = "Email is required.";
+    if (!formValues.password.trim()) newErrors.password = "Password is required.";
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
     setStatus("Logging in...");
     const { error } = await supabase.auth.signInWithPassword({
       email: formValues.email,
@@ -46,13 +59,27 @@ const SignInPage = () => {
           onChange={handleInputChange}
           type="email"
           placeholder="Email"
+          aria-invalid={!!errors.email}
+          aria-describedby="email-error"
         />
+        {errors.email && (
+          <p id="email-error" style={{ justifyContent: "left", color: "red", marginTop: "0.25rem" }}>
+            {errors.email}
+          </p>
+        )}
         <input
           name="password"
           onChange={handleInputChange}
           type="password"
           placeholder="Password"
+          aria-invalid={!!errors.password}
+          aria-describedby="password-error"
         />
+        {errors.password && (
+          <p id="password-error" style={{ justifyContent: "left", color: "red", marginTop: "0.25rem" }}>
+            {errors.password}
+          </p>
+        )}
         <button type="submit">Login</button>
         <Link className="auth-link" to="/auth/sign-up">
           Don't have an account? Sign Up

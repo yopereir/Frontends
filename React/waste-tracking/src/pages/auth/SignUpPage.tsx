@@ -13,12 +13,10 @@ const SignUpPage = () => {
     location: "",
     password: "",
   });
-
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormValues({ ...formValues, [e.target.name]: e.target.value });
-
     // Clear field error when user starts typing
     if (errors[e.target.name as keyof typeof errors]) {
       setErrors((prev) => ({ ...prev, [e.target.name]: "" }));
@@ -78,7 +76,6 @@ const SignUpPage = () => {
             {errors.email}
           </p>
         )}
-
         <input
           name="name"
           onChange={handleInputChange}
@@ -104,7 +101,6 @@ const SignUpPage = () => {
             {errors.password}
           </p>
         )}
-
         <button type="submit">Create Account</button>
 
         <Link className="auth-link" to="/auth/sign-in">
