@@ -5,7 +5,6 @@ import SignUpPage from "../pages/auth/SignUpPage.tsx";
 import ConfirmPage from "../pages/ConfirmPage.tsx";
 import DashboardPage from "../pages/DashboardPage.tsx";
 import ItemsPage from "../pages/ItemsPage.tsx";
-import LabelsPage from "../pages/LabelsPage.tsx";
 import ThankYouPage from "../pages/ThankYouPage.tsx";
 import SettingsPage from "../pages/SettingsPage.tsx";
 import NotFoundPage from "../pages/404Page.tsx";
@@ -51,10 +50,6 @@ const router = createBrowserRouter([
           {
             path: "/items",
             element: <ItemsPage />,
-          },
-          {
-            path: "/labels",
-            element: <LabelsPage />,
           },
           {
             path: "/settings",
