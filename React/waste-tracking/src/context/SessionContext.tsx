@@ -1,20 +1,41 @@
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+} from "react";
 import supabase from "../supabase";
 import LoadingPage from "../pages/LoadingPage";
 import { Session } from "@supabase/supabase-js";
 
-type Theme = "light" | "dark" | "system";
+// === Types ===
+export type Theme = "light" | "dark" | "system";
 
+export interface BatchData {
+  id: string;
+  itemName: string;
+  imageUrl: string;
+  startTime: Date;
+  holdMinutes: number;
+}
+
+// === Context Shape ===
 const SessionContext = createContext<{
   session: Session | null;
   theme: Theme;
   setTheme: (theme: Theme) => void;
+  batches: BatchData[];
+  setBatches: React.Dispatch<React.SetStateAction<BatchData[]>>;
 }>({
   session: null,
   theme: "system",
   setTheme: () => {},
+  batches: [],
+  setBatches: () => {},
 });
 
+// === Hook ===
 export const useSession = () => {
   const context = useContext(SessionContext);
   if (!context) {
@@ -23,8 +44,8 @@ export const useSession = () => {
   return context;
 };
 
-type Props = { children: React.ReactNode };
-export const SessionProvider = ({ children }: Props) => {
+// === Provider ===
+export const SessionProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -32,10 +53,12 @@ export const SessionProvider = ({ children }: Props) => {
     () => (localStorage.getItem("theme") as Theme) || "system"
   );
 
+  const [batches, setBatches] = useState<BatchData[]>([]);
+
+  // Theme toggle logic
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
     localStorage.setItem("theme", newTheme);
-
     const isDark =
       newTheme === "dark" ||
       (newTheme === "system" &&
@@ -51,6 +74,7 @@ export const SessionProvider = ({ children }: Props) => {
     document.documentElement.classList.toggle("dark", isDark);
   }, [theme]);
 
+  // Auth state handling
   useEffect(() => {
     const authStateListener = supabase.auth.onAuthStateChange(
       async (_, session) => {
@@ -64,7 +88,15 @@ export const SessionProvider = ({ children }: Props) => {
   }, []);
 
   return (
-    <SessionContext.Provider value={{ session, theme, setTheme }}>
+    <SessionContext.Provider
+      value={{
+        session,
+        theme,
+        setTheme,
+        batches,
+        setBatches,
+      }}
+    >
       {isLoading ? <LoadingPage /> : children}
     </SessionContext.Provider>
   );
