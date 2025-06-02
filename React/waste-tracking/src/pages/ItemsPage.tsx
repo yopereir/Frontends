@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useSession } from "../context/SessionContext";
 import HeaderBar from "../components/HeaderBar";
-import { formatDistanceToNowStrict } from "date-fns";
 
 interface Item {
   id: string;
