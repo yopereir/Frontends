@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useSession } from "../context/SessionContext";
 import HeaderBar from "../components/HeaderBar";
@@ -34,6 +35,13 @@ const items: Item[] = [
 
 const ItemsPage = () => {
   const { batches, setBatches } = useSession();
+  const [now, setNow] = useState(new Date());
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setNow(new Date());
+    }, 1000);
+    return () => clearInterval(interval);
+  }, []);
 
   const handleAddBatch = (item: Item) => {
     const newBatch = {
@@ -48,10 +56,11 @@ const ItemsPage = () => {
 
   const getRemainingTime = (start: Date, holdMinutes: number) => {
     const endTime = new Date(new Date(start).getTime() + holdMinutes * 60000);
-    const now = new Date();
-    return now > endTime
-      ? "Expired"
-      : formatDistanceToNowStrict(endTime, { addSuffix: true });
+    const totalSeconds = Math.floor((endTime.getTime() - now.getTime()) / 1000);
+    if (totalSeconds <= 0) return "Expired";
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = totalSeconds % 60;
+    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
   return (
