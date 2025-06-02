@@ -36,6 +36,8 @@ const items: Item[] = [
 const ItemsPage = () => {
   const { batches, setBatches } = useSession();
   const [now, setNow] = useState(new Date());
+  const [view, setView] = useState<'batches' | 'items'>('batches');
+
   useEffect(() => {
     const interval = setInterval(() => {
       setNow(new Date());
@@ -63,6 +65,48 @@ const ItemsPage = () => {
     return `${minutes}:${seconds.toString().padStart(2, "0")}`;
   };
 
+  const toggleView = () => {
+    setView(prev => (prev === 'batches' ? 'items' : 'batches'));
+  };
+
+  const itemsContainer =   <>
+    <h2 className="header-text">Items</h2>
+    <div className="grid-container">
+      {items.map((item) => (
+        <div className="batch" key={item.id}>
+          <img
+            src={item.imageUrl}
+            alt={item.name}
+            className="batch-image"
+          />
+          <h2 className="batch-title">{item.name}</h2>
+          <p className="batch-subtext">Hold time: {item.holdMinutes} min</p>
+          <button className="batch-button" onClick={() => handleAddBatch(item)}>
+            Add Batch
+          </button>
+        </div>
+      ))}
+    </div>
+  </>
+  const batchesContainer = <>
+    <h2 className="header-text mt-10">Active Batches</h2>
+    <div className="grid-container">
+      {batches.map((batch) => (
+        <div className="batch" key={batch.id}>
+          <img
+            src={batch.imageUrl}
+            alt={batch.itemName}
+            className="batch-image"
+          />
+          <h2 className="batch-title">{batch.itemName}</h2>
+          <p className="batch-subtext">
+            Remaining: {getRemainingTime(batch.startTime, batch.holdMinutes)}
+          </p>
+        </div>
+      ))}
+    </div>
+  </>
+
   return (
     <main>
       <HeaderBar />
@@ -70,41 +114,8 @@ const ItemsPage = () => {
         ◄ Home
       </Link>
       <section className="main-container">
-        <h1 className="header-text">Items</h1>
-
-        <div className="grid-container">
-          {items.map((item) => (
-            <div className="batch" key={item.id}>
-              <img
-                src={item.imageUrl}
-                alt={item.name}
-                className="batch-image"
-              />
-              <h2 className="batch-title">{item.name}</h2>
-              <p className="batch-subtext">Hold time: {item.holdMinutes} min</p>
-              <button className="batch-button" onClick={() => handleAddBatch(item)}>
-                Add Batch
-              </button>
-            </div>
-          ))}
-        </div>
-
-        <h2 className="header-text mt-10">Active Batches</h2>
-        <div className="grid-container">
-          {batches.map((batch) => (
-            <div className="batch" key={batch.id}>
-              <img
-                src={batch.imageUrl}
-                alt={batch.itemName}
-                className="batch-image"
-              />
-              <h2 className="batch-title">{batch.itemName}</h2>
-              <p className="batch-subtext">
-                Remaining: {getRemainingTime(batch.startTime, batch.holdMinutes)}
-              </p>
-            </div>
-          ))}
-        </div>
+        <button onClick={toggleView}>{view === 'batches'?'Items':'Batches'}</button>
+        {view === 'batches' ? batchesContainer : itemsContainer}
       </section>
     </main>
   );
