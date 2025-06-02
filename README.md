@@ -10,15 +10,13 @@ Repo containing frontends for websites.
 
 # TODO:
 # Dashboard:
-item entries
-view graph of items
+- Item entries
+- View graph of items
 
 # Items:
-    - Create a new batch
-    - Update existing batch
-    filter items by lunch/breakfast
-
-# remove labels:
+- Create a new batch
+- Update existing batch
+- Filter items by lunch/breakfast
 
 Boxes->Bags->Items
 
