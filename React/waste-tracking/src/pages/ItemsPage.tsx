@@ -10,7 +10,8 @@ interface Item {
   name: string;
   imageUrl: string;
   holdMinutes: number;
-  quantity_type: string,
+  quantity_type: string;
+  tags: string[];
 }
 
 // Replace with Supabase fetch if needed
@@ -21,6 +22,7 @@ const items: Item[] = [
     imageUrl: "/images/chicken-sandwich.jpg",
     holdMinutes: 20,
     quantity_type: "Pounds",
+    tags: ['lunch'],
   },
   {
     id: "2",
@@ -28,6 +30,7 @@ const items: Item[] = [
     imageUrl: "/images/nuggets.jpg",
     holdMinutes: 15,
     quantity_type: "Count",
+    tags: ['lunch'],
   },
   {
     id: "3",
@@ -35,6 +38,23 @@ const items: Item[] = [
     imageUrl: "/images/fries.jpg",
     holdMinutes: 7,
     quantity_type: "Pounds",
+    tags: ['lunch'],
+  },
+  {
+    id: "4",
+    name: "Cookies",
+    imageUrl: "/images/cookies.jpg",
+    holdMinutes: 1440,
+    quantity_type: "Count",
+    tags: ['breakfast', 'lunch'],
+  },
+  {
+    id: "5",
+    name: "Egg Sandwich",
+    imageUrl: "/images/egg_sandwich.jpg",
+    holdMinutes: 4,
+    quantity_type: "Count",
+    tags: ['breakfast'],
   },
 ];
 
@@ -44,6 +64,13 @@ const ItemsPage = () => {
   const [view, setView] = useState<'batches' | 'items'>('batches');
   const [showDialog, setShowDialog] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+  const [selectedTab, setSelectedTab] = useState<'lunch' | 'breakfast' | null>(null);
+
+  const handleTabClick = (tab: 'lunch' | 'breakfast') => {
+    setSelectedTab(prev => (prev === tab ? null : tab));
+  };
+
+  const filteredItems = selectedTab ? items.filter(item => item.tags.includes(selectedTab)): items;
 
   const handleAddWithQuantity = (item: Item) => {
     setSelectedItem(item);
@@ -93,8 +120,28 @@ const ItemsPage = () => {
   const itemsContainer = (
     <>
       <h2 className="header-text">Items</h2>
+      <div className="tabs-container">
+        <button
+          className="tab-button"
+          style={{
+            backgroundColor: selectedTab === 'breakfast' ? 'var(--button-color)' : 'var(--menu-bg)',
+          }}
+          onClick={() => handleTabClick('breakfast')}
+        >
+          Breakfast
+        </button>
+        <button
+          className="tab-button"
+          style={{
+            backgroundColor: selectedTab === 'lunch' ? 'var(--button-color)' : 'var(--menu-bg)',
+          }}
+          onClick={() => handleTabClick('lunch')}
+        >
+          Lunch
+        </button>
+      </div>
       <div className="grid-container">
-        {items.map((item) => (
+        {filteredItems.map((item) => (
           <div className="batch-card" key={item.id}>
             <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
               <div className="batch-left" style={{ marginBottom: '.5rem' }}>

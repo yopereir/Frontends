@@ -14,8 +14,6 @@ Repo containing frontends for websites.
 - View graph of items
 
 # Items:
-- Create a new batch
-- Update existing batch
 - Filter items by lunch/breakfast
 
 Boxes->Bags->Items
