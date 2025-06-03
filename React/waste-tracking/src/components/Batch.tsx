@@ -1,14 +1,8 @@
 // ./components/Batch.tsx
 import { useEffect, useState } from "react";
+import { BatchData } from "../context/SessionContext";
 
-interface BatchProps {
-  itemName: string;
-  imageUrl: string;
-  startTime: Date;
-  holdMinutes: number;
-}
-
-const Batch = ({ itemName, imageUrl, startTime, holdMinutes }: BatchProps) => {
+const Batch = ({ itemName, imageUrl, startTime, holdMinutes, quantity_type, quantity_amount }: BatchData) => {
   const [timeLeft, setTimeLeft] = useState("");
 
   useEffect(() => {
@@ -49,10 +43,12 @@ const Batch = ({ itemName, imageUrl, startTime, holdMinutes }: BatchProps) => {
       <img
         src={imageUrl}
         alt={itemName}
-        style={{ width: 48, height: 48, borderRadius: "50%" }}
+        className="batch-image"
+        style={{ width: "3em", height: "3em", borderRadius: "50%" }}
       />
-      <div style={{ flexGrow: 1 }}>{itemName}</div>
-      <div style={{ fontWeight: "bold", color: "#3ecf8e" }}>{timeLeft}</div>
+      <div className="batch-title" style={{ flexGrow: 1 }}>{itemName}</div>
+      <div className="batch-subtext">{quantity_type}: {quantity_amount}</div>
+      <div className="batch-subtext" style={{ fontSize: "2em", fontWeight: "bold", color: "#3ecf8e" }}>{timeLeft}</div>
     </div>
   );
 };

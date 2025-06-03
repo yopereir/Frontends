@@ -2,12 +2,14 @@ import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { useSession } from "../context/SessionContext";
 import HeaderBar from "../components/HeaderBar";
+import Batch from "../components/Batch";
 
 interface Item {
   id: string;
   name: string;
   imageUrl: string;
   holdMinutes: number;
+  quantity_type: string,
 }
 
 // Replace with Supabase fetch if needed
@@ -17,18 +19,21 @@ const items: Item[] = [
     name: "Chicken Sandwich",
     imageUrl: "/images/chicken-sandwich.jpg",
     holdMinutes: 20,
+    quantity_type: "Pounds",
   },
   {
     id: "2",
     name: "Nuggets",
     imageUrl: "/images/nuggets.jpg",
     holdMinutes: 15,
+    quantity_type: "Count",
   },
   {
     id: "3",
     name: "Fries",
     imageUrl: "/images/fries.jpg",
     holdMinutes: 7,
+    quantity_type: "Pounds",
   },
 ];
 
@@ -51,6 +56,8 @@ const ItemsPage = () => {
       imageUrl: item.imageUrl,
       startTime: new Date(),
       holdMinutes: item.holdMinutes,
+      quantity_type: item.quantity_type,
+      quantity_amount: 1,
     };
     setBatches((prev) => [...prev, newBatch]);
   };
@@ -91,17 +98,15 @@ const ItemsPage = () => {
     <h2 className="header-text mt-10">Active Batches</h2>
     <div className="grid-container">
       {batches.map((batch) => (
-        <div className="batch" key={batch.id}>
-          <img
-            src={batch.imageUrl}
-            alt={batch.itemName}
-            className="batch-image"
+          <Batch
+            id={batch.id}
+            itemName={batch.itemName}
+            imageUrl={batch.imageUrl}
+            startTime={batch.startTime}
+            holdMinutes={batch.holdMinutes}
+            quantity_type={batch.quantity_type}
+            quantity_amount={batch.quantity_amount}
           />
-          <h2 className="batch-title">{batch.itemName}</h2>
-          <p className="batch-subtext">
-            Remaining: {getRemainingTime(batch.startTime, batch.holdMinutes)}
-          </p>
-        </div>
       ))}
     </div>
   </>

@@ -18,6 +18,8 @@ export interface BatchData {
   imageUrl: string;
   startTime: Date;
   holdMinutes: number;
+  quantity_type: string;
+  quantity_amount: number;
 }
 
 // === Context Shape ===
