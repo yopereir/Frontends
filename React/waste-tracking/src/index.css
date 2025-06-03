@@ -320,8 +320,16 @@ a:hover {
 .batch-left {
   display: flex;
   align-items: center;
+  height: 100%;
   gap: 1em;
-  flex: 1;
+  flex: 1; /* Make it fill the remaining space */
+  cursor: pointer; /* Show pointer cursor */
+}
+
+.batch-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
 }
 
 .batch-timer {

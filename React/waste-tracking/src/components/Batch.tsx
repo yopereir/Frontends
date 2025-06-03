@@ -15,6 +15,11 @@ const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, quantity_type, 
     setShowDialog(false);
   };
 
+  const handleClear = () => {
+    const updated = batches.filter(batch => batch.id !== id);
+    setBatches(updated);
+  };
+
   useEffect(() => {
     const updateCountdown = () => {
       const now = new Date();
@@ -38,18 +43,14 @@ const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, quantity_type, 
 
   return (
     <div className="batch-card">
-      <div className="batch-left">
+      <div className="batch-left" onClick={() => setShowDialog(true)}>
         <img src={imageUrl} alt={itemName} className="batch-image" />
         <div className="batch-title">{itemName}</div>
       </div>
       <div className="batch-right">
-        <div className="batch-subtext">
-          {quantity_amount} {quantity_type}
-        </div>
+        <div className="batch-subtext">{quantity_amount}: {quantity_type}</div>
         <div className="batch-timer">{timeLeft}</div>
-        <button className="batch-button" onClick={() => setShowDialog(true)}>
-          Edit
-        </button>
+        <button className="batch-button" onClick={handleClear}>Clear</button>
       </div>
       {showDialog && (
         <QuantityDialog
