@@ -26,29 +26,17 @@ const Batch = ({ itemName, imageUrl, startTime, holdMinutes, quantity_type, quan
   }, [startTime, holdMinutes]);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        alignItems: "center",
-        backgroundColor: "#2a2a2a",
-        border: "1px solid #3ecf8e",
-        borderRadius: "8px",
-        padding: "0.5em 1em",
-        marginBottom: "1em",
-        gap: "1em",
-        width: "100%",
-        justifyContent: "space-between",
-      }}
-    >
-      <img
-        src={imageUrl}
-        alt={itemName}
-        className="batch-image"
-        style={{ width: "3em", height: "3em", borderRadius: "50%" }}
-      />
-      <div className="batch-title" style={{ flexGrow: 1 }}>{itemName}</div>
-      <div className="batch-subtext">{quantity_type}: {quantity_amount}</div>
-      <div className="batch-subtext" style={{ fontSize: "2em", fontWeight: "bold", color: "#3ecf8e" }}>{timeLeft}</div>
+    <div className="batch-card">
+      <div className="batch-left">
+        <img src={imageUrl} alt={itemName} className="batch-image" />
+        <div className="batch-title">{itemName}</div>
+      </div>
+      <div className="batch-right">
+        <div className="batch-subtext">
+          {quantity_amount} {quantity_type}
+        </div>
+        <div className="batch-timer">{timeLeft}</div>
+      </div>
     </div>
   );
 };

@@ -1,3 +1,30 @@
+:root {
+  --button-color  : #229f65; /* Supabase green */
+  --button-hover-color: #2ebd80; /* Slightly darker Supabase green for hover */
+/* Light mode styles */
+  --header-bg: white;
+  --header-color: #1c1c1c;
+  --menu-bg: #e2e2e2;
+  --menu-border: #ccc;
+  --menu-text: #000;
+  --main-bg: #ffffff;
+  --body-bg: #fafafa;
+  --input-color: #000;
+  --input-bg:white;
+}
+
+/* Dark mode styles */
+:root.dark {
+  --header-bg: #1c1c1c;
+  --header-color: white;
+  --menu-bg: #2a2a2a;
+  --menu-border: #333;
+  --menu-text: white;
+  --main-bg: #1c1c1c;
+  --input-color: white;
+  --input-bg:#3a3a3a;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -233,31 +260,6 @@ a:hover {
   flex-shrink: 0;
 }
 
-/* Dark mode styles */
-:root.dark {
-  --header-bg: #1c1c1c;
-  --header-color: white;
-  --menu-bg: #2a2a2a;
-  --menu-border: #333;
-  --menu-text: white;
-  --main-bg: #1c1c1c;
-  --input-color: white;
-  --input-bg:#3a3a3a;
-}
-
-/* Light mode styles */
-:root {
-  --header-bg: white;
-  --header-color: #1c1c1c;
-  --menu-bg: #e2e2e2;
-  --menu-border: #ccc;
-  --menu-text: #000;
-  --main-bg: #ffffff;
-  --body-bg: #fafafa;
-  --input-color: #000;
-  --input-bg:white;
-}
-
 @media (max-width: 768px) {
   .main-container {
     width: 90%;
@@ -284,6 +286,16 @@ a:hover {
     width: max-content;
     min-width: 8rem;
   }
+
+  .batch-card {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .batch-right {
+    align-items: flex-start;
+    width: 100%;
+  }
 }
 
 .batch {
@@ -294,28 +306,54 @@ a:hover {
   text-align: center;
 }
 
-.batch-image {
+.batch-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: var(--menu-bg,#2a2a2a);
+  border: 1px solid #3ecf8e;
+  border-radius: 8px;
+  padding: 0.75em 1em;
+  margin-bottom: 1em;
   width: 100%;
-  height: 150px;
+  max-width: 600px;
+  gap: 1em;
+}
+
+.batch-left {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+  flex: 1;
+}
+
+.batch-timer {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: #3ecf8e;
+}
+
+.batch-image {
+  width: 3em;
+  height: 3em;
+  border-radius: 50%;
   object-fit: cover;
-  border-radius: 0.5rem;
 }
 
 .batch-title {
-  font-size: 1.2rem;
-  font-weight: 600;
-  margin-top: 0.5rem;
+  font-size: 1.2em;
+  font-weight: bold;
+  color: var(--menu-text, white);
 }
 
 .batch-subtext {
-  font-size: 0.9rem;
-  color: gray;
-  margin-bottom: 0.5rem;
+  color: var(--menu-text, white);
+  font-size: 0.9em;
 }
 
 .batch-button {
   padding: 0.5rem 1rem;
-  background-color: #1d4ed8;
+  background-color: var(--button-color);
   color: white;
   border: none;
   border-radius: 0.5rem;
@@ -323,7 +361,7 @@ a:hover {
 }
 
 .batch-button:hover {
-  background-color: #2563eb;
+  background-color: var(--button-hover-color);
 }
 
 .grid-container {
