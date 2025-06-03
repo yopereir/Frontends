@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useSession } from "../context/SessionContext";
 import HeaderBar from "../components/HeaderBar";
 import Batch from "../components/Batch";
+import QuantityDialog from "../components/QuantityDialog";
 
 interface Item {
   id: string;
@@ -41,6 +42,29 @@ const ItemsPage = () => {
   const { batches, setBatches } = useSession();
   const [now, setNow] = useState(new Date());
   const [view, setView] = useState<'batches' | 'items'>('batches');
+  const [showDialog, setShowDialog] = useState(false);
+  const [selectedItem, setSelectedItem] = useState<Item | null>(null);
+
+  const handleAddWithQuantity = (item: Item) => {
+    setSelectedItem(item);
+    setShowDialog(true);
+  };
+
+  const handleQuantitySubmit = (quantity: number) => {
+    if (!selectedItem) return;
+    const newBatch = {
+      id: crypto.randomUUID(),
+      itemName: selectedItem.name,
+      imageUrl: selectedItem.imageUrl,
+      startTime: new Date(),
+      holdMinutes: selectedItem.holdMinutes,
+      quantity_type: selectedItem.quantity_type,
+      quantity_amount: quantity,
+    };
+    setBatches((prev) => [...prev, newBatch]);
+    setShowDialog(false);
+    setSelectedItem(null);
+  };
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -83,7 +107,7 @@ const ItemsPage = () => {
               </div>
               <p className="batch-subtext">Hold time: {item.holdMinutes} min</p>
             </div>
-            <button className="batch-button" onClick={() => handleAddBatch(item)}>
+            <button className="batch-button" onClick={() => handleAddWithQuantity(item)}>
               Add Batch
             </button>
           </div>
@@ -119,6 +143,13 @@ const ItemsPage = () => {
         <button onClick={toggleView}>{view === 'batches'?'Items':'Batches'}</button>
         {view === 'batches' ? batchesContainer : itemsContainer}
       </section>
+      {showDialog && selectedItem && (
+        <QuantityDialog
+          initialQuantity={1}
+          onClose={() => setShowDialog(false)}
+          onSubmit={handleQuantitySubmit}
+        />
+      )}
     </main>
   );
 };

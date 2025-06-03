@@ -1,9 +1,19 @@
-// ./components/Batch.tsx
 import { useEffect, useState } from "react";
-import { BatchData } from "../context/SessionContext";
+import { useSession, BatchData } from "../context/SessionContext";
+import QuantityDialog from './QuantityDialog';
 
-const Batch = ({ itemName, imageUrl, startTime, holdMinutes, quantity_type, quantity_amount }: BatchData) => {
+const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, quantity_type, quantity_amount }: BatchData) => {
   const [timeLeft, setTimeLeft] = useState("");
+  const [showDialog, setShowDialog] = useState(false);
+  const { batches, setBatches } = useSession();
+
+    const handleUpdateQuantity = (newQuantity: number) => {
+    const updated = batches.map(batch =>
+      batch.id === id ? { ...batch, quantity_amount: newQuantity } : batch
+    );
+    setBatches(updated);
+    setShowDialog(false);
+  };
 
   useEffect(() => {
     const updateCountdown = () => {
@@ -25,6 +35,7 @@ const Batch = ({ itemName, imageUrl, startTime, holdMinutes, quantity_type, quan
     return () => clearInterval(interval);
   }, [startTime, holdMinutes]);
 
+
   return (
     <div className="batch-card">
       <div className="batch-left">
@@ -36,7 +47,17 @@ const Batch = ({ itemName, imageUrl, startTime, holdMinutes, quantity_type, quan
           {quantity_amount} {quantity_type}
         </div>
         <div className="batch-timer">{timeLeft}</div>
+        <button className="batch-button" onClick={() => setShowDialog(true)}>
+          Edit
+        </button>
       </div>
+      {showDialog && (
+        <QuantityDialog
+          initialQuantity={quantity_amount}
+          onClose={() => setShowDialog(false)}
+          onSubmit={handleUpdateQuantity}
+        />
+      )}
     </div>
   );
 };
