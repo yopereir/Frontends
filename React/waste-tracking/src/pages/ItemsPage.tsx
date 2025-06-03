@@ -62,38 +62,36 @@ const ItemsPage = () => {
     setBatches((prev) => [...prev, newBatch]);
   };
 
-  const getRemainingTime = (start: Date, holdMinutes: number) => {
-    const endTime = new Date(new Date(start).getTime() + holdMinutes * 60000);
-    const totalSeconds = Math.floor((endTime.getTime() - now.getTime()) / 1000);
-    if (totalSeconds <= 0) return "Expired";
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
-  };
-
   const toggleView = () => {
     setView(prev => (prev === 'batches' ? 'items' : 'batches'));
   };
 
-  const itemsContainer =   <>
-    <h2 className="header-text">Items</h2>
-    <div className="grid-container">
-      {items.map((item) => (
-        <div className="batch" key={item.id}>
-          <img
-            src={item.imageUrl}
-            alt={item.name}
-            className="batch-image"
-          />
-          <h2 className="batch-title">{item.name}</h2>
-          <p className="batch-subtext">Hold time: {item.holdMinutes} min</p>
-          <button className="batch-button" onClick={() => handleAddBatch(item)}>
-            Add Batch
-          </button>
-        </div>
-      ))}
-    </div>
-  </>
+  const itemsContainer = (
+    <>
+      <h2 className="header-text">Items</h2>
+      <div className="grid-container">
+        {items.map((item) => (
+          <div className="batch-card" key={item.id}>
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+              <div className="batch-left" style={{ marginBottom: '.5rem' }}>
+                <img
+                  src={item.imageUrl}
+                  alt={item.name}
+                  className="batch-image"
+                />
+                <h2 className="batch-title">{item.name}</h2>
+              </div>
+              <p className="batch-subtext">Hold time: {item.holdMinutes} min</p>
+            </div>
+            <button className="batch-button" onClick={() => handleAddBatch(item)}>
+              Add Batch
+            </button>
+          </div>
+        ))}
+      </div>
+    </>
+  );
+
   const batchesContainer = <>
     <h2 className="header-text mt-10">Active Batches</h2>
     <div className="grid-container">

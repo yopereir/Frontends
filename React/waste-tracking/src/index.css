@@ -1,6 +1,7 @@
 :root {
+/* Global variables */
   --button-color  : #229f65; /* Supabase green */
-  --button-hover-color: #2ebd80; /* Slightly darker Supabase green for hover */
+  --button-hover-color: #2ebd80; /* Slightly brighter Supabase green for hover */
 /* Light mode styles */
   --header-bg: white;
   --header-color: #1c1c1c;
@@ -298,14 +299,6 @@ a:hover {
   }
 }
 
-.batch {
-  background-color: white;
-  border-radius: 1rem;
-  padding: 1rem;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  text-align: center;
-}
-
 .batch-card {
   display: flex;
   align-items: center;
@@ -358,6 +351,9 @@ a:hover {
   border: none;
   border-radius: 0.5rem;
   cursor: pointer;
+  max-width: 30%;
+  min-width: 100px;
+  width: 100%;
 }
 
 .batch-button:hover {
