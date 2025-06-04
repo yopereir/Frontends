@@ -70,6 +70,8 @@ if ! adb shell pm list packages | grep -q "$PACKAGE_NAME"; then
     exit 1
 fi
 echo "🚀 Launching $BROWSER browser..."
+adb shell am force-stop "$PACKAGE_NAME"
+adb shell am start "$PACKAGE_NAME"
 adb shell monkey -p "$PACKAGE_NAME" -c android.intent.category.LAUNCHER 1
 sleep 2
 
