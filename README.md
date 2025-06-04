@@ -13,9 +13,6 @@ Repo containing frontends for websites.
 - Item entries
 - View graph of items
 
-# Items:
-- Filter items by lunch/breakfast
-
 Boxes->Bags->Items
 
 Item-> id, type, quantity type (pounds/number based on item type), quantity amount, initialTimer.
