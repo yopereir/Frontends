@@ -1,0 +1,127 @@
+/* SettingsPage.css */
+
+/* Ensure main-container on settings page is flexible and scrolls */
+.main-container.settings-container {
+  justify-content: flex-start; /* Align content to the top */
+  height: auto; /* Allow container to grow with content */
+  min-height: calc(100vh - 3.5rem - 2rem); /* Adjust if using different top margin for main-container */
+  /* The existing margin-top: 5rem; for main-container from index.css should position it below the HeaderBar */
+  overflow-y: auto; /* Allow vertical scrolling if content exceeds viewport */
+  padding-bottom: 2rem; /* Add some padding at the bottom */
+}
+
+/* Wrapper for all settings categories */
+.settings-categories-wrapper {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem; /* Space between category blocks */
+}
+
+.settings-category {
+  width: 100%;
+  background-color: var(--main-bg); /* Use main background for category card */
+  padding: 1.5rem;
+  border-radius: 8px;
+  border: 1px solid var(--menu-border, #4a4a4a);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.settings-category h2 {
+  font-size: 1.6em; /* Slightly larger category titles */
+  color: var(--header-color); /* Use header color for titles */
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--button-color); /* Accent color for heading underline */
+  text-align: left;
+}
+
+.setting-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  gap: 1rem; /* Overall gap */
+}
+
+.setting-field label {
+  flex-basis: 30%; /* Adjust as needed */
+  min-width: 150px; /* Ensure labels have enough space */
+  font-weight: 500;
+  color: var(--menu-text);
+  text-align: left;
+  padding-right: 1rem; /* Space between label and input area */
+}
+
+.input-with-button {
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem; /* Gap between input and save button */
+}
+
+.setting-field input {
+  /* Inherits global input styles, customize if needed */
+  flex-grow: 1; /* Input takes up available space in .input-with-button */
+  margin-top: 0; /* Override global input margin-top if it exists and is not desired here */
+  width: auto; /* Let flexbox handle width */
+}
+
+.setting-field input.input-dirty {
+  border-color: var(--button-hover-color); /* Highlight changed fields */
+}
+
+.save-button {
+  /* Based on existing button styles, but can be smaller */
+  padding: 0.6em 1em;
+  font-size: 0.9rem;
+  width: auto; /* Fit content */
+  min-width: 80px;
+  height: auto; /* Adjust height to match input field better if needed */
+  margin-top: 0; /* Override global button margin-top */
+  font-weight: 500; /* Slightly less bold than main action buttons */
+  flex-shrink: 0; /* Prevent button from shrinking */
+}
+
+
+/* Responsive adjustments for settings page */
+@media (max-width: 768px) {
+  .main-container.settings-container {
+    /* Uses .main-container mobile styles from index.css for width, padding */
+    margin-top: calc(3.5rem + 1rem); /* Ensure space below fixed header and home link */
+  }
+
+  .settings-category {
+    padding: 1rem;
+  }
+
+  .settings-category h2 {
+    font-size: 1.3em;
+  }
+
+  .setting-field {
+    flex-direction: column;
+    align-items: stretch; /* Make label and input-with-button full width */
+    gap: 0.5rem; /* Reduced gap for stacked layout */
+  }
+
+  .setting-field label {
+    flex-basis: auto;
+    min-width: auto;
+    margin-bottom: 0.25rem; /* Space between label and input group */
+    padding-right: 0;
+  }
+
+  .input-with-button {
+    width: 100%;
+  }
+
+  .setting-field input {
+    width: 100%; /* Make input take full width within its container */
+  }
+
+  .save-button {
+    min-width: 70px; /* Adjust for mobile if needed */
+    padding: 0.5em 0.8em;
+  }
+}
