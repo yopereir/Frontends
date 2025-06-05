@@ -2,6 +2,7 @@
 /* Global variables */
   --button-color  : #229f65; /* Supabase green */
   --button-hover-color: #2ebd80; /* Slightly brighter Supabase green for hover */
+  --error-color: #ff4d4d;
 /* Light mode styles */
   --header-bg: white;
   --header-color: #1c1c1c;
@@ -71,6 +72,7 @@
   padding: 0;
   box-sizing: border-box;
   font-family: "Inter", sans-serif !important;
+  transition: background-color 0.3s;
 }
 
 /* Specific styles */

@@ -168,6 +168,7 @@ const ItemsPage = () => {
     <div className="grid-container">
       {batches.map((batch) => (
           <Batch
+            key={batch.id}
             id={batch.id}
             itemName={batch.itemName}
             imageUrl={batch.imageUrl}

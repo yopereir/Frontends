@@ -4,6 +4,7 @@ import QuantityDialog from './QuantityDialog';
 
 const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, quantity_type, quantity_amount }: BatchData) => {
   const [timeLeft, setTimeLeft] = useState("");
+  const [timeColor, setTimeColor] = useState("#3ecf8e");
   const [showDialog, setShowDialog] = useState(false);
   const { batches, setBatches } = useSession();
 
@@ -28,10 +29,13 @@ const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, quantity_type, 
 
       if (diffMs <= 0) {
         setTimeLeft("EXPIRED");
+        setTimeColor(getComputedStyle(document.documentElement).getPropertyValue('--error-color'));
       } else {
         const minutes = Math.floor(diffMs / 60000);
         const seconds = Math.floor((diffMs % 60000) / 1000);
         setTimeLeft(`${minutes}:${seconds.toString().padStart(2, "0")}`);
+        setTimeColor(diffMs/(holdMinutes * 60000) < .2 ? getComputedStyle(document.documentElement).getPropertyValue('--error-color') :
+         getComputedStyle(document.documentElement).getPropertyValue('--button-color')); // Change color if less than 20% of time left
       }
     };
 
@@ -49,7 +53,7 @@ const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, quantity_type, 
       </div>
       <div className="batch-right">
         <div className="batch-subtext">{quantity_amount}: {quantity_type}</div>
-        <div className="batch-timer">{timeLeft}</div>
+        <div className="batch-timer" style={{ color: timeColor }}>{timeLeft}</div>
         <button className="batch-button" onClick={handleClear}>Clear</button>
       </div>
       {showDialog && (
