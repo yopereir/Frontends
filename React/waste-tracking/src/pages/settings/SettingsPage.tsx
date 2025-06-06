@@ -3,7 +3,7 @@ import { useSession } from "../../context/SessionContext";
 import HeaderBar from "../../components/HeaderBar";
 import React, { useState, useEffect } from 'react';
 import supabase from "../../supabase"; // Make sure supabase is imported if you use it in save handlers
-import './SettingsPage.css'; // We'll create this file for specific styles
+import './SettingsPage.css';
 
 // Props for the EditableField component
 type EditableFieldProps = {

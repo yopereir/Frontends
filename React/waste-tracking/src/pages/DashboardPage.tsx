@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { useSession } from "../context/SessionContext";
 import HeaderBar from "../components/HeaderBar";
 import ItemsLineChart from "../components/ItemsLineChart";
+import ItemsTable from "../components/ItemsTable/ItemsTable";
 import supabase from "../supabase";
 import { subDays } from "date-fns";
 
@@ -68,6 +69,7 @@ const DashboardPage = () => {
         <h1 className="header-text">Items Dashboard</h1>
         <p>Current User: {session?.user.email || "None"}</p>
         <ItemsLineChart items={items} />
+        <ItemsTable items={items} />
       </section>
     </main>
   );
