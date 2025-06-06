@@ -9,6 +9,12 @@
   "description": "",
   "devDependencies": {
     "@playwright/test": "^1.52.0",
-    "@types/node": "^22.15.17"
+    "@types/node": "^22.15.17",
+    "appium-xcuitest-driver": "^9.4.0"
+  },
+  "dependencies": {
+    "appium": "^2.19.0",
+    "wd": "^1.14.0",
+    "webdriverio": "^9.15.0"
   }
 }

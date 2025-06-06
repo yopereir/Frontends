@@ -2,14 +2,16 @@
 
 # === PRE-REQUISITES ===
 brew list carthage libimobiledevice ios-deploy || brew install carthage libimobiledevice ios-deploy
+appium driver install xcuitest
 
 # === CONFIG ===
-SCHEME="WebDriverAgentRunner"
+SCHEME="WebDriverAgent"
 PROJECT="WebDriverAgent.xcodeproj"
 DESTINATION=""
 DEVELOPER_TEAM_ID="BGEA" # <- CHANGE THIS
-BUNDLE_ID="com.yourcompany.WebDriverAgentRunner" # <- UNIQUE BUNDLE ID
-DEVICE_UDID=$(xcrun xctrace list devices | grep -oE '[0-9A-Fa-f-]{40}' | head -1)
+BUNDLE_ID="com.yourcompany.WebDriverAgent" # <- UNIQUE BUNDLE ID
+#DEVICE_UDID=$(xcrun xctrace list devices | grep -oE '[0-9A-Fa-f-]{40}' | head -1)
+DEVICE_UDID=$(idevice_id -l)
 
 # Check for UDID
 if [ -z "$DEVICE_UDID" ]; then
@@ -41,7 +43,7 @@ echo "✅ WDA built and installed on device."
 # Optional: proxy WDA port (8100) to local machine
 echo "🔌 Starting iproxy to forward localhost:8100 -> device:8100"
 pkill iproxy 2>/dev/null
-iproxy 8100 8100 "$DEVICE_UDID" &
+iproxy 8100 8100 -u "$DEVICE_UDID" & # Run idevice_id -l to verify device is connected
 sleep 2
 
 # Check WDA status
