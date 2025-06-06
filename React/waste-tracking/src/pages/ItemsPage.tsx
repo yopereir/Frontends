@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { useSession } from "../context/SessionContext";
 import HeaderBar from "../components/HeaderBar";
 import Batch from "../components/Batch";
@@ -99,19 +98,6 @@ const ItemsPage = () => {
     }, 1000);
     return () => clearInterval(interval);
   }, []);
-
-  const handleAddBatch = (item: Item) => {
-    const newBatch = {
-      id: crypto.randomUUID(),
-      itemName: item.name,
-      imageUrl: item.imageUrl,
-      startTime: new Date(),
-      holdMinutes: item.holdMinutes,
-      quantity_type: item.quantity_type,
-      quantity_amount: 1,
-    };
-    setBatches((prev) => [...prev, newBatch]);
-  };
 
   const toggleView = () => {
     setView(prev => (prev === 'batches' ? 'items' : 'batches'));

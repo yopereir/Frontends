@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
 import { useSession } from "../context/SessionContext";
 import HeaderBar from "../components/HeaderBar";
 import ItemsLineChart from "../components/ItemsLineChart";
