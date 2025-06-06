@@ -16,7 +16,3 @@ Repo containing frontends for websites.
 Boxes->Bags->Items
 
 Item-> id, type, quantity type (pounds/number based on item type), quantity amount, initialTimer.
-
-Bags-> id, arrayOfItems.
-
-Boxes-> id, arrayOfBags.
