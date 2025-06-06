@@ -10,16 +10,22 @@ import { subDays } from "date-fns";
 const DashboardPage = () => {
   const { session } = useSession();
   const [items, setItems] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  let loadingText = "Loading items...";
 
   useEffect(() => {
     const fetchItems = async () => {
+      loadingText = "Loading items...";
+      setLoading(true);
       const { data, error } = await supabase
         .from("items")
         .select("id, created_at, name, restaurant_id");
 
       if (!error && data && data.length > 0) {
+        setLoading(false);
         setItems(data);
       } else {
+        loadingText = error?.message || "Failed to load items";
         console.warn("Supabase fetch failed, using fallback data:", error);
 
         const fallbackItems = [
@@ -68,8 +74,14 @@ const DashboardPage = () => {
       <section className="main-container" style={{ flexDirection: "column", gap: "2rem" }}>
         <h1 className="header-text">Items Dashboard</h1>
         <p>Current User: {session?.user.email || "None"}</p>
-        <ItemsLineChart items={items} />
-        <ItemsTable items={items} />
+        { loading ? (
+          <p style={{ color: "var(--error-color)", marginTop: "0.25rem" }}>{loadingText}</p>
+        ) : (
+          <>
+            <ItemsLineChart items={items} />
+            <ItemsTable items={items} />
+          </>
+        )}
       </section>
     </main>
   );

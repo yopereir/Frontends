@@ -15,6 +15,7 @@ type Props = {
 
 const ItemsTable = ({ items }: Props) => {
   const [sortAsc, setSortAsc] = useState(true);
+  const [sortKey, setSortKey] = useState<"created_at" | "name">("created_at");
   const [selectedNames, setSelectedNames] = useState<string[]>([]);
 
   const itemNames = useMemo(() => [...new Set(items.map((item) => item.name))], [items]);
@@ -25,11 +26,29 @@ const ItemsTable = ({ items }: Props) => {
       : items.filter((item) => selectedNames.includes(item.name));
 
     return [...visible].sort((a, b) => {
-      const dateA = new Date(a.created_at).getTime();
-      const dateB = new Date(b.created_at).getTime();
-      return sortAsc ? dateA - dateB : dateB - dateA;
+      let valA = sortKey === "created_at"
+        ? new Date(a.created_at).getTime()
+        : a.name.toLowerCase();
+      let valB = sortKey === "created_at"
+        ? new Date(b.created_at).getTime()
+        : b.name.toLowerCase();
+
+      if (typeof valA === "string" && typeof valB === "string") {
+        return sortAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+      }
+
+      return sortAsc ? (valA as number) - (valB as number) : (valB as number) - (valA as number);
     });
-  }, [items, selectedNames, sortAsc]);
+  }, [items, selectedNames, sortAsc, sortKey]);
+
+  const toggleSort = (key: "created_at" | "name") => {
+    if (sortKey === key) {
+      setSortAsc(!sortAsc);
+    } else {
+      setSortKey(key);
+      setSortAsc(true);
+    }
+  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
@@ -66,15 +85,14 @@ const ItemsTable = ({ items }: Props) => {
         ))}
       </div>
 
-      <table className="items-table" style={{ width: "100%", borderCollapse: "collapse" }}>
+      <table className="items-table">
         <thead>
           <tr>
             <th>ID</th>
-            <th>Name</th>
             <th>
-              Created At{" "}
+              Name{" "}
               <button
-                onClick={() => setSortAsc(!sortAsc)}
+                onClick={() => toggleSort("name")}
                 style={{
                   background: "none",
                   border: "none",
@@ -82,7 +100,21 @@ const ItemsTable = ({ items }: Props) => {
                   fontSize: "0.8rem",
                 }}
               >
-                {sortAsc ? "▲" : "▼"}
+                {sortKey === "name" ? (sortAsc ? "▲" : "▼") : "↕"}
+              </button>
+            </th>
+            <th>
+              Created At{" "}
+              <button
+                onClick={() => toggleSort("created_at")}
+                style={{
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  fontSize: "0.8rem",
+                }}
+              >
+                {sortKey === "created_at" ? (sortAsc ? "▲" : "▼") : "↕"}
               </button>
             </th>
             <th>Restaurant ID</th>
