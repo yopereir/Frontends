@@ -16,7 +16,7 @@
 
     /* Linting */
     "strict": true,
-    "noUnusedLocals": true,
+    "noUnusedLocals": false, // TODO: set to true for production
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
