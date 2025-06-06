@@ -55,7 +55,12 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     () => (localStorage.getItem("theme") as Theme) || "system"
   );
 
-  const [batches, setBatches] = useState<BatchData[]>([]);
+  const [batches, setBatches] = useState<BatchData[]>(() => {
+    const stored = localStorage.getItem("batches");
+    return stored ? JSON.parse(stored, (key, value) =>
+      key === "startTime" ? new Date(value) : value
+    ) : [];
+  });
 
   // Theme toggle logic
   const setTheme = (newTheme: Theme) => {
@@ -75,6 +80,10 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
         window.matchMedia("(prefers-color-scheme: dark)").matches);
     document.documentElement.classList.toggle("dark", isDark);
   }, [theme]);
+
+  useEffect(() => {
+    localStorage.setItem("batches", JSON.stringify(batches));
+  }, [batches]);
 
   // Auth state handling
   useEffect(() => {
