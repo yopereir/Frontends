@@ -47,7 +47,7 @@ const DashboardPage = () => {
         {
           id: 1,
           name: "Chicken Sandwich",
-          created_at: subDays(new Date(), 2).toISOString(),
+          created_at: subDays(new Date(), 35).toISOString(),
           restaurant_id: 1,
         },
         {
@@ -71,7 +71,7 @@ const DashboardPage = () => {
         {
           id: 5,
           name: "Lemonade",
-          created_at: subDays(new Date(), 3).toISOString(),
+          created_at: subDays(new Date(), 70).toISOString(),
           restaurant_id: 1,
         },
       ];
