@@ -71,7 +71,6 @@ const DashboardPage = () => {
   return (
     <main>
       <HeaderBar />
-      <Link className="home-link" to="/">◄ Home</Link>
       <section className="main-container" style={{ flexDirection: "column", gap: "2rem" }}>
         <h1 className="header-text">Items Dashboard</h1>
         <p>Current User: {session?.user.email || "None"}</p>

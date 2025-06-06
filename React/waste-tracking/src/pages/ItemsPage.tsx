@@ -184,9 +184,6 @@ const ItemsPage = () => {
   return (
     <main>
       <HeaderBar />
-      <Link className="home-link" to="/">
-        ◄ Home
-      </Link>
       <section className="main-container">
         <button onClick={toggleView}>{view === 'batches'?'Items':'Batches'}</button>
         {view === 'batches' ? batchesContainer : itemsContainer}

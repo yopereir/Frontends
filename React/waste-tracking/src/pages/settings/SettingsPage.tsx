@@ -162,9 +162,6 @@ const SettingsPage = () => {
   return (
     <div className="home-page"> {/* Using home-page class for consistent page structure */}
       <HeaderBar />
-      <Link className="home-link" to="/">
-        ◄ Home
-      </Link>
       <main className="main-container settings-container">
         <h1 className="header-text" style={{ width: '100%', justifyContent: 'center' }}>Settings</h1>
         <p style={{ width: '100%', textAlign: 'center', color: 'var(--menu-text)', marginBottom: '1.5rem' }}>
