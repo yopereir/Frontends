@@ -27,6 +27,7 @@ const DashboardPage = () => {
       } else {
         loadingText = error?.message || "Failed to load items";
         console.warn("Supabase fetch failed, using fallback data:", error);
+        setLoading(false); // TODO: REMOVE THIS LINE FOR PRODUCTION
 
         const fallbackItems = [
           {

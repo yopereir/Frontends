@@ -2,6 +2,8 @@
 width: 100%;
 border-collapse: collapse;
 font-size: 0.95rem;
+table-layout: fixed; /* Ensures consistent column widths */
+box-sizing: border-box; /* Prevents padding from causing overextension */
 }
 
 .items-table th,
@@ -10,9 +12,16 @@ padding: 0.75rem;
 border-left: 2px solid var(--button-hover-color);
 border-bottom: 2px solid var(--button-hover-color);
 text-align: left;
+overflow: hidden; /* Prevents content from overflowing */
+text-overflow: ellipsis; /* Adds ellipsis for long content */
+white-space: nowrap; /* Prevents text wrapping */
 }
 
 .items-table th:first-child,
 .items-table td:first-child {
 border-left: none; /* Remove left border from first column */
+}
+.items-table-container {
+  width: 100%;
+  overflow-x: auto; /* Adds horizontal scroll if table is too wide */
 }

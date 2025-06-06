@@ -85,6 +85,7 @@ const ItemsTable = ({ items }: Props) => {
         ))}
       </div>
 
+      <div className="items-table-container">
       <table className="items-table">
         <thead>
           <tr>
@@ -131,6 +132,7 @@ const ItemsTable = ({ items }: Props) => {
           ))}
         </tbody>
       </table>
+      </div>
     </div>
   );
 };
