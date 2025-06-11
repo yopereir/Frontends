@@ -3,6 +3,7 @@ import HeaderBar from "../../components/HeaderBar";
 import React, { useState, useEffect } from 'react';
 import supabase from "../../supabase"; // Make sure supabase is imported if you use it in save handlers
 import './SettingsPage.css';
+import { set } from "date-fns";
 
 // Props for the EditableField component
 type EditableFieldProps = {
@@ -17,6 +18,7 @@ const EditableField: React.FC<EditableFieldProps> = ({ label, initialValue, onSa
   const [value, setValue] = useState(initialValue);
   const [isDirty, setIsDirty] = useState(false); // Tracks if the field has been changed
   const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null); // State to hold save error messages
 
   // Update internal state if initialValue prop changes (e.g., after a parent-led data refresh)
   useEffect(() => {
@@ -27,42 +29,48 @@ const EditableField: React.FC<EditableFieldProps> = ({ label, initialValue, onSa
   const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setValue(event.target.value);
     setIsDirty(event.target.value !== initialValue);
+    if (error) { setError(null); } // Clear error when user starts typing
   };
 
   const handleSave = async () => {
     if (!isDirty) return; // Don't save if not changed
 
     setIsSaving(true);
+    setError(null);
     try {
       await onSave(value);
       setIsDirty(false); // Reset dirty state after successful save
       // Optionally, you might want to update initialValue here or rely on parent to re-fetch/pass new prop
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to save setting:", error);
       // Handle error (e.g., show a notification to the user)
+      setError(error.message || "An unexpected error occurred.");
     } finally {
       setIsSaving(false);
     }
   };
 
   return (
-    <div className="setting-field">
-      <label htmlFor={fieldId}>{label}:</label>
-      <div className="input-with-button">
-        <input
-          type={fieldType}
-          id={fieldId}
-          value={value}
-          onChange={handleInputChange}
-          className={isDirty ? 'input-dirty' : ''}
-        />
-        {isDirty && (
-          <button onClick={handleSave} className="save-button" disabled={isSaving}>
-            {isSaving ? "Saving..." : "Save"}
-          </button>
-        )}
+    <>
+      <div className="setting-field">
+        <label htmlFor={fieldId}>{label}:</label>
+        <div className="input-with-button">
+          <input
+            type={fieldType}
+            id={fieldId}
+            value={value}
+            onChange={handleInputChange}
+            className={isDirty ? 'input-dirty' : ''}
+          />
+          {isDirty && (
+            <button onClick={handleSave} className="save-button" disabled={isSaving}>
+              {isSaving ? "Saving..." : "Save"}
+            </button>
+          )}
+        </div>
       </div>
-    </div>
+      {error && <p style={{ color: "red", marginTop: "0.25rem", textAlign: 'left', width: '100%' }}>{error}</p>}
+    </>
   );
 };
 
@@ -76,8 +84,24 @@ const SettingsPage = () => {
     console.log(`Attempting to save User Setting - ${fieldName}: ${newValue}`);
     if (!session?.user) {
       console.error("User not authenticated");
-      return;
+      throw new Error("User not authenticated");
     }
+    let error;
+    switch (fieldName) {
+      case 'username': ({ error } = await supabase.auth.updateUser({data: { username: newValue }}));
+        break;
+      case 'email': ({ error } = await supabase.auth.updateUser({ email: newValue.toString() }));
+        break;
+      case 'password': ({ error } = await supabase.auth.updateUser({password: newValue.toString() }));
+        break;
+      default:
+        throw new Error(`Unknown user setting: ${fieldName}`);
+    }
+    if (error) {
+      console.error(`Error saving ${fieldName}:`, error.message);
+      throw new Error(`Failed to update ${fieldName}. `+error.message);
+    }
+    console.log(`${fieldName} updated successfully.`);
     // Example: Updating user_metadata
     // const { data, error } = await supabase.auth.updateUser({
     //   data: { [fieldName]: newValue }
@@ -138,24 +162,24 @@ const SettingsPage = () => {
     currency: "USD",
   });
 
-  // useEffect to fetch actual settings if needed
-  // useEffect(() => {
-  //   const fetchSettings = async () => {
-  //     if (session?.user) {
-  //       // Fetch user settings (e.g., from a 'profiles' table or user_metadata)
-  //       // setUserSettings({ email: session.user.email, username: session.user.user_metadata.username || ''});
-  //
-  //       // Fetch item settings
-  //       // const { data: itemData } = await supabase.from('item_settings').select('*').eq('user_id', session.user.id).single();
-  //       // if (itemData) setItemSettings(itemData);
-  //
-  //       // Fetch restaurant settings
-  //       // const { data: restaurantData } = await supabase.from('restaurant_settings').select('*').eq('user_id', session.user.id).single();
-  //       // if (restaurantData) setRestaurantSettings(restaurantData);
-  //     }
-  //   };
-  //   fetchSettings();
-  // }, [session]);
+  //useEffect to fetch actual settings if needed
+  useEffect(() => {
+    const fetchSettings = async () => {
+      if (session?.user) {
+        //Fetch user settings (e.g., from a 'profiles' table or user_metadata)
+        setUserSettings({ email: session.user.email || '', username: session.user.user_metadata.username || ''});
+  
+        //Fetch item settings
+        const { data: itemData } = await supabase.from('item_settings').select('*').eq('user_id', session.user.id).single();
+        if (itemData) setItemSettings(itemData);
+  
+        //Fetch restaurant settings
+        const { data: restaurantData } = await supabase.from('restaurant_settings').select('*').eq('user_id', session.user.id).single();
+        if (restaurantData) setRestaurantSettings(restaurantData);
+      }
+    };
+    fetchSettings();
+  }, [session]);
 
 
   return (
