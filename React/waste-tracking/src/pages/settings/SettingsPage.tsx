@@ -77,9 +77,6 @@ const EditableField: React.FC<EditableFieldProps> = ({ label, initialValue, onSa
 const SettingsPage = () => {
   const { session } = useSession();
 
-  // --- Save Handlers ---
-  // Replace these with your actual Supabase (or other backend) update logic.
-
   const handleSaveUserSetting = (fieldName: string) => async (newValue: string | number) => {
     console.log(`Attempting to save User Setting - ${fieldName}: ${newValue}`);
     if (!session?.user) {
@@ -102,23 +99,27 @@ const SettingsPage = () => {
       throw new Error(`Failed to update ${fieldName}. `+error.message);
     }
     console.log(`${fieldName} updated successfully.`);
-    // Example: Updating user_metadata
-    // const { data, error } = await supabase.auth.updateUser({
-    //   data: { [fieldName]: newValue }
-    // });
-    // if (error) console.error(`Error saving ${fieldName}:`, error.message);
-    // else console.log(`${fieldName} updated successfully:`, data);
+  };
 
-    // For email, it's slightly different:
-    // if (fieldName === 'email' && typeof newValue === 'string') {
-    //   const { data, error } = await supabase.auth.updateUser({ email: newValue });
-    // }
-
-    // For password changes, it's:
-    // if (fieldName === 'password' && typeof newValue === 'string') {
-    //   const { data, error } = await supabase.auth.updateUser({ password: newValue });
-    // }
-    alert(`Simulated save for User - ${fieldName}: ${newValue}`); // Placeholder
+  const handleSaveSubscriptionSetting = (fieldName: string) => async (newValue: string | number) => {
+    console.log(`Attempting to save Subscription Setting - ${fieldName}: ${newValue}`);
+    if (!session?.user) {
+      console.error("User not authenticated");
+      throw new Error("User not authenticated");
+    }
+    let error;
+    switch (fieldName) {
+      case 'endDate': ({ error } = await supabase.from('subscriptions').update({endDate: newValue}));break;
+      case 'plan': ({ error } = await supabase.from('subscriptions').update({plan: newValue}));break;
+      case 'status': ({ error } = await supabase.from('subscriptions').update({status: newValue}));break;
+      default:
+        throw new Error(`Unknown subscription setting: ${fieldName}`);
+    }
+    if (error) {
+      console.error(`Error saving ${fieldName}:`, error.message);
+      throw new Error(`Failed to update ${fieldName}. `+error.message);
+    }
+    console.log(`${fieldName} updated successfully.`);
   };
 
   const handleSaveItemSetting = (fieldName: string) => async (newValue: string | number) => {
@@ -152,14 +153,19 @@ const SettingsPage = () => {
     username: session?.user?.user_metadata?.username || session?.user?.email?.split('@')[0] || "User",
     email: session?.user?.email || "",
   });
+  const [subscriptionSettings, setSubscriptionSettings] = useState({
+    endDate: "00-00-00",
+    status: "ended",
+    plan: "all",
+  });
+  const [restaurantSettings, setRestaurantsSettings] = useState([{
+    name: "My Waste Tracker",
+    location: "123 Green Way",
+    subscription: "USD",
+  }]);
   const [itemSettings, setItemSettings] = useState({
     defaultUnit: "kg",
     lowStockThreshold: 10,
-  });
-  const [restaurantSettings, setRestaurantSettings] = useState({
-    restaurantName: "My Waste Tracker",
-    address: "123 Green Way",
-    currency: "USD",
   });
 
   //useEffect to fetch actual settings if needed
@@ -168,14 +174,28 @@ const SettingsPage = () => {
       if (session?.user) {
         //Fetch user settings (e.g., from a 'profiles' table or user_metadata)
         setUserSettings({ email: session.user.email || '', username: session.user.user_metadata.username || ''});
-  
-        //Fetch item settings
-        const { data: itemData } = await supabase.from('item_settings').select('*').eq('user_id', session.user.id).single();
-        if (itemData) setItemSettings(itemData);
-  
+
+        //Fetch subscription settings
+        const { data: subscriptionData } = await supabase.from('subscriptions').select('*').single();
+        if (subscriptionData) setSubscriptionSettings({ endDate: subscriptionData.end_date, status: subscriptionData.status, plan: subscriptionData.plan });
+
         //Fetch restaurant settings
-        const { data: restaurantData } = await supabase.from('restaurant_settings').select('*').eq('user_id', session.user.id).single();
-        if (restaurantData) setRestaurantSettings(restaurantData);
+        const { data: restaurantsData } = await supabase.from('restaurants').select('*');
+        console.log("Restaurant data: ", restaurantsData);
+        if (restaurantsData) {
+          setRestaurantsSettings([]); // Reset before adding new data
+          setRestaurantsSettings(
+            restaurantsData.map((restaurantData) => ({
+              name: restaurantData.name,
+              location: restaurantData.location,
+              subscription: restaurantData.subscription_id
+            }))
+          );
+        }
+
+        //Fetch item settings
+        const { data: itemData } = await supabase.from('items').select('*').eq('restaurant_id', session.user.id).single();
+        if (itemData) setItemSettings(itemData);
       }
     };
     fetchSettings();
@@ -219,6 +239,53 @@ const SettingsPage = () => {
 
           {/* Item Settings */}
           <section className="settings-category">
+            <h2>Subscription Settings</h2>
+            <EditableField
+              fieldId="endDate"
+              label="Subscription End Date"
+              initialValue={subscriptionSettings.endDate}
+              onSave={handleSaveSubscriptionSetting('endDate')}
+            />
+            <EditableField
+              fieldId="plan"
+              label="Subscription plan"
+              initialValue={subscriptionSettings.plan}
+              onSave={handleSaveSubscriptionSetting('plan')}
+            />
+            <EditableField
+              fieldId="status"
+              label="Subscription Status"
+              initialValue={subscriptionSettings.status}
+              onSave={handleSaveSubscriptionSetting('status')}
+            />
+          </section>
+
+          {/* Restaurant Settings */}
+          <section className="settings-category">
+            <h2>Restaurant Settings</h2>
+            { restaurantSettings.map((restaurantData, index) => (
+              <div key={index} className="restaurant-setting">
+                <h3>Restaurant {index + 1}</h3>
+                <EditableField
+                  fieldId={`name-${index}`}
+                  label="Name"
+                  initialValue={restaurantData.name}
+                  onSave={handleSaveRestaurantSetting('name')}
+                />
+                <EditableField
+                  fieldId={`location-${index}`}
+                  label="Location"
+                  initialValue={restaurantData.location}
+                  onSave={handleSaveRestaurantSetting('location')}
+                />
+                <EditableField
+                  fieldId={`subscription-${index}`}
+                  label="Subscription"
+                  initialValue={restaurantData.subscription}
+                  onSave={handleSaveRestaurantSetting('subscription')}
+                />
+              </div>
+            ))}
             <h2>Item Settings</h2>
             <EditableField
               fieldId="defaultUnit"
@@ -232,29 +299,6 @@ const SettingsPage = () => {
               initialValue={itemSettings.lowStockThreshold}
               onSave={handleSaveItemSetting('lowStockThreshold')}
               fieldType="number"
-            />
-          </section>
-
-          {/* Restaurant Settings */}
-          <section className="settings-category">
-            <h2>Restaurant Settings</h2>
-            <EditableField
-              fieldId="restaurantName"
-              label="Restaurant Name"
-              initialValue={restaurantSettings.restaurantName}
-              onSave={handleSaveRestaurantSetting('restaurantName')}
-            />
-            <EditableField
-              fieldId="address"
-              label="Address"
-              initialValue={restaurantSettings.address}
-              onSave={handleSaveRestaurantSetting('address')}
-            />
-             <EditableField
-              fieldId="currency"
-              label="Currency Symbol"
-              initialValue={restaurantSettings.currency}
-              onSave={handleSaveRestaurantSetting('currency')}
             />
           </section>
         </div>
