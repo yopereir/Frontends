@@ -168,7 +168,8 @@ const SettingsPage = () => {
     holdMinutes: "30",
     restaurant_id: "",
     unit: "kg",
-    imageURL: ""
+    imageURL: "",
+    tags: ""
   }]);
 
   //useEffect to fetch actual settings if needed
@@ -199,13 +200,15 @@ const SettingsPage = () => {
         const { data: itemsData } = await supabase.from('items').select('*');
         if (itemsData) {
           setItemsSettings([]); // Reset before adding new data
+          let tagString = "";
           setItemsSettings(
             itemsData.map((itemData) => ({
               name: itemData.name,
               holdMinutes: itemData.holdMinutes,
               restaurant_id: itemData.restaurant_id,
               unit: itemData.metadata.unit,
-              imageURL: itemData.metadata.imageURL
+              imageURL: itemData.metadata.imageURL,
+              tags: itemData.metadata.tags.toString() || ""
             }))
           );
         }
@@ -325,6 +328,12 @@ const SettingsPage = () => {
                       label="Image URL"
                       initialValue={itemData.imageURL}
                       onSave={handleSaveItemSetting('imageURL')}
+                    />
+                    <EditableField
+                      fieldId={`item-tags-${itemIndex}`}
+                      label="Image Tags"
+                      initialValue={itemData.tags}
+                      onSave={handleSaveItemSetting('tags')}
                     />
                     <h2></h2>
                   </div>
