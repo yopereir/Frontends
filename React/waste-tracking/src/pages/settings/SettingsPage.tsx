@@ -163,10 +163,13 @@ const SettingsPage = () => {
     location: "123 Green Way",
     subscription: "USD",
   }]);
-  const [itemSettings, setItemSettings] = useState({
-    defaultUnit: "kg",
-    lowStockThreshold: 10,
-  });
+  const [itemSettings, setItemsSettings] = useState([{
+    name: "Default Item",
+    holdMinutes: "30",
+    restaurant_id: "",
+    unit: "kg",
+    imageURL: ""
+  }]);
 
   //useEffect to fetch actual settings if needed
   useEffect(() => {
@@ -181,7 +184,6 @@ const SettingsPage = () => {
 
         //Fetch restaurant settings
         const { data: restaurantsData } = await supabase.from('restaurants').select('*');
-        console.log("Restaurant data: ", restaurantsData);
         if (restaurantsData) {
           setRestaurantsSettings([]); // Reset before adding new data
           setRestaurantsSettings(
@@ -194,8 +196,19 @@ const SettingsPage = () => {
         }
 
         //Fetch item settings
-        const { data: itemData } = await supabase.from('items').select('*').eq('restaurant_id', session.user.id).single();
-        if (itemData) setItemSettings(itemData);
+        const { data: itemsData } = await supabase.from('items').select('*');
+        if (itemsData) {
+          setItemsSettings([]); // Reset before adding new data
+          setItemsSettings(
+            itemsData.map((itemData) => ({
+              name: itemData.name,
+              holdMinutes: itemData.holdMinutes,
+              restaurant_id: itemData.restaurant_id,
+              unit: itemData.metadata.unit,
+              imageURL: itemData.metadata.imageURL
+            }))
+          );
+        }
       }
     };
     fetchSettings();
@@ -237,7 +250,7 @@ const SettingsPage = () => {
             />
           </section>
 
-          {/* Item Settings */}
+          {/* Subscription Settings */}
           <section className="settings-category">
             <h2>Subscription Settings</h2>
             <EditableField
@@ -284,22 +297,40 @@ const SettingsPage = () => {
                   initialValue={restaurantData.subscription}
                   onSave={handleSaveRestaurantSetting('subscription')}
                 />
+                <h2></h2>
+                <h2>Item Settings</h2>
+                { itemSettings.map((itemData, itemIndex) => (
+                  <div key={itemIndex} className="item-setting">
+                    <h3>Item {itemIndex + 1}</h3>
+                    <EditableField
+                      fieldId={`item-name-${itemIndex}`}
+                      label="Item Name"
+                      initialValue={itemData.name}
+                      onSave={handleSaveItemSetting('name')}
+                    />
+                    <EditableField
+                      fieldId={`item-restaurant-${itemIndex}`}
+                      label="Restaurant ID"
+                      initialValue={itemData.restaurant_id}
+                      onSave={handleSaveItemSetting('restaurant_id')}
+                    />
+                    <EditableField
+                      fieldId={`item-unit-${itemIndex}`}
+                      label="Unit"
+                      initialValue={itemData.unit}
+                      onSave={handleSaveItemSetting('unit')}
+                    />
+                    <EditableField
+                      fieldId={`item-imageURL-${itemIndex}`}
+                      label="Image URL"
+                      initialValue={itemData.imageURL}
+                      onSave={handleSaveItemSetting('imageURL')}
+                    />
+                    <h2></h2>
+                  </div>
+                ))}
               </div>
             ))}
-            <h2>Item Settings</h2>
-            <EditableField
-              fieldId="defaultUnit"
-              label="Default Item Unit"
-              initialValue={itemSettings.defaultUnit}
-              onSave={handleSaveItemSetting('defaultUnit')}
-            />
-            <EditableField
-              fieldId="lowStockThreshold"
-              label="Low Stock Threshold"
-              initialValue={itemSettings.lowStockThreshold}
-              onSave={handleSaveItemSetting('lowStockThreshold')}
-              fieldType="number"
-            />
           </section>
         </div>
       </main>
