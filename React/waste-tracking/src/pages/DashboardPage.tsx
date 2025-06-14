@@ -16,13 +16,26 @@ const DashboardPage = () => {
     const fetchItems = async () => {
       loadingText = "Loading items...";
       setLoading(true);
-      const { data, error } = await supabase
-        .from("items")
-        .select("id, created_at, name, restaurant_id");
+      const { data, error } = await supabase.from("waste_entries").select("*");
 
       if (!error && data && data.length > 0) {
         setLoading(false);
-        setItems(data);
+        const fetchedItems = async () => {
+          const updatedItems = await Promise.all(
+            data.map(async (wasteEntry) => {
+              const { data:itemData } = await supabase.from("items").select("name, restaurant_id").eq("id",wasteEntry.item_id).single();
+              return ({
+                id: wasteEntry.id,
+                name: itemData?.name || "Unknown Item",
+                created_at: wasteEntry.created_at,
+                quantity: wasteEntry.quantity,
+                restaurant_id: itemData?.restaurant_id,
+              })
+            })
+          )
+          setItems(updatedItems)
+        }
+        await fetchedItems();
       } else {
         loadingText = error?.message || "Failed to load items";
         console.warn("Supabase fetch failed, using fallback data:", error);

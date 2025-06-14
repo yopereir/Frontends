@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { format, subDays, subMonths, subYears } from "date-fns";
+import { format, subHours, subDays, subMonths, subYears } from "date-fns";
 import {
   LineChart,
   Line,
@@ -23,10 +23,11 @@ const ItemsLineChart = ({ items }: { items: Item[] }) => {
   const [groupedData, setGroupedData] = useState<any[]>([]);
   const [itemNames, setItemNames] = useState<string[]>([]);
   const [selectedNames, setSelectedNames] = useState<string[]>([]);
-  const [range, setRange] = useState<"30d" | "6m" | "1y" | "all">("30d");
+  const [range, setRange] = useState<"1d" | "30d" | "6m" | "1y" | "all">("30d");
 
   const getStartDate = () => {
     const now = new Date();
+    if (range === "1d") return subHours(now, 24);
     if (range === "30d") return subDays(now, 30);
     if (range === "6m") return subMonths(now, 6);
     if (range === "1y") return subYears(now, 1);
@@ -64,6 +65,7 @@ const ItemsLineChart = ({ items }: { items: Item[] }) => {
       <div>
         <label style={{ marginRight: "1em" }}>Date Range:</label>
         <select value={range} onChange={(e) => setRange(e.target.value as any)}>
+          <option value="1d">Past 1 Day</option>
           <option value="30d">Past 30 Days</option>
           <option value="6m">Past 6 Months</option>
           <option value="1y">Past 1 Year</option>
