@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import supabase from "../../supabase"; // Make sure supabase is imported if you use it in save handlers
 import './SettingsPage.css';
 import AddItemDialog from "../../components/AddItemDialog";
+import { Link } from "react-router-dom";
 
 // Props for the EditableField component
 type EditableFieldProps = {
@@ -77,6 +78,7 @@ const EditableField: React.FC<EditableFieldProps> = ({ label, initialValue, onSa
 const SettingsPage = () => {
   const { session } = useSession();
   const [isAddItemDialogOpen, setAddItemDialogOpen] = useState(false);
+  const [activeRestaurantId, setActiveRestaurantId] = useState<string>("");
 
   const handleSaveUserSetting = (fieldName: string) => async (newValue: string | number) => {
     console.log(`Attempting to save User Setting - ${fieldName}: ${newValue}`);
@@ -180,6 +182,7 @@ const SettingsPage = () => {
     plan: "all",
   });
   const [restaurantSettings, setRestaurantsSettings] = useState([{
+    id: "",
     name: "My Waste Tracker",
     location: "123 Green Way",
     subscription: "USD",
@@ -208,6 +211,7 @@ const SettingsPage = () => {
         setRestaurantsSettings([]); // Reset before adding new data
         setRestaurantsSettings(
           restaurantsData.map((restaurantData) => ({
+            id: restaurantData.id,
             name: restaurantData.name,
             location: restaurantData.location,
             subscription: restaurantData.subscription_id
@@ -297,6 +301,7 @@ const SettingsPage = () => {
               initialValue={subscriptionSettings.status}
               onSave={handleSaveSubscriptionSetting('status')}
             />
+            <Link to="/subscription">Update Subscription</Link>
           </section>
 
           {/* Restaurant Settings */}
@@ -361,7 +366,7 @@ const SettingsPage = () => {
                     <h2></h2>
                   </div>
                 ))}
-              <button onClick={() => setAddItemDialogOpen(true)}>Add New Item</button>
+              <button onClick={() => {setActiveRestaurantId(restaurantData.id);setAddItemDialogOpen(true)}}>Add New Item</button>
               </div>
             ))}
           </section>
@@ -375,6 +380,7 @@ const SettingsPage = () => {
               fetchSettings(); // Re-fetch data to show the new item
               setAddItemDialogOpen(false); // Close dialog on success
           }}
+          restaurantId={activeRestaurantId}
       />
     )}
     </>

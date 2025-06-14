@@ -5,9 +5,10 @@ import supabase from '../supabase'; // Ensure supabase is correctly imported
 interface AddItemDialogProps {
   onClose: () => void;
   onItemAdded: () => void; // A callback to refresh the items list on the settings page
+  restaurantId: string;
 }
 
-const AddItemDialog: React.FC<AddItemDialogProps> = ({ onClose, onItemAdded }) => {
+const AddItemDialog: React.FC<AddItemDialogProps> = ({ onClose, onItemAdded, restaurantId }) => {
   const [itemName, setItemName] = useState('');
   const [unit, setUnit] = useState('');
   const [imageUrl, setImageUrl] = useState('');
@@ -26,17 +27,17 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({ onClose, onItemAdded }) =
     setError(null);
 
     const tagsArray = tags.split(',').map(tag => tag.trim()).filter(Boolean);
-
+    console.log("restaurantId:", restaurantId);
     const { error: insertError } = await supabase
       .from('items')
       .insert([{
         name: itemName,
+        restaurant_id: restaurantId,
         metadata: {
           unit,
           imageUrl,
           tags: tagsArray,
         },
-        // restaurant_id will be set if you pass it as a prop
       }]);
 
     setIsCreating(false);
