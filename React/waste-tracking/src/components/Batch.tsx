@@ -3,7 +3,7 @@ import { useSession, BatchData } from "../context/SessionContext";
 import QuantityDialog from './QuantityDialog';
 import supabase from "../supabase";
 
-const Batch = ({ id, itemId, itemName, imageUrl, startTime, holdMinutes, unit, quantity_amount }: BatchData) => {
+const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_amount }: BatchData) => {
   const [timeLeft, setTimeLeft] = useState("");
   const [timeColor, setTimeColor] = useState("#3ecf8e");
   const [showDialog, setShowDialog] = useState(false);
