@@ -3,59 +3,16 @@ import { useSession } from "../context/SessionContext";
 import HeaderBar from "../components/HeaderBar";
 import Batch from "../components/Batch";
 import QuantityDialog from "../components/QuantityDialog";
+import supabase from "../supabase";
 
 interface Item {
   id: string;
   name: string;
   imageUrl: string;
   holdMinutes: number;
-  quantity_type: string;
+  unit: string;
   tags: string[];
 }
-
-// Replace with Supabase fetch if needed
-const items: Item[] = [
-  {
-    id: "1",
-    name: "Chicken Sandwich",
-    imageUrl: "/images/chicken-sandwich.jpg",
-    holdMinutes: 20,
-    quantity_type: "Pounds",
-    tags: ['lunch'],
-  },
-  {
-    id: "2",
-    name: "Nuggets",
-    imageUrl: "/images/nuggets.jpg",
-    holdMinutes: 15,
-    quantity_type: "Count",
-    tags: ['lunch'],
-  },
-  {
-    id: "3",
-    name: "Fries",
-    imageUrl: "/images/fries.jpg",
-    holdMinutes: 7,
-    quantity_type: "Pounds",
-    tags: ['lunch'],
-  },
-  {
-    id: "4",
-    name: "Cookies",
-    imageUrl: "/images/cookies.jpg",
-    holdMinutes: 1440,
-    quantity_type: "Count",
-    tags: ['breakfast', 'lunch'],
-  },
-  {
-    id: "5",
-    name: "Egg Sandwich",
-    imageUrl: "/images/egg_sandwich.jpg",
-    holdMinutes: 4,
-    quantity_type: "Count",
-    tags: ['breakfast'],
-  },
-];
 
 const ItemsPage = () => {
   const { batches, setBatches } = useSession();
@@ -64,6 +21,7 @@ const ItemsPage = () => {
   const [showDialog, setShowDialog] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [selectedTab, setSelectedTab] = useState<'lunch' | 'breakfast' | null>(null);
+  const [items, setItems] = useState<Item[]>([]);
 
   const handleTabClick = (tab: 'lunch' | 'breakfast') => {
     setSelectedTab(prev => (prev === tab ? null : tab));
@@ -84,13 +42,35 @@ const ItemsPage = () => {
       imageUrl: selectedItem.imageUrl,
       startTime: new Date(),
       holdMinutes: selectedItem.holdMinutes,
-      quantity_type: selectedItem.quantity_type,
+      unit: selectedItem.unit,
       quantity_amount: quantity,
     };
     setBatches((prev) => [...prev, newBatch]);
     setShowDialog(false);
     setSelectedItem(null);
   };
+
+  useEffect(() => {
+    const fetchItems = async () => {
+      const { data, error } = await supabase.from('items').select(`*`);
+      console.log("Fetched items:", data, error);
+      if (error || !data) {
+        console.error("Failed to fetch items", error);
+        return;
+      }
+
+      const parsedItems: Item[] = data.map((item: any) => ({
+        id: item.id,
+        name: item.name,
+        imageUrl: item.metadata?.imageUrl || "",
+        holdMinutes: item.metadata?.holdMinutes || 0,
+        unit: item.metadata?.unit || "",
+        tags: item.metadata?.tags || [],  // Assuming tags might come from metadata
+      }));
+      setItems(parsedItems);
+    };
+    fetchItems();
+  }, []);
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -160,7 +140,7 @@ const ItemsPage = () => {
             imageUrl={batch.imageUrl}
             startTime={batch.startTime}
             holdMinutes={batch.holdMinutes}
-            quantity_type={batch.quantity_type}
+            unit={batch.unit}
             quantity_amount={batch.quantity_amount}
           />
       ))}

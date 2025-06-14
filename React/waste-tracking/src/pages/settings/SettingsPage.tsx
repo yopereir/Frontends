@@ -168,7 +168,7 @@ const SettingsPage = () => {
     holdMinutes: "30",
     restaurant_id: "",
     unit: "kg",
-    imageURL: "",
+    imageUrl: "",
     tags: ""
   }]);
 
@@ -207,7 +207,7 @@ const SettingsPage = () => {
               holdMinutes: itemData.holdMinutes,
               restaurant_id: itemData.restaurant_id,
               unit: itemData.metadata.unit,
-              imageURL: itemData.metadata.imageURL,
+              imageUrl: itemData.metadata.imageUrl,
               tags: itemData.metadata.tags.toString() || ""
             }))
           );
@@ -324,10 +324,10 @@ const SettingsPage = () => {
                       onSave={handleSaveItemSetting('unit')}
                     />
                     <EditableField
-                      fieldId={`item-imageURL-${itemIndex}`}
+                      fieldId={`item-imageUrl-${itemIndex}`}
                       label="Image URL"
-                      initialValue={itemData.imageURL}
-                      onSave={handleSaveItemSetting('imageURL')}
+                      initialValue={itemData.imageUrl}
+                      onSave={handleSaveItemSetting('imageUrl')}
                     />
                     <EditableField
                       fieldId={`item-tags-${itemIndex}`}

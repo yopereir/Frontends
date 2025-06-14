@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useSession, BatchData } from "../context/SessionContext";
 import QuantityDialog from './QuantityDialog';
 
-const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, quantity_type, quantity_amount }: BatchData) => {
+const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_amount }: BatchData) => {
   const [timeLeft, setTimeLeft] = useState("");
   const [timeColor, setTimeColor] = useState("#3ecf8e");
   const [showDialog, setShowDialog] = useState(false);
@@ -52,7 +52,7 @@ const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, quantity_type, 
         <div className="batch-title">{itemName}</div>
       </div>
       <div className="batch-right">
-        <div className="batch-subtext">{quantity_amount}: {quantity_type}</div>
+        <div className="batch-subtext">{quantity_amount} {unit}</div>
         <div className="batch-timer" style={{ color: timeColor }}>{timeLeft}</div>
         <button className="batch-button" onClick={handleClear}>Clear</button>
       </div>

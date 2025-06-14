@@ -18,7 +18,7 @@ export interface BatchData {
   imageUrl: string;
   startTime: Date;
   holdMinutes: number;
-  quantity_type: string;
+  unit: string;
   quantity_amount: number;
 }
 
