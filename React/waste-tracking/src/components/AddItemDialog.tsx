@@ -11,6 +11,7 @@ interface AddItemDialogProps {
 const AddItemDialog: React.FC<AddItemDialogProps> = ({ onClose, onItemAdded, restaurantId }) => {
   const [itemName, setItemName] = useState('');
   const [unit, setUnit] = useState('');
+  const [holdingTime, setHoldingTime] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [tags, setTags] = useState('');
   const [isCreating, setIsCreating] = useState(false);
@@ -34,6 +35,7 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({ onClose, onItemAdded, res
         restaurant_id: restaurantId,
         metadata: {
           unit,
+          holdMinutes: holdingTime,
           imageUrl,
           tags: tagsArray,
         },
@@ -66,6 +68,12 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({ onClose, onItemAdded, res
             value={unit}
             onChange={(e) => setUnit(e.target.value)}
             placeholder="Unit (e.g., kg, lbs, pieces)"
+          />
+          <input
+            type="text"
+            value={holdingTime}
+            onChange={(e) => setHoldingTime(e.target.value)}
+            placeholder="HoldingTime in multi minutes (e.g., 30)"
           />
           <input
             type="text"

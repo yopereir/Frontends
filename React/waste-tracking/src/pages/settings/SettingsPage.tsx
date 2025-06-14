@@ -136,10 +136,11 @@ const SettingsPage = () => {
     let error;
     switch (fieldName) {
       case 'name': ({ error } = await supabase.from('items').update({name: newValue}).eq('id', itemId));break;
-      case 'restaurant_id': ({ error } = await supabase.from('items').update({restaurant_id: newValue}).eq('id', itemId));break;
-      case 'unit': ({ error } = await supabase.from('items').update({metadata: {...{unit: newValue}}}).eq('id', itemId));break;
-      case 'imageUrl': ({ error } = await supabase.from('items').update({metadata: {...{imageUrl: newValue}}}).eq('id', itemId));break;
-      case 'tags': ({ error } = await supabase.from('items').update({metadata: {...{tags: newValue}}}).eq('id', itemId));break;
+      case 'restaurant_id': ({ error } = await supabase.from('items').update({restaurant_id: newValue}).eq('id', itemId));break
+      case 'unit': ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {[fieldName]: fieldName === 'unit' ? newValue : newValue}}));break;
+      case 'holdingtime': ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {"holdMinutes": newValue}}));break;
+      case 'imageUrl': ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {[fieldName]: fieldName === 'imageUrl' ? newValue : newValue}}));break;
+      case 'tags': ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {[fieldName]: fieldName === 'tags' ? newValue.toString().split(',') : newValue}}));break;
       default:
         throw new Error(`Unknown item setting: ${fieldName}`);
     }
@@ -231,7 +232,7 @@ const SettingsPage = () => {
           itemsData.map((itemData) => ({
             id: itemData.id,
             name: itemData.name,
-            holdMinutes: itemData.holdMinutes,
+            holdMinutes: itemData.metadata.holdMinutes,
             restaurant_id: itemData.restaurant_id,
             unit: itemData.metadata.unit,
             imageUrl: itemData.metadata.imageUrl,
@@ -354,6 +355,12 @@ const SettingsPage = () => {
                       label="Unit"
                       initialValue={itemData.unit}
                       onSave={handleSaveItemSetting('unit', itemData.id)}
+                    />
+                    <EditableField
+                      fieldId={`item-holdingtime-${itemIndex}`}
+                      label="Holdingtime"
+                      initialValue={itemData.holdMinutes}
+                      onSave={handleSaveItemSetting('holdingtime', itemData.id)}
                     />
                     <EditableField
                       fieldId={`item-imageUrl-${itemIndex}`}
