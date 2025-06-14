@@ -27,7 +27,6 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({ onClose, onItemAdded, res
     setError(null);
 
     const tagsArray = tags.split(',').map(tag => tag.trim()).filter(Boolean);
-    console.log("restaurantId:", restaurantId);
     const { error: insertError } = await supabase
       .from('items')
       .insert([{

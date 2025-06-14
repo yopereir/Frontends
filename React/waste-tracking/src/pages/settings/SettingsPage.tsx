@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import supabase from "../../supabase"; // Make sure supabase is imported if you use it in save handlers
 import './SettingsPage.css';
 import AddItemDialog from "../../components/AddItemDialog";
+import AddRestaurantDialog from "../../components/AddRestaurantDialog";
 import { Link } from "react-router-dom";
 
 // Props for the EditableField component
@@ -78,6 +79,7 @@ const EditableField: React.FC<EditableFieldProps> = ({ label, initialValue, onSa
 const SettingsPage = () => {
   const { session } = useSession();
   const [isAddItemDialogOpen, setAddItemDialogOpen] = useState(false);
+  const [isAddRestaurantDialogOpen, setAddRestaurantDialogOpen] = useState(false);
   const [activeRestaurantId, setActiveRestaurantId] = useState<string>("");
 
   const handleSaveUserSetting = (fieldName: string) => async (newValue: string | number) => {
@@ -177,6 +179,7 @@ const SettingsPage = () => {
     email: session?.user?.email || "",
   });
   const [subscriptionSettings, setSubscriptionSettings] = useState({
+    id: "",
     endDate: "00-00-00",
     status: "ended",
     plan: "all",
@@ -204,7 +207,7 @@ const SettingsPage = () => {
 
       //Fetch subscription settings
       const { data: subscriptionData } = await supabase.from('subscriptions').select('*').single();
-      if (subscriptionData) setSubscriptionSettings({ endDate: subscriptionData.end_date, status: subscriptionData.status, plan: subscriptionData.plan });
+      if (subscriptionData) setSubscriptionSettings({ id: subscriptionData.id, endDate: subscriptionData.end_date, status: subscriptionData.status, plan: subscriptionData.plan });
 
       //Fetch restaurant settings
       const { data: restaurantsData } = await supabase.from('restaurants').select('*');
@@ -224,7 +227,6 @@ const SettingsPage = () => {
       const { data: itemsData } = await supabase.from('items').select('*');
       if (itemsData) {
         setItemsSettings([]); // Reset before adding new data
-        let tagString = "";
         setItemsSettings(
           itemsData.map((itemData) => ({
             id: itemData.id,
@@ -333,8 +335,8 @@ const SettingsPage = () => {
                 <h2></h2>
                 <h2>Item Settings</h2>
                 { itemSettings.map((itemData, itemIndex) => (
+                  itemData.restaurant_id === restaurantData.id &&
                   <div key={itemIndex} className="item-setting">
-                    <h3>Item {itemIndex + 1}</h3>
                     <EditableField
                       fieldId={`item-name-${itemIndex}`}
                       label="Item Name"
@@ -369,8 +371,10 @@ const SettingsPage = () => {
                   </div>
                 ))}
               <button onClick={() => {setActiveRestaurantId(restaurantData.id);setAddItemDialogOpen(true)}}>Add New Item</button>
+              <h2></h2>
               </div>
             ))}
+            <button onClick={() => {setAddRestaurantDialogOpen(true)}}>Add New Restaurant</button>
           </section>
         </div>
       </main>
@@ -383,6 +387,16 @@ const SettingsPage = () => {
               setAddItemDialogOpen(false);
           }}
           restaurantId={activeRestaurantId}
+      />
+    )}
+    {isAddRestaurantDialogOpen && (
+      <AddRestaurantDialog
+          onClose={() => setAddRestaurantDialogOpen(false)}
+          onRestaurantAdded={() => {
+              fetchSettings();
+              setAddRestaurantDialogOpen(false);
+          }}
+          subscriptionId={subscriptionSettings.id}
       />
     )}
     </>
