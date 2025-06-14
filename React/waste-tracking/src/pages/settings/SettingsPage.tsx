@@ -124,26 +124,46 @@ const SettingsPage = () => {
 
   const handleSaveItemSetting = (fieldName: string) => async (newValue: string | number) => {
     console.log(`Attempting to save Item Setting - ${fieldName}: ${newValue}`);
-    // Example: Update a 'item_settings' table
-    // const { data, error } = await supabase
-    //   .from('item_settings')
-    //   .update({ [fieldName]: newValue })
-    //   .eq('user_id', session.user.id); // Or some other relevant identifier
-    // if (error) console.error(`Error saving ${fieldName}:`, error.message);
-    // else console.log(`${fieldName} updated successfully:`, data);
-    alert(`Simulated save for Item - ${fieldName}: ${newValue}`); // Placeholder
+    if (!session?.user) {
+      console.error("User not authenticated");
+      throw new Error("User not authenticated");
+    }
+    let error;
+    switch (fieldName) {
+      case 'name': ({ error } = await supabase.from('items').update({name: newValue}));break;
+      case 'restaurant_id': ({ error } = await supabase.from('items').update({restaurant_id: newValue}));break;
+      case 'unit': ({ error } = await supabase.from('items').update({metadata: {...{unit: newValue}}}));break;
+      case 'imageUrl': ({ error } = await supabase.from('items').update({metadata: {...{imageUrl: newValue}}}));break;
+      case 'tags': ({ error } = await supabase.from('items').update({metadata: {...{tags: newValue}}}));break;
+      default:
+        throw new Error(`Unknown item setting: ${fieldName}`);
+    }
+    if (error) {
+      console.error(`Error saving ${fieldName}:`, error.message);
+      throw new Error(`Failed to update ${fieldName}. `+error.message);
+    }
+    console.log(`${fieldName} updated successfully.`);
   };
 
   const handleSaveRestaurantSetting = (fieldName: string) => async (newValue: string | number) => {
     console.log(`Attempting to save Restaurant Setting - ${fieldName}: ${newValue}`);
-    // Example: Update a 'restaurant_settings' table
-    // const { data, error } = await supabase
-    //   .from('restaurant_settings')
-    //   .update({ [fieldName]: newValue })
-    //   .eq('user_id', session.user.id); // Or some other relevant identifier
-    // if (error) console.error(`Error saving ${fieldName}:`, error.message);
-    // else console.log(`${fieldName} updated successfully:`, data);
-    alert(`Simulated save for Restaurant - ${fieldName}: ${newValue}`); // Placeholder
+    if (!session?.user) {
+      console.error("User not authenticated");
+      throw new Error("User not authenticated");
+    }
+    let error;
+    switch (fieldName) {
+      case 'name': ({ error } = await supabase.from('restaurants').update({name: newValue}));break;
+      case 'location': ({ error } = await supabase.from('restaurants').update({location: newValue}));break;
+      case 'subscription': ({ error } = await supabase.from('restaurants').update({subscription_id: newValue}));break;
+      default:
+        throw new Error(`Unknown item setting: ${fieldName}`);
+    }
+    if (error) {
+      console.error(`Error saving ${fieldName}:`, error.message);
+      throw new Error(`Failed to update ${fieldName}. `+error.message);
+    }
+    console.log(`${fieldName} updated successfully.`);
   };
 
 
