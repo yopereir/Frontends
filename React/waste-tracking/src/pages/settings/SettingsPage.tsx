@@ -125,7 +125,7 @@ const SettingsPage = () => {
     console.log(`${fieldName} updated successfully.`);
   };
 
-  const handleSaveItemSetting = (fieldName: string) => async (newValue: string | number) => {
+  const handleSaveItemSetting = (fieldName: string, itemId: string) => async (newValue: string | number) => {
     console.log(`Attempting to save Item Setting - ${fieldName}: ${newValue}`);
     if (!session?.user) {
       console.error("User not authenticated");
@@ -133,11 +133,11 @@ const SettingsPage = () => {
     }
     let error;
     switch (fieldName) {
-      case 'name': ({ error } = await supabase.from('items').update({name: newValue}));break;
-      case 'restaurant_id': ({ error } = await supabase.from('items').update({restaurant_id: newValue}));break;
-      case 'unit': ({ error } = await supabase.from('items').update({metadata: {...{unit: newValue}}}));break;
-      case 'imageUrl': ({ error } = await supabase.from('items').update({metadata: {...{imageUrl: newValue}}}));break;
-      case 'tags': ({ error } = await supabase.from('items').update({metadata: {...{tags: newValue}}}));break;
+      case 'name': ({ error } = await supabase.from('items').update({name: newValue}).eq('id', itemId));break;
+      case 'restaurant_id': ({ error } = await supabase.from('items').update({restaurant_id: newValue}).eq('id', itemId));break;
+      case 'unit': ({ error } = await supabase.from('items').update({metadata: {...{unit: newValue}}}).eq('id', itemId));break;
+      case 'imageUrl': ({ error } = await supabase.from('items').update({metadata: {...{imageUrl: newValue}}}).eq('id', itemId));break;
+      case 'tags': ({ error } = await supabase.from('items').update({metadata: {...{tags: newValue}}}).eq('id', itemId));break;
       default:
         throw new Error(`Unknown item setting: ${fieldName}`);
     }
@@ -148,7 +148,7 @@ const SettingsPage = () => {
     console.log(`${fieldName} updated successfully.`);
   };
 
-  const handleSaveRestaurantSetting = (fieldName: string) => async (newValue: string | number) => {
+  const handleSaveRestaurantSetting = (fieldName: string, restaurantId: string) => async (newValue: string | number) => {
     console.log(`Attempting to save Restaurant Setting - ${fieldName}: ${newValue}`);
     if (!session?.user) {
       console.error("User not authenticated");
@@ -156,9 +156,9 @@ const SettingsPage = () => {
     }
     let error;
     switch (fieldName) {
-      case 'name': ({ error } = await supabase.from('restaurants').update({name: newValue}));break;
-      case 'location': ({ error } = await supabase.from('restaurants').update({location: newValue}));break;
-      case 'subscription': ({ error } = await supabase.from('restaurants').update({subscription_id: newValue}));break;
+      case 'name': ({ error } = await supabase.from('restaurants').update({name: newValue}).eq('id', restaurantId));break;
+      case 'location': ({ error } = await supabase.from('restaurants').update({location: newValue}).eq('id', restaurantId));break;
+      case 'subscription': ({ error } = await supabase.from('restaurants').update({subscription_id: newValue}).eq('id', restaurantId));break;
       default:
         throw new Error(`Unknown item setting: ${fieldName}`);
     }
@@ -188,6 +188,7 @@ const SettingsPage = () => {
     subscription: "USD",
   }]);
   const [itemSettings, setItemsSettings] = useState([{
+    id: "",
     name: "Default Item",
     holdMinutes: "30",
     restaurant_id: "",
@@ -226,12 +227,13 @@ const SettingsPage = () => {
         let tagString = "";
         setItemsSettings(
           itemsData.map((itemData) => ({
+            id: itemData.id,
             name: itemData.name,
             holdMinutes: itemData.holdMinutes,
             restaurant_id: itemData.restaurant_id,
             unit: itemData.metadata.unit,
             imageUrl: itemData.metadata.imageUrl,
-            tags: itemData.metadata.tags.toString() || ""
+            tags: itemData.metadata?.tags?.toString() || ""
           }))
         );
       }
@@ -314,19 +316,19 @@ const SettingsPage = () => {
                   fieldId={`name-${index}`}
                   label="Name"
                   initialValue={restaurantData.name}
-                  onSave={handleSaveRestaurantSetting('name')}
+                  onSave={handleSaveRestaurantSetting('name', restaurantData.id)}
                 />
                 <EditableField
                   fieldId={`location-${index}`}
                   label="Location"
                   initialValue={restaurantData.location}
-                  onSave={handleSaveRestaurantSetting('location')}
+                  onSave={handleSaveRestaurantSetting('location', restaurantData.id)}
                 />
                 <EditableField
                   fieldId={`subscription-${index}`}
                   label="Subscription"
                   initialValue={restaurantData.subscription}
-                  onSave={handleSaveRestaurantSetting('subscription')}
+                  onSave={handleSaveRestaurantSetting('subscription', restaurantData.id)}
                 />
                 <h2></h2>
                 <h2>Item Settings</h2>
@@ -337,31 +339,31 @@ const SettingsPage = () => {
                       fieldId={`item-name-${itemIndex}`}
                       label="Item Name"
                       initialValue={itemData.name}
-                      onSave={handleSaveItemSetting('name')}
+                      onSave={handleSaveItemSetting('name', itemData.id)}
                     />
                     <EditableField
                       fieldId={`item-restaurant-${itemIndex}`}
                       label="Restaurant ID"
                       initialValue={itemData.restaurant_id}
-                      onSave={handleSaveItemSetting('restaurant_id')}
+                      onSave={handleSaveItemSetting('restaurant_id', itemData.id)}
                     />
                     <EditableField
                       fieldId={`item-unit-${itemIndex}`}
                       label="Unit"
                       initialValue={itemData.unit}
-                      onSave={handleSaveItemSetting('unit')}
+                      onSave={handleSaveItemSetting('unit', itemData.id)}
                     />
                     <EditableField
                       fieldId={`item-imageUrl-${itemIndex}`}
                       label="Image URL"
                       initialValue={itemData.imageUrl}
-                      onSave={handleSaveItemSetting('imageUrl')}
+                      onSave={handleSaveItemSetting('imageUrl', itemData.id)}
                     />
                     <EditableField
                       fieldId={`item-tags-${itemIndex}`}
                       label="Image Tags"
                       initialValue={itemData.tags}
-                      onSave={handleSaveItemSetting('tags')}
+                      onSave={handleSaveItemSetting('tags', itemData.id)}
                     />
                     <h2></h2>
                   </div>
@@ -377,8 +379,8 @@ const SettingsPage = () => {
       <AddItemDialog
           onClose={() => setAddItemDialogOpen(false)}
           onItemAdded={() => {
-              fetchSettings(); // Re-fetch data to show the new item
-              setAddItemDialogOpen(false); // Close dialog on success
+              fetchSettings();
+              setAddItemDialogOpen(false);
           }}
           restaurantId={activeRestaurantId}
       />
