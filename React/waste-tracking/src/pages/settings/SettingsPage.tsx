@@ -1,9 +1,9 @@
 import { useSession } from "../../context/SessionContext";
 import HeaderBar from "../../components/HeaderBar";
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import supabase from "../../supabase"; // Make sure supabase is imported if you use it in save handlers
 import './SettingsPage.css';
-import { set } from "date-fns";
+import AddItemDialog from "../../components/AddItemDialog";
 
 // Props for the EditableField component
 type EditableFieldProps = {
@@ -69,13 +69,14 @@ const EditableField: React.FC<EditableFieldProps> = ({ label, initialValue, onSa
           )}
         </div>
       </div>
-      {error && <p style={{ color: "red", marginTop: "0.25rem", textAlign: 'left', width: '100%' }}>{error}</p>}
+      {error && <p style={{ color: "var(--error-color)", marginTop: "0.25rem", textAlign: 'left', width: '100%' }}>{error}</p>}
     </>
   );
 };
 
 const SettingsPage = () => {
   const { session } = useSession();
+  const [isAddItemDialogOpen, setAddItemDialogOpen] = useState(false);
 
   const handleSaveUserSetting = (fieldName: string) => async (newValue: string | number) => {
     console.log(`Attempting to save User Setting - ${fieldName}: ${newValue}`);
@@ -192,53 +193,55 @@ const SettingsPage = () => {
     tags: ""
   }]);
 
+  const fetchSettings = useCallback(async () => {
+    if (session?.user) {
+      //Fetch user settings (e.g., from a 'profiles' table or user_metadata)
+      setUserSettings({ email: session.user.email || '', username: session.user.user_metadata.username || ''});
+
+      //Fetch subscription settings
+      const { data: subscriptionData } = await supabase.from('subscriptions').select('*').single();
+      if (subscriptionData) setSubscriptionSettings({ endDate: subscriptionData.end_date, status: subscriptionData.status, plan: subscriptionData.plan });
+
+      //Fetch restaurant settings
+      const { data: restaurantsData } = await supabase.from('restaurants').select('*');
+      if (restaurantsData) {
+        setRestaurantsSettings([]); // Reset before adding new data
+        setRestaurantsSettings(
+          restaurantsData.map((restaurantData) => ({
+            name: restaurantData.name,
+            location: restaurantData.location,
+            subscription: restaurantData.subscription_id
+          }))
+        );
+      }
+
+      //Fetch item settings
+      const { data: itemsData } = await supabase.from('items').select('*');
+      if (itemsData) {
+        setItemsSettings([]); // Reset before adding new data
+        let tagString = "";
+        setItemsSettings(
+          itemsData.map((itemData) => ({
+            name: itemData.name,
+            holdMinutes: itemData.holdMinutes,
+            restaurant_id: itemData.restaurant_id,
+            unit: itemData.metadata.unit,
+            imageUrl: itemData.metadata.imageUrl,
+            tags: itemData.metadata.tags.toString() || ""
+          }))
+        );
+      }
+    }
+  }, [session]);
+
   //useEffect to fetch actual settings if needed
   useEffect(() => {
-    const fetchSettings = async () => {
-      if (session?.user) {
-        //Fetch user settings (e.g., from a 'profiles' table or user_metadata)
-        setUserSettings({ email: session.user.email || '', username: session.user.user_metadata.username || ''});
-
-        //Fetch subscription settings
-        const { data: subscriptionData } = await supabase.from('subscriptions').select('*').single();
-        if (subscriptionData) setSubscriptionSettings({ endDate: subscriptionData.end_date, status: subscriptionData.status, plan: subscriptionData.plan });
-
-        //Fetch restaurant settings
-        const { data: restaurantsData } = await supabase.from('restaurants').select('*');
-        if (restaurantsData) {
-          setRestaurantsSettings([]); // Reset before adding new data
-          setRestaurantsSettings(
-            restaurantsData.map((restaurantData) => ({
-              name: restaurantData.name,
-              location: restaurantData.location,
-              subscription: restaurantData.subscription_id
-            }))
-          );
-        }
-
-        //Fetch item settings
-        const { data: itemsData } = await supabase.from('items').select('*');
-        if (itemsData) {
-          setItemsSettings([]); // Reset before adding new data
-          let tagString = "";
-          setItemsSettings(
-            itemsData.map((itemData) => ({
-              name: itemData.name,
-              holdMinutes: itemData.holdMinutes,
-              restaurant_id: itemData.restaurant_id,
-              unit: itemData.metadata.unit,
-              imageUrl: itemData.metadata.imageUrl,
-              tags: itemData.metadata.tags.toString() || ""
-            }))
-          );
-        }
-      }
-    };
     fetchSettings();
-  }, [session]);
+  }, [fetchSettings]);
 
 
   return (
+    <>
     <div className="home-page"> {/* Using home-page class for consistent page structure */}
       <HeaderBar />
       <main className="main-container settings-container">
@@ -358,12 +361,23 @@ const SettingsPage = () => {
                     <h2></h2>
                   </div>
                 ))}
+              <button onClick={() => setAddItemDialogOpen(true)}>Add New Item</button>
               </div>
             ))}
           </section>
         </div>
       </main>
     </div>
+    {isAddItemDialogOpen && (
+      <AddItemDialog
+          onClose={() => setAddItemDialogOpen(false)}
+          onItemAdded={() => {
+              fetchSettings(); // Re-fetch data to show the new item
+              setAddItemDialogOpen(false); // Close dialog on success
+          }}
+      />
+    )}
+    </>
   );
 };
 

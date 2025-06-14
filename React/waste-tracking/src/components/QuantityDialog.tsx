@@ -12,7 +12,7 @@ const QuantityDialog = ({ initialQuantity, onClose, onSubmit }: QuantityDialogPr
   return (
     <div className="dialog-overlay">
       <div className="dialog">
-        <h3>Set Quantity</h3>
+        <h3 style={{color: "var(--menu-text)"}}>Set Quantity</h3>
         <input
           type="number"
           value={quantity}
