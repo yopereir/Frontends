@@ -38,6 +38,7 @@ const ItemsPage = () => {
     if (!selectedItem) return;
     const newBatch = {
       id: crypto.randomUUID(),
+      itemId: selectedItem.id,
       itemName: selectedItem.name,
       imageUrl: selectedItem.imageUrl,
       startTime: new Date(),
@@ -136,6 +137,7 @@ const ItemsPage = () => {
           <Batch
             key={batch.id}
             id={batch.id}
+            itemId={batch.itemId}
             itemName={batch.itemName}
             imageUrl={batch.imageUrl}
             startTime={batch.startTime}

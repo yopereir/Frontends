@@ -14,6 +14,7 @@ export type Theme = "light" | "dark" | "system";
 
 export interface BatchData {
   id: string;
+  itemId: string;
   itemName: string;
   imageUrl: string;
   startTime: Date;

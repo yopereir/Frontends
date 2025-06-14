@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { useSession, BatchData } from "../context/SessionContext";
 import QuantityDialog from './QuantityDialog';
+import supabase from "../supabase";
 
-const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_amount }: BatchData) => {
+const Batch = ({ id, itemId, itemName, imageUrl, startTime, holdMinutes, unit, quantity_amount }: BatchData) => {
   const [timeLeft, setTimeLeft] = useState("");
   const [timeColor, setTimeColor] = useState("#3ecf8e");
   const [showDialog, setShowDialog] = useState(false);
   const { batches, setBatches } = useSession();
+  const { session } = useSession();
 
     const handleUpdateQuantity = (newQuantity: number) => {
     const updated = batches.map(batch =>
@@ -16,9 +18,18 @@ const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_
     setShowDialog(false);
   };
 
-  const handleClear = () => {
+  const handleClear = async () => {
     const updated = batches.filter(batch => batch.id !== id);
     setBatches(updated);
+    // Save waste entry
+    const removedBatch = batches.filter(batch => batch.id === id)[0];
+    const { error } = await supabase.from('waste_entries').insert({item_id: removedBatch.itemId, user_id: session?.user.id, quantity: removedBatch.quantity_amount, metadata: {}});
+    if (error) {
+      console.error("Error logging waste entry:", error);
+      alert("Failed to log waste entry. "+error.message);
+    } else {
+      console.log("Waste entry logged successfully");
+    }
   };
 
   useEffect(() => {
@@ -54,7 +65,7 @@ const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_
       <div className="batch-right">
         <div className="batch-subtext">{quantity_amount} {unit}</div>
         <div className="batch-timer" style={{ color: timeColor }}>{timeLeft}</div>
-        <button className="batch-button" onClick={handleClear}>Clear</button>
+        <button className="batch-button" onClick={handleClear}>Done</button>
       </div>
       {showDialog && (
         <QuantityDialog
