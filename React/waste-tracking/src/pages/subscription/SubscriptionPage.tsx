@@ -4,6 +4,21 @@ import { useSession } from "../../context/SessionContext";
 import supabase from "../../supabase";
 import "./SubscriptionPage.css";
 
+function getMonthsRemaining(endDate: string): number {
+  switch (endDate.toLowerCase()) {
+    case "1 month":
+      return 1;
+    case "3 months":
+      return 3;
+    case "6 months":
+      return 6;
+    case "1 year":
+      return 12;
+    default:
+      return 0;
+  }
+}
+
 const SubscriptionPage = () => {
   const { session } = useSession();
   const navigate = useNavigate();
@@ -80,7 +95,7 @@ const SubscriptionPage = () => {
     setSupabaseError("");
 
     if (!validate()) return;
-
+    console.log("Current userid: ", session?.user.id);
     let userId = session?.user.id;
 
     try {
@@ -103,11 +118,16 @@ const SubscriptionPage = () => {
       }
 
       setStatus("Creating subscription...");
+      console.log("Creating subscription for user:", userId);
 
+      // TODO: the below supabase query should ONLY be run on server-side AFTER stripe payment is successful
+      // This is a placeholder for the actual subscription creation logic and will fail due to RLS preventing users to add subscriptions
+      // Users should NOT be able to add or update subscriptions directly on client-side
       const { error: subError } = await supabase.from("subscriptions").insert({
         user_id: userId,
         subscription_type: formValues.subscriptionType,
-        period: formValues.subscriptionPeriod,
+        start_date: new Date().toISOString(),
+        end_date: new Date(new Date().setMonth(new Date().getMonth() + getMonthsRemaining(formValues.subscriptionPeriod))).toISOString(),
         auto_renew: formValues.autoRenew,
       });
 
@@ -205,7 +225,7 @@ const SubscriptionPage = () => {
         </label>
 
         <button type="submit" disabled={isLoading}>
-          {isLoading ? "Submitting..." : "Submit"}
+          {isLoading ? "Submitting..." : "Checkout"}
         </button>
 
         {supabaseError && (
