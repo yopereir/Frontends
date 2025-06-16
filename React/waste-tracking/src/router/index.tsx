@@ -8,7 +8,7 @@ import ItemsPage from "../pages/ItemsPage.tsx";
 import ThankYouPage from "../pages/ThankYouPage.tsx";
 import SettingsPage from "../pages/settings/SettingsPage.tsx";
 import NotFoundPage from "../pages/404Page.tsx";
-import SubscriptionPage from "../pages/SubscriptionPage.tsx";
+import SubscriptionPage from "../pages/subscription/SubscriptionPage.tsx";
 import AuthProtectedRoute from "./AuthProtectedRoute.tsx";
 import Providers from "../Providers.tsx";
 

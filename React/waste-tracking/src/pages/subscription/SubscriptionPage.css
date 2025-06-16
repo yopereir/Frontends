@@ -1,0 +1,124 @@
+/*
+  SubscriptionPage.css
+  Styles for the subscription form, designed to be compatible with index.css.
+*/
+.main-container {
+  justify-content: flex-start; /* Align form elements to the top */
+  overflow-y: auto;          /* Allow scrolling on smaller screens */
+  gap: 0.25rem;                /* Add small, consistent spacing between elements */
+}
+
+
+/* ----- Form Element Styling ----- */
+
+/* Styles for section headings (e.g., "User Details") */
+.main-container h2 {
+  font-size: 1.6em; /* Slightly larger category titles */
+  color: var(--header-color); /* Use header color for titles */
+  margin-bottom: 1.5rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid var(--button-color); /* Accent color for heading underline */
+  text-align: left;
+}
+
+/* Remove top margin from the first heading to reduce excessive space */
+.main-container h2:first-of-type {
+  margin-top: 0.5rem;
+}
+
+/*
+  Styles for <select> dropdowns to match the look of <input> fields
+  from index.css.
+*/
+.main-container select {
+  padding: 1rem;
+  border-radius: 4px;
+  outline: none;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+  background-color: var(--input-bg, #3a3a3a);
+  border: 1px solid #4a4a4a;
+  font-size: 1rem;
+  color: var(--input-color, white);
+  margin-top: 7px;
+  width: 100%;
+  height: 50px; /* Consistent height with inputs */
+  cursor: pointer;
+
+  /* Remove default browser arrow and add a custom SVG arrow */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23cccccc' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1em;
+  padding-right: 3rem; /* Make space for the custom arrow */
+}
+
+/*
+  Styles for the "Auto-Renew" checkbox container.
+  This targets the <label> using its inline style attribute from the TSX file.
+*/
+.main-container label[style*="display: flex"] {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  width: 100%;
+  margin-top: 1rem;
+  color: var(--menu-text);
+  cursor: pointer;
+  font-size: 1rem;
+  /* Override generic button/link styles from index.css that might affect labels */
+  font-weight: normal;
+  text-align: left;
+  padding: 0;
+  background: none;
+  border: none;
+  height: auto;
+  justify-content: flex-start;
+}
+
+/* Styles the checkbox input itself */
+.main-container label[style*="display: flex"] input[type="checkbox"] {
+  /* Reset width/height from generic input styles */
+  width: 1.25em;
+  height: 1.25em;
+  margin: 0;
+  cursor: pointer;
+  /* Uses the theme's button color for the checkmark */
+  accent-color: var(--button-color);
+}
+
+/*
+  Styles for validation error messages.
+  This targets the <p> tags using their inline style attribute from the TSX file.
+*/
+.main-container p[style*="color: red"] {
+  color: var(--error-color);
+  font-size: 0.875rem;
+  margin-top: 4px;
+  margin-bottom: 4px;
+  width: 300px;
+  text-align: left;
+}
+
+/*
+  Styles for the final status message (e.g., "Submitting...").
+  This targets the <p> tag using its inline style attribute from the TSX file.
+*/
+.main-container p[style*="text-align: center"] {
+  text-align: center;
+  margin-top: 1rem;
+  color: var(--menu-text);
+  opacity: 0.8;
+  width: 100%;
+}
+
+/* Add a bit more space above the final submit button for better separation */
+.main-container button[type="submit"] {
+  margin-top: 1.5rem; /* More space above the submit button */
+  width: 100%; /* Allow it to fill the container */
+  display: flex; /* Center text inside the button */
+  justify-content: center;
+  align-items: center;
+}
