@@ -1,0 +1,12 @@
+baseURL = "https://charlotteplumbers.com/"
+languageCode = "en-us"
+title = "Charlotte Plumbing Pros"
+theme = ""
+enableRobotsTXT = true
+
+[params]
+  city = "Charlotte"
+  trade = "Plumbing"
+  phone = "(704) 555-1234"
+  email = "info@charlotteplumbers.com"
+  company = "Charlotte Plumbing Pros"
