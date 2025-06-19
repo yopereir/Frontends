@@ -2,6 +2,7 @@ import { createBrowserRouter } from "react-router-dom";
 import HomePage from "../pages/HomePage.tsx";
 import SignInPage from "../pages/auth/SignInPage.tsx";
 import SignUpPage from "../pages/auth/SignUpPage.tsx";
+import ResetPasswordPage from "../pages/auth/ResetPasswordPage.tsx";
 import ConfirmPage from "../pages/ConfirmPage.tsx";
 import DashboardPage from "../pages/DashboardPage.tsx";
 import ItemsPage from "../pages/ItemsPage.tsx";
@@ -30,6 +31,10 @@ const router = createBrowserRouter([
       {
         path: "/auth/sign-up",
         element: <SignUpPage />,
+      },
+      {
+        path: "/auth/reset-password",
+        element: <ResetPasswordPage />,
       },
       {
         path: "/confirm",
