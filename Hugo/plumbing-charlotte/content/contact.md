@@ -1,15 +1,12 @@
 ---
 title: "Contact Us"
-slug: "contact"
 ---
 
-# Contact Charlotte Plumbing Pros
-
-Fill out the form and we’ll get back to you ASAP.
+Get in touch with our {{ .Site.Params.city }} plumbing team.
 
 <form name="contact" method="POST" data-netlify="true">
-  <input type="text" name="name" placeholder="Your Name" required><br>
-  <input type="email" name="email" placeholder="Your Email" required><br>
-  <textarea name="message" placeholder="Your Message" required></textarea><br>
-  <button type="submit">Send</button>
+  <input type="text" name="name" placeholder="Your Name" required>
+  <input type="email" name="email" placeholder="Email" required>
+  <textarea name="message" placeholder="How can we help?" required></textarea>
+  <button type="submit">Send Message</button>
 </form>

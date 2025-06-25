@@ -1,0 +1,16 @@
+{{ define "main" }}
+  <section>
+    <h2>Top-Rated Plumbing Services in {{ .Site.Params.city }}</h2>
+    <p>Need fast, affordable, and reliable {{ .Site.Params.trade | lower }} help in {{ .Site.Params.city }}?</p>
+    <p>Call {{ .Site.Params.company }} at <strong>{{ .Site.Params.phone }}</strong>.</p>
+    <a href="/contact/">Request a Quote</a>
+  </section>
+  <section>
+    <h3>Latest Articles</h3>
+    <ul>
+      {{ range first 5 (where .Site.RegularPages "Section" "articles") }}
+        <li><a href="{{ .RelPermalink }}">{{ .Title }}</a></li>
+      {{ end }}
+    </ul>
+  </section>
+{{ end }}
