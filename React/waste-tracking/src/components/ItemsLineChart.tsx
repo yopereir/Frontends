@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { format, subHours, subDays, subMonths, subYears } from "date-fns";
+import { format, subHours, subDays, subMonths, subYears, startOfHour, startOfDay, eachHourOfInterval, eachDayOfInterval } from "date-fns";
 import {
   LineChart,
   Line,
@@ -48,16 +48,48 @@ const ItemsLineChart = ({ items }: { items: Item[] }) => {
     setFilteredItems(filtered);
 
     const counts: Record<string, number> = {};
+
+    // Determine the format based on the selected range
+    const dateFormat = range === "1d" ? "yyyy-MM-dd HH:00" : "yyyy-MM-dd";
+
     filtered.forEach((item) => {
-      const day = format(new Date(item.created_at), "yyyy-MM-dd");
-      counts[day] = (counts[day] || 0) + 1;
+      const dateKey = format(new Date(item.created_at), dateFormat);
+      counts[dateKey] = (counts[dateKey] || 0) + 1;
     });
 
-    const dataPoints = Object.entries(counts)
-      .map(([date, count]) => ({ date, count }))
-      .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    let dataPoints: any[] = [];
+    if (range === "1d") {
+      const now = new Date();
+      const startOf24HoursAgo = startOfHour(subHours(now, 24));
+      const endOfNow = startOfHour(now); // This will include the current hour if not exactly 24 hours
+      
+      const hoursInInterval = eachHourOfInterval({
+        start: startOf24HoursAgo,
+        end: endOfNow,
+      });
 
-    setGroupedData(dataPoints);
+      dataPoints = hoursInInterval.map((hour) => {
+        const dateKey = format(hour, "yyyy-MM-dd HH:00");
+        return { date: format(hour, "MMM d, h a"), count: counts[dateKey] || 0 };
+      });
+
+    } else {
+      // For ranges other than "1d", fill in missing days with 0 counts
+      const startOfRange = startOfDay(getStartDate());
+      const endOfToday = startOfDay(new Date());
+
+      const daysInInterval = eachDayOfInterval({
+        start: startOfRange,
+        end: endOfToday,
+      });
+
+      dataPoints = daysInInterval.map((day) => {
+        const dateKey = format(day, "yyyy-MM-dd");
+        return { date: format(day, "MMM d"), count: counts[dateKey] || 0 };
+      });
+    }
+
+    setGroupedData(dataPoints.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
   }, [items, range, selectedNames]);
 
   return (
