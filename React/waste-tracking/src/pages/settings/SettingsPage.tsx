@@ -140,7 +140,7 @@ const SettingsPage = () => {
       case 'unit': ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {[fieldName]: fieldName === 'unit' ? newValue : newValue}}));break;
       case 'holdingtime': ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {"holdMinutes": newValue}}));break;
       case 'imageUrl': ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {[fieldName]: fieldName === 'imageUrl' ? newValue : newValue}}));break;
-      case 'tags': ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {[fieldName]: fieldName === 'tags' ? newValue.toString().split(',') : newValue}}));break;
+      case 'tags': ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {[fieldName]: fieldName === 'tags' ? newValue.toString().toLowerCase().split(',') : newValue}}));break;
       default:
         throw new Error(`Unknown item setting: ${fieldName}`);
     }
