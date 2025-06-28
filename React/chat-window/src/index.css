@@ -1,0 +1,167 @@
+/* index.css */
+:root {
+  /* Global variables */
+  --button-color: #229f65; /* Supabase green */
+  --button-hover-color: #2ebd80; /* Slightly brighter Supabase green for hover */
+  --error-color: #ff4d4d;
+  background-color: #242424;
+}
+
+.chat-widget-container {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1000; /* Ensure it's on top of other content */
+}
+
+.chat-toggle-button {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 60px;
+  height: 60px;
+  font-size: 1.2em;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: background-color 0.3s ease;
+}
+
+.chat-toggle-button:hover {
+  background-color: #0056b3;
+}
+
+.chat-window {
+  width: 350px;
+  height: 450px;
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.chat-header {
+  background-color: #007bff;
+  color: white;
+  padding: 15px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+
+.chat-header h3 {
+  margin: 0;
+  font-size: 1.1em;
+}
+
+.close-chat-button {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.8em;
+  cursor: pointer;
+  line-height: 1; /* Aligns the 'x' better */
+}
+
+.close-chat-button:hover {
+  color: #f0f0f0;
+}
+
+.chat-messages {
+  flex-grow: 1;
+  padding: 15px;
+  overflow-y: auto;
+  background-color: #f9f9f9;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.no-messages {
+  text-align: center;
+  color: #888;
+  font-style: italic;
+  margin-top: 20px;
+}
+
+.message {
+  padding: 8px 12px;
+  border-radius: 15px;
+  max-width: 80%;
+  word-wrap: break-word;
+}
+
+.message.user {
+  align-self: flex-end;
+  background-color: #dcf8c6; /* Light green for user messages */
+}
+
+.message.bot {
+  align-self: flex-start;
+  background-color: #e0e0e0; /* Light gray for bot messages */
+}
+
+/* Styles for text input form */
+.chat-input-form {
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid #ddd;
+  background-color: white;
+}
+
+.chat-input-form input {
+  flex-grow: 1;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-right: 10px;
+  font-size: 1em;
+}
+
+.chat-input-form button {
+  background-color: #28a745; /* Green for send button */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.chat-input-form button:hover {
+  background-color: #218838;
+}
+
+/* --- Styles for Options Button Section --- */
+.chat-options {
+  display: flex;
+  flex-direction: column; /* Stack buttons vertically */
+  gap: 10px; /* Space between buttons */
+  padding: 10px;
+  border-top: 1px solid #ddd;
+  background-color: white;
+}
+
+.chat-option-button {
+  background-color: #6c757d; /* A muted color for options */
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  cursor: pointer;
+  font-size: 1em;
+  text-align: center;
+  transition: background-color 0.3s ease;
+}
+
+.chat-option-button:hover {
+  background-color: #5a6268;
+}
