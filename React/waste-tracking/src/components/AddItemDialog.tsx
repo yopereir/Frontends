@@ -34,6 +34,13 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({ onClose, onItemAdded, res
       return;
     }
 
+    // Validate Holding Time
+    const parsedHoldingTime = parseInt(holdingTime);
+    if (holdingTime !== '' && (isNaN(parsedHoldingTime) || parsedHoldingTime < 0)) {
+      setError("Holding Time must be 0 or a positive number.");
+      return;
+    }
+
     setIsCreating(true);
     setError(null);
 
@@ -45,7 +52,7 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({ onClose, onItemAdded, res
         restaurant_id: restaurantId,
         metadata: {
           unit,
-          holdMinutes: holdingTime,
+          holdMinutes: holdingTime === '' ? null : parsedHoldingTime, // Store as null if empty, otherwise as number
           imageUrl,
           tags: tagsArray,
         },

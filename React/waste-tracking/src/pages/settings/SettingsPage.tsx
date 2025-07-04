@@ -18,7 +18,10 @@ type EditableFieldProps = {
 };
 
 const EditableField: React.FC<EditableFieldProps> = ({ label, initialValue, onSave, fieldType = 'text', fieldId, selectOptions }) => {
-  const [value, setValue] = useState(initialValue);
+  // Ensure initialValue is treated consistently as a string for direct comparison
+  // This helps when initialValue might be a number like 0, and input is "0"
+  const [value, setValue] = useState(String(initialValue));
+  const [currentInitialValue, setCurrentInitialValue] = useState(String(initialValue)); // Keep track of the *current* initial value as a string
   const [isDirty, setIsDirty] = useState(false); // Tracks if the field has been changed
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null); // State to hold save error messages
@@ -28,7 +31,8 @@ const EditableField: React.FC<EditableFieldProps> = ({ label, initialValue, onSa
 
   // Update internal state if initialValue prop changes (e.g., after a parent-led data refresh)
   useEffect(() => {
-    setValue(initialValue);
+    setValue(String(initialValue));
+    setCurrentInitialValue(String(initialValue)); // Update the reference initial value
     setIsDirty(false); // Reset dirty state when initialValue changes
   }, [initialValue]);
 
@@ -47,8 +51,12 @@ const EditableField: React.FC<EditableFieldProps> = ({ label, initialValue, onSa
 
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
-    setValue(event.target.value);
-    setIsDirty(event.target.value !== initialValue);
+    const newValue = event.target.value;
+    setValue(newValue);
+
+    // Compare the new string value with the current string representation of the initial value
+    setIsDirty(newValue !== currentInitialValue);
+
     if (error) { setError(null); } // Clear error when user starts typing
   };
 
@@ -58,9 +66,10 @@ const EditableField: React.FC<EditableFieldProps> = ({ label, initialValue, onSa
     setIsSaving(true);
     setError(null);
     try {
-      await onSave(value);
+      await onSave(value); // onSave expects string | number, value is string, will be parsed later if needed
       setIsDirty(false); // Reset dirty state after successful save
-      // Optionally, you might want to update initialValue here or rely on parent to re-fetch/pass new prop
+      // After a successful save, update currentInitialValue to the new saved value
+      setCurrentInitialValue(value);
     } catch (error: any) {
       console.error("Failed to save setting:", error);
       // Handle error (e.g., show a notification to the user)
@@ -173,7 +182,14 @@ const SettingsPage = () => {
       case 'name': ({ error } = await supabase.from('items').update({name: newValue}).eq('id', itemId));break;
       case 'restaurant_id': ({ error } = await supabase.from('items').update({restaurant_id: newValue}).eq('id', itemId));break
       case 'unit': ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {unit: newValue}}));break;
-      case 'holdingtime': ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {"holdMinutes": newValue}}));break;
+      case 'holdingtime':
+        const newValueString = newValue.toString(); // Ensure we're working with a string
+        const parsedHoldingTime = parseInt(newValueString);
+        if (newValueString !== '' && (isNaN(parsedHoldingTime) || parsedHoldingTime < 0)) {
+          throw new Error("Holding Time must be 0 or a positive number.");
+        }
+        ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {"holdMinutes": newValueString === '' ? null : parsedHoldingTime}}));
+        break;
       case 'imageUrl': ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {imageUrl: newValue}}));break;
       case 'tags': ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {tags: newValue.toString().toLowerCase().split(',').map(tag => tag.trim()).filter(Boolean)}}));break;
       default:
@@ -265,7 +281,8 @@ const SettingsPage = () => {
           itemsData.map((itemData) => ({
             id: itemData.id,
             name: itemData.name,
-            holdMinutes: itemData.metadata.holdMinutes,
+            // Ensure holdMinutes is a string for the initialValue of EditableField
+            holdMinutes: itemData.metadata.holdMinutes !== null ? String(itemData.metadata.holdMinutes) : "",
             restaurant_id: itemData.restaurant_id,
             unit: itemData.metadata.unit,
             imageUrl: itemData.metadata.imageUrl,
