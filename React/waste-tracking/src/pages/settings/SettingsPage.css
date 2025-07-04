@@ -125,3 +125,45 @@
     padding: 0.5em 0.8em;
   }
 }
+
+.delete-button {
+  background-color: var(--delete-button-bg, #dc3545); /* Red color */
+  color: var(--delete-button-text, white);
+  border: none;
+  padding: 8px 12px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 0.9em;
+  margin-top: 10px; /* Space above the button */
+  transition: background-color 0.2s ease;
+  width: auto; /* Allow button to size based on content */
+  align-self: flex-end; /* Align to the right if in a flex container */
+}
+
+.delete-button:hover {
+  background-color: var(--delete-button-hover, #c82333); /* Darker red on hover */
+}
+
+.delete-button:disabled {
+  background-color: var(--delete-button-disabled, #6c757d); /* Gray out when disabled */
+  cursor: not-allowed;
+}
+
+/* You might want to adjust .item-setting or .input-with-button
+   to better accommodate the delete button's layout.
+   For example, if .item-setting is a flex container: */
+.item-setting {
+  display: flex;
+  flex-direction: column; /* Stack children vertically */
+  gap: 10px; /* Space between fields */
+  /* ... other styles ... */
+  padding-bottom: 20px; /* Add some padding at the bottom of each item */
+  border-bottom: 1px solid var(--border-color); /* Separator between items */
+  margin-bottom: 20px; /* Space below each item */
+}
+
+/* Ensure the error message aligns correctly */
+.item-setting p {
+    text-align: center; /* Center the error text if desired */
+    width: 100%; /* Make it take full width */
+}

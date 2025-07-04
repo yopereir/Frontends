@@ -125,6 +125,7 @@ const SettingsPage = () => {
   const [isAddItemDialogOpen, setAddItemDialogOpen] = useState(false);
   const [isAddRestaurantDialogOpen, setAddRestaurantDialogOpen] = useState(false);
   const [activeRestaurantId, setActiveRestaurantId] = useState<string>("");
+  const [itemDeleteErrors, setItemDeleteErrors] = useState<{[key: string]: string | null}>({});
 
   const handleSaveUserSetting = (fieldName: string) => async (newValue: string | number) => {
     console.log(`Attempting to save User Setting - ${fieldName}: ${newValue}`);
@@ -223,6 +224,38 @@ const SettingsPage = () => {
     console.log(`${fieldName} updated successfully.`);
   };
 
+  const handleDeleteItem = async (itemId: string) => {
+    // Clear any previous error for this item
+    setItemDeleteErrors(prev => ({ ...prev, [itemId]: null }));
+
+    if (!session?.user) {
+      setItemDeleteErrors(prev => ({ ...prev, [itemId]: "User not authenticated." }));
+      return;
+    }
+
+    if (!window.confirm("Are you sure you want to delete this item? This action cannot be undone.")) {
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from('items')
+        .delete()
+        .eq('id', itemId);
+
+      if (error) {
+        console.error("Error deleting item:", error.message);
+        setItemDeleteErrors(prev => ({ ...prev, [itemId]: `Failed to delete item: ${error.message}` }));
+      } else {
+        console.log(`Item ${itemId} deleted successfully.`);
+        // Re-fetch settings to update the UI after deletion
+        fetchSettings();
+      }
+    } catch (err: any) {
+      console.error("An unexpected error occurred during deletion:", err);
+      setItemDeleteErrors(prev => ({ ...prev, [itemId]: `An unexpected error occurred: ${err.message || String(err)}` }));
+    }
+  };
 
   // --- Example Initial Values ---
   // In a real app, you'd fetch these from your backend/Supabase when the component mounts.
@@ -426,6 +459,17 @@ const SettingsPage = () => {
                       initialValue={itemData.tags}
                       onSave={handleSaveItemSetting('tags', itemData.id)}
                     />
+                    <button
+                      onClick={() => handleDeleteItem(itemData.id)}
+                      className="delete-button" // Add a class for styling
+                    >
+                      Delete Item
+                    </button>
+                    {itemDeleteErrors[itemData.id] && (
+                      <p style={{ color: "var(--error-color)", marginTop: "0.25rem", textAlign: 'center', width: '100%' }}>
+                        {itemDeleteErrors[itemData.id]}
+                      </p>
+                    )}
                     <h2></h2>
                   </div>
                 ))}
