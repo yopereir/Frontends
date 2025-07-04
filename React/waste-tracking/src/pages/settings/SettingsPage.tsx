@@ -1,9 +1,9 @@
 import { useSession } from "../../context/SessionContext";
 import HeaderBar from "../../components/HeaderBar";
 import React, { useState, useEffect, useCallback } from 'react';
-import supabase from "../../supabase"; // Make sure supabase is imported if you use it in save handlers
+import supabase from "../../supabase";
 import './SettingsPage.css';
-import AddItemDialog from "../../components/AddItemDialog";
+import AddItemDialog, { unitOptions } from "../../components/AddItemDialog";
 import AddRestaurantDialog from "../../components/AddRestaurantDialog";
 import { Link } from "react-router-dom";
 
@@ -12,15 +12,19 @@ type EditableFieldProps = {
   label: string;
   initialValue: string | number;
   onSave: (newValue: string | number) => Promise<void> | void; // Can be async
-  fieldType?: 'text' | 'email' | 'password' | 'number';
+  fieldType?: 'text' | 'email' | 'password' | 'number' | 'select'; // Add 'select' type
   fieldId: string; // For label htmlFor
+  selectOptions?: string[]; // New prop for select options
 };
 
-const EditableField: React.FC<EditableFieldProps> = ({ label, initialValue, onSave, fieldType = 'text', fieldId }) => {
+const EditableField: React.FC<EditableFieldProps> = ({ label, initialValue, onSave, fieldType = 'text', fieldId, selectOptions }) => {
   const [value, setValue] = useState(initialValue);
   const [isDirty, setIsDirty] = useState(false); // Tracks if the field has been changed
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null); // State to hold save error messages
+
+  // Local state for combined select options (unitOptions + initialValue if unique)
+  const [currentSelectOptions, setCurrentSelectOptions] = useState<string[]>([]);
 
   // Update internal state if initialValue prop changes (e.g., after a parent-led data refresh)
   useEffect(() => {
@@ -28,7 +32,21 @@ const EditableField: React.FC<EditableFieldProps> = ({ label, initialValue, onSa
     setIsDirty(false); // Reset dirty state when initialValue changes
   }, [initialValue]);
 
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Effect to manage select options
+  useEffect(() => {
+    if (fieldType === 'select' && selectOptions) {
+      const optionsSet = new Set(selectOptions);
+      // If initialValue is not in the provided selectOptions, add it
+      if (typeof initialValue === 'string' && initialValue && !optionsSet.has(initialValue)) {
+        setCurrentSelectOptions([initialValue, ...selectOptions]); // Add initialValue at the beginning
+      } else {
+        setCurrentSelectOptions(selectOptions);
+      }
+    }
+  }, [fieldType, selectOptions, initialValue]);
+
+
+  const handleChange = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setValue(event.target.value);
     setIsDirty(event.target.value !== initialValue);
     if (error) { setError(null); } // Clear error when user starts typing
@@ -57,13 +75,30 @@ const EditableField: React.FC<EditableFieldProps> = ({ label, initialValue, onSa
       <div className="setting-field">
         <label htmlFor={fieldId}>{label}:</label>
         <div className="input-with-button">
-          <input
-            type={fieldType}
-            id={fieldId}
-            value={value}
-            onChange={handleInputChange}
-            className={isDirty ? 'input-dirty' : ''}
-          />
+          {fieldType === 'select' ? (
+            <select
+              id={fieldId}
+              value={value}
+              onChange={handleChange}
+              className={`unit-select ${isDirty ? 'input-dirty' : ''}`}
+              disabled={isSaving}
+            >
+              {currentSelectOptions.map((option) => (
+                <option key={option} value={option}>
+                  {option}
+                </option>
+              ))}
+            </select>
+          ) : (
+            <input
+              type={fieldType}
+              id={fieldId}
+              value={value}
+              onChange={handleChange}
+              className={isDirty ? 'input-dirty' : ''}
+              disabled={isSaving}
+            />
+          )}
           {isDirty && (
             <button onClick={handleSave} className="save-button" disabled={isSaving}>
               {isSaving ? "Saving..." : "Save"}
@@ -137,10 +172,10 @@ const SettingsPage = () => {
     switch (fieldName) {
       case 'name': ({ error } = await supabase.from('items').update({name: newValue}).eq('id', itemId));break;
       case 'restaurant_id': ({ error } = await supabase.from('items').update({restaurant_id: newValue}).eq('id', itemId));break
-      case 'unit': ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {[fieldName]: fieldName === 'unit' ? newValue : newValue}}));break;
+      case 'unit': ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {unit: newValue}}));break;
       case 'holdingtime': ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {"holdMinutes": newValue}}));break;
-      case 'imageUrl': ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {[fieldName]: fieldName === 'imageUrl' ? newValue : newValue}}));break;
-      case 'tags': ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {[fieldName]: fieldName === 'tags' ? newValue.toString().toLowerCase().split(',') : newValue}}));break;
+      case 'imageUrl': ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {imageUrl: newValue}}));break;
+      case 'tags': ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {tags: newValue.toString().toLowerCase().split(',').map(tag => tag.trim()).filter(Boolean)}}));break;
       default:
         throw new Error(`Unknown item setting: ${fieldName}`);
     }
@@ -213,7 +248,6 @@ const SettingsPage = () => {
       //Fetch restaurant settings
       const { data: restaurantsData } = await supabase.from('restaurants').select('*');
       if (restaurantsData) {
-        setRestaurantsSettings([]); // Reset before adding new data
         setRestaurantsSettings(
           restaurantsData.map((restaurantData) => ({
             id: restaurantData.id,
@@ -227,7 +261,6 @@ const SettingsPage = () => {
       //Fetch item settings
       const { data: itemsData } = await supabase.from('items').select('*');
       if (itemsData) {
-        setItemsSettings([]); // Reset before adding new data
         setItemsSettings(
           itemsData.map((itemData) => ({
             id: itemData.id,
@@ -313,22 +346,22 @@ const SettingsPage = () => {
           <section className="settings-category">
             <h2>Restaurant Settings</h2>
             { restaurantSettings.map((restaurantData, index) => (
-              <div key={index} className="restaurant-setting">
+              <div key={restaurantData.id} className="restaurant-setting"> {/* Use unique ID for key */}
                 <h3>Restaurant {index + 1}</h3>
                 <EditableField
-                  fieldId={`name-${index}`}
+                  fieldId={`name-${restaurantData.id}`}
                   label="Name"
                   initialValue={restaurantData.name}
                   onSave={handleSaveRestaurantSetting('name', restaurantData.id)}
                 />
                 <EditableField
-                  fieldId={`location-${index}`}
+                  fieldId={`location-${restaurantData.id}`}
                   label="Location"
                   initialValue={restaurantData.location}
                   onSave={handleSaveRestaurantSetting('location', restaurantData.id)}
                 />
                 <EditableField
-                  fieldId={`subscription-${index}`}
+                  fieldId={`subscription-${restaurantData.id}`}
                   label="Subscription"
                   initialValue={restaurantData.subscription}
                   onSave={handleSaveRestaurantSetting('subscription', restaurantData.id)}
@@ -337,39 +370,41 @@ const SettingsPage = () => {
                 <h2>Item Settings</h2>
                 { itemSettings.map((itemData, itemIndex) => (
                   itemData.restaurant_id === restaurantData.id &&
-                  <div key={itemIndex} className="item-setting">
+                  <div key={itemData.id} className="item-setting"> {/* Use unique ID for key */}
                     <EditableField
-                      fieldId={`item-name-${itemIndex}`}
+                      fieldId={`item-name-${itemData.id}`}
                       label="Item Name"
                       initialValue={itemData.name}
                       onSave={handleSaveItemSetting('name', itemData.id)}
                     />
                     <EditableField
-                      fieldId={`item-restaurant-${itemIndex}`}
+                      fieldId={`item-restaurant-${itemData.id}`}
                       label="Restaurant ID"
                       initialValue={itemData.restaurant_id}
                       onSave={handleSaveItemSetting('restaurant_id', itemData.id)}
                     />
                     <EditableField
-                      fieldId={`item-unit-${itemIndex}`}
+                      fieldId={`item-unit-${itemData.id}`}
                       label="Unit"
                       initialValue={itemData.unit}
                       onSave={handleSaveItemSetting('unit', itemData.id)}
+                      fieldType="select" // Specify fieldType as 'select'
+                      selectOptions={unitOptions} // Pass the unitOptions to the EditableField
                     />
                     <EditableField
-                      fieldId={`item-holdingtime-${itemIndex}`}
+                      fieldId={`item-holdingtime-${itemData.id}`}
                       label="Holdingtime"
                       initialValue={itemData.holdMinutes}
                       onSave={handleSaveItemSetting('holdingtime', itemData.id)}
                     />
                     <EditableField
-                      fieldId={`item-imageUrl-${itemIndex}`}
+                      fieldId={`item-imageUrl-${itemData.id}`}
                       label="Image URL"
                       initialValue={itemData.imageUrl}
                       onSave={handleSaveItemSetting('imageUrl', itemData.id)}
                     />
                     <EditableField
-                      fieldId={`item-tags-${itemIndex}`}
+                      fieldId={`item-tags-${itemData.id}`}
                       label="Image Tags"
                       initialValue={itemData.tags}
                       onSave={handleSaveItemSetting('tags', itemData.id)}
@@ -377,8 +412,8 @@ const SettingsPage = () => {
                     <h2></h2>
                   </div>
                 ))}
-              <button onClick={() => {setActiveRestaurantId(restaurantData.id);setAddItemDialogOpen(true)}}>Add New Item</button>
-              <h2></h2>
+                <button onClick={() => {setActiveRestaurantId(restaurantData.id);setAddItemDialogOpen(true)}}>Add New Item</button>
+                <h2></h2>
               </div>
             ))}
             <button onClick={() => {setAddRestaurantDialogOpen(true)}}>Add New Restaurant</button>

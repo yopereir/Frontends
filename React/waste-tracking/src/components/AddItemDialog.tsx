@@ -8,9 +8,19 @@ interface AddItemDialogProps {
   restaurantId: string;
 }
 
+// Define the unit options outside the component for reusability
+export const unitOptions: string[] = [
+  'kg/grams',
+  'pounds/ounces',
+  'gallons/quarts',
+  'liters/ml',
+  'pieces',
+  // Add more units as needed
+];
+
 const AddItemDialog: React.FC<AddItemDialogProps> = ({ onClose, onItemAdded, restaurantId }) => {
   const [itemName, setItemName] = useState('');
-  const [unit, setUnit] = useState('');
+  const [unit, setUnit] = useState(unitOptions[0]);
   const [holdingTime, setHoldingTime] = useState('');
   const [imageUrl, setImageUrl] = useState('');
   const [tags, setTags] = useState('');
@@ -63,12 +73,17 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({ onClose, onItemAdded, res
             onChange={(e) => setItemName(e.target.value)}
             placeholder="Item Name (e.g., Sliced Tomatoes)"
           />
-          <input
-            type="text"
+          <select
             value={unit}
             onChange={(e) => setUnit(e.target.value)}
-            placeholder="Unit (e.g., kg, lbs, pieces)"
-          />
+            className="unit-select" // You might want to add some styling
+          >
+            {unitOptions.map((option) => (
+              <option key={option} value={option}>
+                {option}
+              </option>
+            ))}
+          </select>
           <input
             type="text"
             value={holdingTime}
