@@ -34,21 +34,33 @@ const ItemsPage = () => {
     setShowDialog(true);
   };
 
-  const handleQuantitySubmit = (quantity: number) => {
+  const handleQuantitySubmit = (
+    quantity: number | { pounds: number; ounces: number }
+  ) => {
     if (!selectedItem) return;
+
+    const isWeight = ['pounds/ounces'].includes(
+      selectedItem.unit.toLowerCase()
+    );
+
+    const totalQuantity = isWeight && typeof quantity === "object"
+      ? quantity.pounds * 16 + quantity.ounces
+      : Number(quantity);
+
     setBatches((prevBatches) => {
-      const existingBatchIndex = prevBatches.findIndex(batch => batch.itemId === selectedItem.id);
+      const existingBatchIndex = prevBatches.findIndex(
+        (batch) => batch.itemId === selectedItem.id
+      );
 
       if (existingBatchIndex !== -1) {
-        // Update existing batch quantity
         const updatedBatches = [...prevBatches];
         updatedBatches[existingBatchIndex] = {
           ...updatedBatches[existingBatchIndex],
-          quantity_amount: updatedBatches[existingBatchIndex].quantity_amount + quantity
+          quantity_amount:
+            updatedBatches[existingBatchIndex].quantity_amount + totalQuantity,
         };
         return updatedBatches;
       } else {
-        // Create new batch
         const newBatch = {
           id: crypto.randomUUID(),
           itemId: selectedItem.id,
@@ -57,7 +69,7 @@ const ItemsPage = () => {
           startTime: new Date(),
           holdMinutes: selectedItem.holdMinutes,
           unit: selectedItem.unit,
-          quantity_amount: quantity,
+          quantity_amount: totalQuantity,
         };
         return [...prevBatches, newBatch];
       }
@@ -175,6 +187,7 @@ const ItemsPage = () => {
       {showDialog && selectedItem && (
         <QuantityDialog
           initialQuantity={1}
+          unit={selectedItem.unit}
           onClose={() => setShowDialog(false)}
           onSubmit={handleQuantitySubmit}
         />

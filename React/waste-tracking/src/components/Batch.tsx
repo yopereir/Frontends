@@ -10,10 +10,19 @@ const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_
   const { batches, setBatches } = useSession();
   const { session } = useSession();
 
-    const handleUpdateQuantity = (newQuantity: number) => {
+  const handleUpdateQuantity = (
+    newQuantity: number | { pounds: number; ounces: number }
+  ) => {
+    const isWeight = ['pounds/ounces'].includes(unit.toLowerCase());
+
+    const totalQuantity = isWeight && typeof newQuantity === "object"
+      ? newQuantity.pounds * 16 + newQuantity.ounces
+      : Number(newQuantity);
+
     const updated = batches.map(batch =>
-      batch.id === id ? { ...batch, quantity_amount: newQuantity } : batch
+      batch.id === id ? { ...batch, quantity_amount: totalQuantity } : batch
     );
+
     setBatches(updated);
     setShowDialog(false);
   };
@@ -23,7 +32,9 @@ const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_
     setBatches(updated);
     // Save waste entry
     const removedBatch = batches.filter(batch => batch.id === id)[0];
-    const { error } = await supabase.from('waste_entries').insert({item_id: removedBatch.itemId, user_id: session?.user.id, quantity: removedBatch.quantity_amount, metadata: {}});
+    const isWeight = ['pounds/ounces'].includes(unit.toLowerCase());
+    const processedQuantity = isWeight ? removedBatch.quantity_amount / 16 : removedBatch.quantity_amount;
+    const { error } = await supabase.from('waste_entries').insert({item_id: removedBatch.itemId, user_id: session?.user.id, quantity: processedQuantity, metadata: {}});
     if (error) {
       console.error("Error logging waste entry:", error);
       alert("Failed to log waste entry. "+error.message);
@@ -63,13 +74,22 @@ const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_
         <div className="batch-title">{itemName}</div>
       </div>
       <div className="batch-right">
-        <div className="batch-subtext">{quantity_amount} {unit}</div>
+      <div className="batch-subtext">
+        {['pounds/ounces'].includes(unit.toLowerCase())
+          ? (() => {
+              const pounds = Math.floor(quantity_amount / 16);
+              const ounces = quantity_amount % 16;
+              return `${pounds} pound${pounds !== 1 ? 's' : ''} ${ounces} ounce${ounces !== 1 ? 's' : ''}`;
+            })()
+          : `${quantity_amount} ${unit}`}
+      </div>
         {holdMinutes > 0 && (<div className="batch-timer" style={{ color: timeColor }}>{timeLeft}</div>)}
         <button className="batch-button" onClick={handleClear}>Done</button>
       </div>
       {showDialog && (
         <QuantityDialog
           initialQuantity={quantity_amount}
+          unit={unit}
           onClose={() => setShowDialog(false)}
           onSubmit={handleUpdateQuantity}
         />
