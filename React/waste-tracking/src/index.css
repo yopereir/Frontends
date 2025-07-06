@@ -476,3 +476,70 @@ a:hover {
 .dialog-content .unit-select {
   margin-bottom: 0.5rem; /* Add some spacing between form elements in the dialog */
 }
+
+/* --- View Toggle Buttons --- */
+/* --- View Toggle Buttons Container --- */
+.view-toggle-buttons {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  /* Instead of a border on the container, we'll apply it to individual buttons if needed */
+  border-radius: 8px; /* Apply border-radius to the container to get the overall rounded shape */
+  overflow: hidden; /* This is crucial for children (buttons) to respect the parent's border-radius */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1); /* Optional: subtle shadow for depth */
+}
+
+/* --- Individual Toggle Buttons --- */
+.toggle-button {
+  flex: 1; /* Distribute space equally */
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border: 1px solid var(--border-color); /* A consistent border for all buttons */
+  background-color: var(--menu-bg); /* Default background */
+  color: var(--text-color); /* Default text color */
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  white-space: nowrap;
+  /* Remove individual border-radius here, as the parent's overflow: hidden handles it */
+  border-radius: 0;
+}
+
+/* Remove left border for subsequent buttons to create a connected look */
+.toggle-button + .toggle-button {
+  border-left: none;
+}
+
+/* Style for the active (selected) button */
+.toggle-button.active {
+  background-color: var(--button-color); /* The green color you want */
+  color: white; /* Text color for the active button */
+  font-weight: 600;
+  border-color: var(--button-color); /* Make the border color match the background */
+  z-index: 1; /* Bring active button slightly forward to overlap borders if necessary */
+  position: relative; /* Needed for z-index to work */
+}
+
+/* Ensure the first and last buttons have rounded corners, but only on the outside */
+.toggle-button:first-child {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+.toggle-button:last-child {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+/* Adjust for hover state */
+.toggle-button:hover {
+  background-color: var(--hover-bg);
+  color: var(--text-color); /* Keep text color consistent on hover for non-active */
+}
+
+/* Ensure active button hover doesn't change its color */
+.toggle-button.active:hover {
+  background-color: var(--button-color); /* Stays green */
+  color: white; /* Stays white */
+  cursor: default; /* Optional: indicates it's already selected */
+}

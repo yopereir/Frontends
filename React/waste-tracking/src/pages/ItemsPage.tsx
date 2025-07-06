@@ -14,20 +14,33 @@ interface Item {
   tags: string[];
 }
 
+// Assuming you have a Box interface or similar data structure
+interface Box {
+  id: string;
+  name: string;
+  // Add other properties relevant to a box, e.g.,
+  // contents: string[];
+  // quantity: number;
+  // unit: string;
+}
+
 const ItemsPage = () => {
   const { batches, setBatches } = useSession();
   const [now, setNow] = useState(new Date());
-  const [view, setView] = useState<'batches' | 'items'>('batches');
+  // Updated view state to include 'boxes'
+  const [view, setView] = useState<'batches' | 'items' | 'boxes'>('batches');
   const [showDialog, setShowDialog] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [selectedTab, setSelectedTab] = useState<'lunch' | 'breakfast' | null>(null);
   const [items, setItems] = useState<Item[]>([]);
+  // State for boxes
+  const [boxes, setBoxes] = useState<Box[]>([]);
 
   const handleTabClick = (tab: 'lunch' | 'breakfast') => {
     setSelectedTab(prev => (prev === tab ? null : tab));
   };
 
-  const filteredItems = selectedTab ? items.filter(item => item.tags.includes(selectedTab)): items;
+  const filteredItems = selectedTab ? items.filter(item => item.tags.includes(selectedTab)) : items;
 
   const handleAddWithQuantity = (item: Item) => {
     setSelectedItem(item);
@@ -87,25 +100,40 @@ const ItemsPage = () => {
   };
 
   useEffect(() => {
-    const fetchItems = async () => {
-      const { data, error } = await supabase.from('items').select(`*`);
-      console.log("Fetched items:", data, error);
-      if (error || !data) {
-        console.error("Failed to fetch items", error);
-        return;
+    const fetchItemsAndBoxes = async () => {
+      // Fetch Items
+      const { data: itemsData, error: itemsError } = await supabase.from('items').select(`*`);
+      console.log("Fetched items:", itemsData, itemsError);
+      if (itemsError || !itemsData) {
+        console.error("Failed to fetch items", itemsError);
+      } else {
+        const parsedItems: Item[] = itemsData.map((item: any) => ({
+          id: item.id,
+          name: item.name,
+          imageUrl: item.metadata?.imageUrl || "",
+          holdMinutes: item.metadata?.holdMinutes || 0,
+          unit: item.metadata?.unit || "",
+          tags: item.metadata?.tags || [],
+        }));
+        setItems(parsedItems);
       }
 
-      const parsedItems: Item[] = data.map((item: any) => ({
-        id: item.id,
-        name: item.name,
-        imageUrl: item.metadata?.imageUrl || "",
-        holdMinutes: item.metadata?.holdMinutes || 0,
-        unit: item.metadata?.unit || "",
-        tags: item.metadata?.tags || [],  // Assuming tags might come from metadata
-      }));
-      setItems(parsedItems);
+      // Fetch Boxes (assuming a 'boxes' table in Supabase for this example)
+      const { data: boxesData, error: boxesError } = await supabase.from('boxes').select(`*`);
+      console.log("Fetched boxes:", boxesData, boxesError);
+      if (boxesError || !boxesData) {
+        console.error("Failed to fetch boxes", boxesError);
+      } else {
+        // Map your fetched box data to the Box interface
+        const parsedBoxes: Box[] = boxesData.map((box: any) => ({
+          id: box.id,
+          name: box.name,
+          // Map other box properties here
+        }));
+        setBoxes(parsedBoxes);
+      }
     };
-    fetchItems();
+    fetchItemsAndBoxes();
   }, []);
 
   useEffect(() => {
@@ -115,13 +143,9 @@ const ItemsPage = () => {
     return () => clearInterval(interval);
   }, []);
 
-  const toggleView = () => {
-    setView(prev => (prev === 'batches' ? 'items' : 'batches'));
-  };
-
   const itemsContainer = (
     <>
-      <h2 className="header-text">Items</h2>
+      <h2 className="header-text">Restaurant Items</h2>
       <div className="tabs-container">
         <button
           className="tab-button"
@@ -169,27 +193,69 @@ const ItemsPage = () => {
     <h2 className="header-text mt-10">Active Batches</h2>
     <div className="grid-container">
       {batches.map((batch) => (
-          <Batch
-            key={batch.id}
-            id={batch.id}
-            itemId={batch.itemId}
-            itemName={batch.itemName}
-            imageUrl={batch.imageUrl}
-            startTime={batch.startTime}
-            holdMinutes={batch.holdMinutes}
-            unit={batch.unit}
-            quantity_amount={batch.quantity_amount}
-          />
+        <Batch
+          key={batch.id}
+          id={batch.id}
+          itemId={batch.itemId}
+          itemName={batch.itemName}
+          imageUrl={batch.imageUrl}
+          startTime={batch.startTime}
+          holdMinutes={batch.holdMinutes}
+          unit={batch.unit}
+          quantity_amount={batch.quantity_amount}
+        />
       ))}
     </div>
   </>
+
+  // New container for Boxes
+  const boxesContainer = (
+    <>
+      <h2 className="header-text">Open Boxes</h2>
+      <div className="grid-container">
+        {boxes.map((box) => (
+          <div className="batch-card" key={box.id}> {/* Reusing batch-card for styling */}
+            <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+              <h2 className="batch-title">{box.name}</h2>
+              {/* Add other box-specific details here */}
+              <p className="batch-subtext">Box ID: {box.id}</p>
+            </div>
+            <button className="batch-button" onClick={() => console.log(`View box ${box.name}`)}>
+              View Box
+            </button>
+          </div>
+        ))}
+      </div>
+    </>
+  );
 
   return (
     <main>
       <HeaderBar />
       <section className="main-container">
-        <button onClick={toggleView}>{view === 'batches'?'Items':'Batches'}</button>
-        {view === 'batches' ? batchesContainer : itemsContainer}
+        <div className="view-toggle-buttons">
+          <button
+            className={`toggle-button ${view === 'items' ? 'active' : ''}`}
+            onClick={() => setView('items')}
+          >
+            Items
+          </button>
+          <button
+            className={`toggle-button ${view === 'batches' ? 'active' : ''}`}
+            onClick={() => setView('batches')}
+          >
+            Batches
+          </button>
+          <button
+            className={`toggle-button ${view === 'boxes' ? 'active' : ''}`}
+            onClick={() => setView('boxes')}
+          >
+            Boxes
+          </button>
+        </div>
+        {view === 'batches' && batchesContainer}
+        {view === 'items' && itemsContainer}
+        {view === 'boxes' && boxesContainer}
       </section>
       {showDialog && selectedItem && (
         <QuantityDialog
