@@ -4,35 +4,45 @@ interface QuantityDialogProps {
   initialQuantity: number;
   unit: string;
   onClose: () => void;
-  onSubmit: (quantity: number | { pounds: number; ounces: number }) => void;
+  onSubmit: (quantity: number | { pounds: number; ounces: number } | { gallons: number; quarts: number }) => void;
 }
 
 const QuantityDialog = ({ initialQuantity, unit, onClose, onSubmit }: QuantityDialogProps) => {
   const isWeight = unit.toLowerCase() === 'pounds/ounces';
+  const isVolume = unit.toLowerCase() === 'gallons/quarts';
 
   const [quantity, setQuantity] = useState(initialQuantity);
   const [pounds, setPounds] = useState(0);
   const [ounces, setOunces] = useState(0);
+  const [gallons, setGallons] = useState(0);
+  const [quarts, setQuarts] = useState(0);
 
   useEffect(() => {
     if (isWeight) {
       setPounds(Math.floor(initialQuantity / 16));
       setOunces(initialQuantity % 16);
+    } else if (isVolume) {
+      setGallons(Math.floor(initialQuantity / 4));
+      setQuarts(initialQuantity % 4);
     } else {
       setQuantity(initialQuantity);
     }
-  }, [initialQuantity, isWeight]);
+  }, [initialQuantity, isWeight, isVolume]);
 
   const handleSubmit = () => {
     if (isWeight) {
       const totalOunces = pounds * 16 + ounces;
-      if (totalOunces === initialQuantity || totalOunces === 0) {
+      if (totalOunces === 0) {
         onClose();
         return;
       }
       onSubmit({ pounds, ounces });
+    } else if (isVolume) {
+      const totalQuarts = gallons * 4 + quarts;
+      if (totalQuarts === 0) return onClose();
+      onSubmit({ gallons, quarts });
     } else {
-      if (quantity === initialQuantity || quantity === 0) {
+      if (quantity === 0) {
         onClose();
         return;
       }
@@ -63,7 +73,12 @@ const QuantityDialog = ({ initialQuantity, unit, onClose, onSubmit }: QuantityDi
               onChange={(e) => setOunces(Number(e.target.value))}
             />
           </div>
-        ) : (
+        ) : isVolume ? (
+          <div style={{ display: "flex", gap: "1rem" }}>
+            <input type="number" value={gallons} min={0} placeholder="Gallons" onChange={(e) => setGallons(Number(e.target.value))} />
+            <input type="number" value={quarts} min={0} max={3} placeholder="Quarts" onChange={(e) => setQuarts(Number(e.target.value))} />
+          </div>
+          ) : (
           <input
             type="number"
             value={quantity}

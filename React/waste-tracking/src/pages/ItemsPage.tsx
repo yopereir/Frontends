@@ -35,17 +35,24 @@ const ItemsPage = () => {
   };
 
   const handleQuantitySubmit = (
-    quantity: number | { pounds: number; ounces: number }
+    quantity: number | { pounds: number; ounces: number } | { gallons: number; quarts: number }
   ) => {
     if (!selectedItem) return;
 
-    const isWeight = ['pounds/ounces'].includes(
-      selectedItem.unit.toLowerCase()
-    );
+    const isWeight = selectedItem.unit.toLowerCase() === 'pounds/ounces';
+    const isVolume = selectedItem.unit.toLowerCase() === 'gallons/quarts';
 
-    const totalQuantity = isWeight && typeof quantity === "object"
-      ? quantity.pounds * 16 + quantity.ounces
-      : Number(quantity);
+    let totalQuantity = 0;
+
+    if (typeof quantity === "object") {
+      if ("pounds" in quantity && "ounces" in quantity) {
+        totalQuantity = quantity.pounds * 16 + quantity.ounces;
+      } else if ("gallons" in quantity && "quarts" in quantity) {
+        totalQuantity = quantity.gallons * 4 + quantity.quarts;
+      }
+    } else {
+      totalQuantity = Number(quantity);
+    }
 
     setBatches((prevBatches) => {
       const existingBatchIndex = prevBatches.findIndex(

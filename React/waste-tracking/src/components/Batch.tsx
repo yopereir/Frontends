@@ -11,13 +11,18 @@ const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_
   const { session } = useSession();
 
   const handleUpdateQuantity = (
-    newQuantity: number | { pounds: number; ounces: number }
+    newQuantity: number | { pounds?: number; ounces?: number; gallons?: number; quarts?: number }
   ) => {
-    const isWeight = ['pounds/ounces'].includes(unit.toLowerCase());
+    const lowerUnit = unit.toLowerCase();
 
-    const totalQuantity = isWeight && typeof newQuantity === "object"
-      ? newQuantity.pounds * 16 + newQuantity.ounces
-      : Number(newQuantity);
+    let totalQuantity = 0;
+    if (lowerUnit === 'pounds/ounces' && typeof newQuantity === "object") {
+      totalQuantity = (newQuantity.pounds ?? 0) * 16 + (newQuantity.ounces ?? 0);
+    } else if (lowerUnit === 'gallons/quarts' && typeof newQuantity === "object") {
+      totalQuantity = (newQuantity.gallons ?? 0) * 4 + (newQuantity.quarts ?? 0);
+    } else {
+      totalQuantity = Number(newQuantity);
+    }
 
     const updated = batches.map(batch =>
       batch.id === id ? { ...batch, quantity_amount: totalQuantity } : batch
@@ -32,9 +37,19 @@ const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_
     setBatches(updated);
     // Save waste entry
     const removedBatch = batches.filter(batch => batch.id === id)[0];
-    const isWeight = ['pounds/ounces'].includes(unit.toLowerCase());
-    const processedQuantity = isWeight ? removedBatch.quantity_amount / 16 : removedBatch.quantity_amount;
-    const { error } = await supabase.from('waste_entries').insert({item_id: removedBatch.itemId, user_id: session?.user.id, quantity: processedQuantity, metadata: {}});
+    const lowerUnit = unit.toLowerCase();
+    let processedQuantity = quantity_amount;
+    if (lowerUnit === 'pounds/ounces') {
+      processedQuantity = quantity_amount / 16;
+    } else if (lowerUnit === 'gallons/quarts') {
+      processedQuantity = quantity_amount / 4;
+    }
+    const { error } = await supabase.from('waste_entries').insert({
+      item_id: removedBatch.itemId,
+      user_id: session?.user.id,
+      quantity: processedQuantity,
+      metadata: {}
+    });
     if (error) {
       console.error("Error logging waste entry:", error);
       alert("Failed to log waste entry. "+error.message);
@@ -75,13 +90,20 @@ const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_
       </div>
       <div className="batch-right">
       <div className="batch-subtext">
-        {['pounds/ounces'].includes(unit.toLowerCase())
-          ? (() => {
-              const pounds = Math.floor(quantity_amount / 16);
-              const ounces = quantity_amount % 16;
-              return `${pounds} pound${pounds !== 1 ? 's' : ''} ${ounces} ounce${ounces !== 1 ? 's' : ''}`;
-            })()
-          : `${quantity_amount} ${unit}`}
+        {(() => {
+          const lowerUnit = unit.toLowerCase();
+          if (lowerUnit === 'pounds/ounces') {
+            const pounds = Math.floor(quantity_amount / 16);
+            const ounces = quantity_amount % 16;
+            return `${pounds} pound${pounds !== 1 ? 's' : ''} ${ounces} ounce${ounces !== 1 ? 's' : ''}`;
+          } else if (lowerUnit === 'gallons/quarts') {
+            const gallons = Math.floor(quantity_amount / 4);
+            const quarts = quantity_amount % 4;
+            return `${gallons} gallon${gallons !== 1 ? 's' : ''} ${quarts} quart${quarts !== 1 ? 's' : ''}`;
+          } else {
+            return `${quantity_amount} ${unit}`;
+          }
+        })()}
       </div>
         {holdMinutes > 0 && (<div className="batch-timer" style={{ color: timeColor }}>{timeLeft}</div>)}
         <button className="batch-button" onClick={handleClear}>Done</button>
