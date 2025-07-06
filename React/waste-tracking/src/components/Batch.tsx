@@ -64,7 +64,7 @@ const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_
       </div>
       <div className="batch-right">
         <div className="batch-subtext">{quantity_amount} {unit}</div>
-        <div className="batch-timer" style={{ color: timeColor }}>{timeLeft}</div>
+        {holdMinutes > 0 && (<div className="batch-timer" style={{ color: timeColor }}>{timeLeft}</div>)}
         <button className="batch-button" onClick={handleClear}>Done</button>
       </div>
       {showDialog && (

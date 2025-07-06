@@ -135,7 +135,7 @@ const ItemsPage = () => {
                 />
                 <h2 className="batch-title">{item.name}</h2>
               </div>
-              <p className="batch-subtext">Hold time: {item.holdMinutes} min</p>
+              {item.holdMinutes > 0 && (<p className="batch-subtext">Hold time: {item.holdMinutes} min</p>)}
             </div>
             <button className="batch-button" onClick={() => handleAddWithQuantity(item)}>
               Add Batch
