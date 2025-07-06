@@ -36,17 +36,33 @@ const ItemsPage = () => {
 
   const handleQuantitySubmit = (quantity: number) => {
     if (!selectedItem) return;
-    const newBatch = {
-      id: crypto.randomUUID(),
-      itemId: selectedItem.id,
-      itemName: selectedItem.name,
-      imageUrl: selectedItem.imageUrl,
-      startTime: new Date(),
-      holdMinutes: selectedItem.holdMinutes,
-      unit: selectedItem.unit,
-      quantity_amount: quantity,
-    };
-    setBatches((prev) => [...prev, newBatch]);
+    setBatches((prevBatches) => {
+      const existingBatchIndex = prevBatches.findIndex(batch => batch.itemId === selectedItem.id);
+
+      if (existingBatchIndex !== -1) {
+        // Update existing batch quantity
+        const updatedBatches = [...prevBatches];
+        updatedBatches[existingBatchIndex] = {
+          ...updatedBatches[existingBatchIndex],
+          quantity_amount: updatedBatches[existingBatchIndex].quantity_amount + quantity
+        };
+        return updatedBatches;
+      } else {
+        // Create new batch
+        const newBatch = {
+          id: crypto.randomUUID(),
+          itemId: selectedItem.id,
+          itemName: selectedItem.name,
+          imageUrl: selectedItem.imageUrl,
+          startTime: new Date(),
+          holdMinutes: selectedItem.holdMinutes,
+          unit: selectedItem.unit,
+          quantity_amount: quantity,
+        };
+        return [...prevBatches, newBatch];
+      }
+    });
+
     setShowDialog(false);
     setSelectedItem(null);
   };
