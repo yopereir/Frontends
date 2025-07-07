@@ -14,27 +14,14 @@ interface Item {
   tags: string[];
 }
 
-// Assuming you have a Box interface or similar data structure
-interface Box {
-  id: string;
-  name: string;
-  // Add other properties relevant to a box, e.g.,
-  // contents: string[];
-  // quantity: number;
-  // unit: string;
-}
-
 const ItemsPage = () => {
   const { batches, setBatches } = useSession();
   const [now, setNow] = useState(new Date());
-  // Updated view state to include 'boxes'
-  const [view, setView] = useState<'batches' | 'items' | 'boxes'>('batches');
+  const [view, setView] = useState<'batches' | 'items'>('batches');
   const [showDialog, setShowDialog] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [selectedTab, setSelectedTab] = useState<'lunch' | 'breakfast' | null>(null);
   const [items, setItems] = useState<Item[]>([]);
-  // State for boxes
-  const [boxes, setBoxes] = useState<Box[]>([]);
 
   const handleTabClick = (tab: 'lunch' | 'breakfast') => {
     setSelectedTab(prev => (prev === tab ? null : tab));
@@ -100,7 +87,7 @@ const ItemsPage = () => {
   };
 
   useEffect(() => {
-    const fetchItemsAndBoxes = async () => {
+    const fetchItems = async () => {
       // Fetch Items
       const { data: itemsData, error: itemsError } = await supabase.from('items').select(`*`);
       console.log("Fetched items:", itemsData, itemsError);
@@ -117,23 +104,8 @@ const ItemsPage = () => {
         }));
         setItems(parsedItems);
       }
-
-      // Fetch Boxes (assuming a 'boxes' table in Supabase for this example)
-      const { data: boxesData, error: boxesError } = await supabase.from('boxes').select(`*`);
-      console.log("Fetched boxes:", boxesData, boxesError);
-      if (boxesError || !boxesData) {
-        console.error("Failed to fetch boxes", boxesError);
-      } else {
-        // Map your fetched box data to the Box interface
-        const parsedBoxes: Box[] = boxesData.map((box: any) => ({
-          id: box.id,
-          name: box.name,
-          // Map other box properties here
-        }));
-        setBoxes(parsedBoxes);
-      }
     };
-    fetchItemsAndBoxes();
+    fetchItems();
   }, []);
 
   useEffect(() => {
@@ -208,27 +180,6 @@ const ItemsPage = () => {
     </div>
   </>
 
-  // New container for Boxes
-  const boxesContainer = (
-    <>
-      <h2 className="header-text">Open Boxes</h2>
-      <div className="grid-container">
-        {boxes.map((box) => (
-          <div className="batch-card" key={box.id}> {/* Reusing batch-card for styling */}
-            <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
-              <h2 className="batch-title">{box.name}</h2>
-              {/* Add other box-specific details here */}
-              <p className="batch-subtext">Box ID: {box.id}</p>
-            </div>
-            <button className="batch-button" onClick={() => console.log(`View box ${box.name}`)}>
-              View Box
-            </button>
-          </div>
-        ))}
-      </div>
-    </>
-  );
-
   return (
     <main>
       <HeaderBar />
@@ -246,16 +197,9 @@ const ItemsPage = () => {
           >
             Batches
           </button>
-          <button
-            className={`toggle-button ${view === 'boxes' ? 'active' : ''}`}
-            onClick={() => setView('boxes')}
-          >
-            Boxes
-          </button>
         </div>
         {view === 'batches' && batchesContainer}
         {view === 'items' && itemsContainer}
-        {view === 'boxes' && boxesContainer}
       </section>
       {showDialog && selectedItem && (
         <QuantityDialog
