@@ -69,6 +69,7 @@ const BoxContentDialog = ({
                       borderRadius: '4px',
                       padding: '5px 10px',
                       cursor: 'pointer',
+                      maxWidth: '30%',
                     }}
                   >
                     Remove
