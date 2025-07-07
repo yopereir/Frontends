@@ -3,14 +3,16 @@ import { useSession } from "../context/SessionContext";
 import HeaderBar from "../components/HeaderBar";
 import Batch from "../components/Batch";
 import QuantityDialog from "../components/QuantityDialog";
+import BoxNameDialog from "../components/BoxNameDialog"; // Import the new dialog
 import supabase from "../supabase";
 
 // Define the Box component directly in this file for simplicity
 interface BoxProps {
   id: string;
+  name: string; // Add name property for the Box component
 }
 
-const Box = ({ id }: BoxProps) => (
+const Box = ({ id, name }: BoxProps) => (
   <button
     className="box-component-button"
     style={{
@@ -29,7 +31,8 @@ const Box = ({ id }: BoxProps) => (
       color: 'var(--text-color)',
     }}
   >
-    <span>Box {id.substring(0, 4)}</span> {/* Display a short ID */}
+    {/* Removed SVG here, just keeping the text as per your Box component in the prompt */}
+    <span>{name}</span> {/* Display the box name */}
   </button>
 );
 
@@ -46,14 +49,20 @@ const ItemsPage = () => {
   const { batches, setBatches } = useSession();
   const [now, setNow] = useState(new Date());
   const [view, setView] = useState<'batches' | 'items'>('batches');
-  const [showDialog, setShowDialog] = useState(false);
+  const [showQuantityDialog, setShowQuantityDialog] = useState(false); // Renamed for clarity
+  const [showBoxNameDialog, setShowBoxNameDialog] = useState(false); // New state for box name dialog
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [selectedTab, setSelectedTab] = useState<'lunch' | 'breakfast' | null>(null);
   const [items, setItems] = useState<Item[]>([]);
-  const [boxes, setBoxes] = useState<{ id: string }[]>([]); // State for boxes
+  const [boxes, setBoxes] = useState<{ id: string; name: string }[]>([]); // Updated state for boxes to include name
 
-  const handleAddBox = () => {
-    setBoxes(prevBoxes => [...prevBoxes, { id: crypto.randomUUID() }]);
+  const handleAddBoxClick = () => {
+    setShowBoxNameDialog(true);
+  };
+
+  const handleBoxNameSubmit = (boxName: string) => {
+    setBoxes(prevBoxes => [...prevBoxes, { id: crypto.randomUUID(), name: boxName }]);
+    setShowBoxNameDialog(false);
   };
 
   const handleTabClick = (tab: 'lunch' | 'breakfast') => {
@@ -64,7 +73,7 @@ const ItemsPage = () => {
 
   const handleAddWithQuantity = (item: Item) => {
     setSelectedItem(item);
-    setShowDialog(true);
+    setShowQuantityDialog(true); // Use the new dialog state
   };
 
   const handleQuantitySubmit = (
@@ -111,7 +120,7 @@ const ItemsPage = () => {
       }
     });
 
-    setShowDialog(false);
+    setShowQuantityDialog(false); // Use the new dialog state
     setSelectedItem(null);
   };
 
@@ -212,22 +221,22 @@ const ItemsPage = () => {
       {/* Right column: 30% width, min-height, and button at bottom */}
       <div style={{
         width: '30%',
-        minHeight: '50vh', // Minimum height of 1/3rd viewport height
+        minHeight: '50vh',
         display: 'flex',
         flexDirection: 'column',
-        justifyContent: 'space-between', // Distributes space, pushing button to end
+        justifyContent: 'space-between',
         marginTop: "0",
       }}>
         <div> {/* Wrapper for the header and boxes, to keep them together at the top */}
             <h2 className="header-text">Open boxes</h2>
             {/* Render existing Box components */}
             {boxes.map(box => (
-                <Box key={box.id} id={box.id} />
+                <Box key={box.id} id={box.id} name={box.name} />
             ))}
         </div>
         {/* Button to add a new box, always at the bottom */}
         <button
-            onClick={handleAddBox}
+            onClick={handleAddBoxClick} // Changed to open the new dialog
             style={{
                 backgroundColor: 'var(--button-color)',
                 color: 'white',
@@ -237,8 +246,7 @@ const ItemsPage = () => {
                 cursor: 'pointer',
                 fontSize: '1rem',
                 fontWeight: 'bold',
-                width: '100%', // Make button full width of its column
-                // No marginTop: 'auto' needed here because of 'justifyContent: space-between' on parent
+                width: '100%',
             }}
         >
             Create New Box
@@ -268,12 +276,18 @@ const ItemsPage = () => {
         {view === 'batches' && batchesContainer}
         {view === 'items' && itemsContainer}
       </section>
-      {showDialog && selectedItem && (
+      {showQuantityDialog && selectedItem && ( // Render QuantityDialog based on new state
         <QuantityDialog
           initialQuantity={1}
           unit={selectedItem.unit}
-          onClose={() => setShowDialog(false)}
+          onClose={() => setShowQuantityDialog(false)}
           onSubmit={handleQuantitySubmit}
+        />
+      )}
+      {showBoxNameDialog && ( // Render BoxNameDialog based on its state
+        <BoxNameDialog
+          onClose={() => setShowBoxNameDialog(false)}
+          onSubmit={handleBoxNameSubmit}
         />
       )}
     </main>
