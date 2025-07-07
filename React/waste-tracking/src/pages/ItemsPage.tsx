@@ -3,38 +3,76 @@ import { useSession } from "../context/SessionContext";
 import HeaderBar from "../components/HeaderBar";
 import Batch from "../components/Batch";
 import QuantityDialog from "../components/QuantityDialog";
-import BoxNameDialog from "../components/BoxNameDialog"; // Import the new dialog
+import BoxNameDialog from "../components/BoxNameDialog";
+import BoxContentDialog from "../components/BoxContentDialog"; // Import the new BoxContentDialog
 import supabase from "../supabase";
 
-// Define the Box component directly in this file for simplicity
-interface BoxProps {
+// Extend the Batch interface for consistent typing in Box
+interface BatchInBox {
   id: string;
-  name: string; // Add name property for the Box component
+  itemId: string;
+  itemName: string;
+  imageUrl: string;
+  startTime: Date;
+  holdMinutes: number;
+  unit: string;
+  quantity_amount: number;
 }
 
-const Box = ({ id, name }: BoxProps) => (
-  <button
-    className="box-component-button"
-    style={{
-      background: 'none',
-      border: '2px solid var(--button-color)',
-      borderRadius: '8px',
-      padding: '10px',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      cursor: 'pointer',
-      height: '10vh',
-      width: '100%', // Take full width of its container
-      marginBottom: '10px', // Space between multiple boxes
-      color: 'var(--text-color)',
-    }}
-  >
-    {/* Removed SVG here, just keeping the text as per your Box component in the prompt */}
-    <span>{name}</span> {/* Display the box name */}
-  </button>
-);
+// Define the Box component with its own batches
+interface BoxProps {
+  id: string;
+  name: string;
+  batches: BatchInBox[]; // Box still holds a list of batches, but doesn't display them directly
+  onDropBatch: (batchId: string, targetBoxId: string) => void;
+  onBoxClick: (boxId: string) => void; // New prop to handle click on the box
+}
+
+const Box = ({ id, name, batches, onDropBatch, onBoxClick }: BoxProps) => {
+  const handleDragOver = (e: React.DragEvent<HTMLButtonElement>) => {
+    e.preventDefault(); // Essential to allow dropping
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    const batchId = e.dataTransfer.getData("batchId");
+    if (batchId) {
+      onDropBatch(batchId, id); // Pass batchId and the target box's ID
+    }
+  };
+
+  return (
+    <button
+      className="box-component-button"
+      style={{
+        background: 'none',
+        border: '2px solid var(--button-color)',
+        borderRadius: '8px',
+        padding: '10px',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center', // Keep center for display
+        cursor: 'pointer',
+        minHeight: '10vh',
+        width: '100%',
+        marginBottom: '10px',
+        color: 'var(--text-color)',
+        position: 'relative',
+      }}
+      onDragOver={handleDragOver}
+      onDrop={handleDrop}
+      onClick={() => onBoxClick(id)} // Handle click to open dialog
+    >
+      <h4 style={{ margin: '0', color: 'var(--menu-text)' }}>{name}</h4> {/* Display box name */}
+      {/* No direct display of batches here anymore */}
+      {batches.length > 0 && (
+        <p style={{ fontSize: '0.8em', color: 'gray', marginTop: '5px' }}>({batches.length} item{batches.length !== 1 ? 's' : ''})</p>
+      )}
+    </button>
+  );
+};
+
 
 interface Item {
   id: string;
@@ -49,19 +87,23 @@ const ItemsPage = () => {
   const { batches, setBatches } = useSession();
   const [now, setNow] = useState(new Date());
   const [view, setView] = useState<'batches' | 'items'>('batches');
-  const [showQuantityDialog, setShowQuantityDialog] = useState(false); // Renamed for clarity
-  const [showBoxNameDialog, setShowBoxNameDialog] = useState(false); // New state for box name dialog
+  const [showQuantityDialog, setShowQuantityDialog] = useState(false);
+  const [showBoxNameDialog, setShowBoxNameDialog] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [selectedTab, setSelectedTab] = useState<'lunch' | 'breakfast' | null>(null);
   const [items, setItems] = useState<Item[]>([]);
-  const [boxes, setBoxes] = useState<{ id: string; name: string }[]>([]); // Updated state for boxes to include name
+  // Box state now includes an array of batches
+  const [boxes, setBoxes] = useState<{ id: string; name: string; batches: BatchInBox[] }[]>([]);
+  // State for the BoxContentDialog
+  const [showBoxContentDialog, setShowBoxContentDialog] = useState(false);
+  const [selectedBoxForContent, setSelectedBoxForContent] = useState<{ id: string; name: string; batches: BatchInBox[] } | null>(null);
 
   const handleAddBoxClick = () => {
     setShowBoxNameDialog(true);
   };
 
   const handleBoxNameSubmit = (boxName: string) => {
-    setBoxes(prevBoxes => [...prevBoxes, { id: crypto.randomUUID(), name: boxName }]);
+    setBoxes(prevBoxes => [...prevBoxes, { id: crypto.randomUUID(), name: boxName, batches: [] }]);
     setShowBoxNameDialog(false);
   };
 
@@ -73,7 +115,7 @@ const ItemsPage = () => {
 
   const handleAddWithQuantity = (item: Item) => {
     setSelectedItem(item);
-    setShowQuantityDialog(true); // Use the new dialog state
+    setShowQuantityDialog(true);
   };
 
   const handleQuantitySubmit = (
@@ -86,7 +128,7 @@ const ItemsPage = () => {
       if ("pounds" in quantity && "ounces" in quantity) {
         totalQuantity = quantity.pounds * 16 + quantity.ounces;
       } else if ("gallons" in quantity && "quarts" in quantity) {
-        totalQuantity = quantity.gallons * 4 + quantity.quarts;
+        totalQuantity = quantity.gallons * 4 + quarts;
       }
     } else {
       totalQuantity = Number(quantity);
@@ -120,9 +162,56 @@ const ItemsPage = () => {
       }
     });
 
-    setShowQuantityDialog(false); // Use the new dialog state
+    setShowQuantityDialog(false);
     setSelectedItem(null);
   };
+
+  // DRAG AND DROP HANDLERS
+  const handleDragStart = (e: React.DragEvent<HTMLDivElement>, batchId: string) => {
+    e.dataTransfer.setData("batchId", batchId);
+  };
+
+  const handleDropBatch = (batchId: string, targetBoxId: string) => {
+    const droppedBatch = batches.find(batch => batch.id === batchId);
+
+    if (!droppedBatch) {
+      console.warn("Dropped batch not found:", batchId);
+      return;
+    }
+
+    setBoxes(prevBoxes => prevBoxes.map(box => {
+      if (box.id === targetBoxId) {
+        return {
+          ...box,
+          batches: [...box.batches, droppedBatch]
+        };
+      }
+      return box;
+    }));
+
+    setBatches(prevBatches => prevBatches.filter(batch => batch.id !== batchId));
+  };
+
+  // BOX CONTENT DIALOG HANDLERS
+  const handleBoxClick = (boxId: string) => {
+    const box = boxes.find(b => b.id === boxId);
+    if (box) {
+      setSelectedBoxForContent(box);
+      setShowBoxContentDialog(true);
+    }
+  };
+
+  const handleCloseBoxDialog = () => {
+    setShowBoxContentDialog(false);
+    setSelectedBoxForContent(null);
+  };
+
+  const handleCloseBoxAndRemove = (boxId: string) => {
+    setBoxes(prevBoxes => prevBoxes.filter(box => box.id !== boxId));
+    setShowBoxContentDialog(false);
+    setSelectedBoxForContent(null);
+  };
+
 
   useEffect(() => {
     const fetchItems = async () => {
@@ -204,17 +293,23 @@ const ItemsPage = () => {
         <h2 className="header-text mt-10">Active Batches</h2>
         <div className="grid-container">
           {batches.map((batch) => (
-            <Batch
+            <div
               key={batch.id}
-              id={batch.id}
-              itemId={batch.itemId}
-              itemName={batch.itemName}
-              imageUrl={batch.imageUrl}
-              startTime={batch.startTime}
-              holdMinutes={batch.holdMinutes}
-              unit={batch.unit}
-              quantity_amount={batch.quantity_amount}
-            />
+              draggable="true"
+              onDragStart={(e) => handleDragStart(e, batch.id)}
+              style={{ width: '100%' }}
+            >
+              <Batch
+                id={batch.id}
+                itemId={batch.itemId}
+                itemName={batch.itemName}
+                imageUrl={batch.imageUrl}
+                startTime={batch.startTime}
+                holdMinutes={batch.holdMinutes}
+                unit={batch.unit}
+                quantity_amount={batch.quantity_amount}
+              />
+            </div>
           ))}
         </div>
       </div>
@@ -231,12 +326,19 @@ const ItemsPage = () => {
             <h2 className="header-text">Open boxes</h2>
             {/* Render existing Box components */}
             {boxes.map(box => (
-                <Box key={box.id} id={box.id} name={box.name} />
+                <Box
+                    key={box.id}
+                    id={box.id}
+                    name={box.name}
+                    batches={box.batches}
+                    onDropBatch={handleDropBatch}
+                    onBoxClick={handleBoxClick} // Pass the click handler
+                />
             ))}
         </div>
         {/* Button to add a new box, always at the bottom */}
         <button
-            onClick={handleAddBoxClick} // Changed to open the new dialog
+            onClick={handleAddBoxClick}
             style={{
                 backgroundColor: 'var(--button-color)',
                 color: 'white',
@@ -276,7 +378,7 @@ const ItemsPage = () => {
         {view === 'batches' && batchesContainer}
         {view === 'items' && itemsContainer}
       </section>
-      {showQuantityDialog && selectedItem && ( // Render QuantityDialog based on new state
+      {showQuantityDialog && selectedItem && (
         <QuantityDialog
           initialQuantity={1}
           unit={selectedItem.unit}
@@ -284,10 +386,20 @@ const ItemsPage = () => {
           onSubmit={handleQuantitySubmit}
         />
       )}
-      {showBoxNameDialog && ( // Render BoxNameDialog based on its state
+      {showBoxNameDialog && (
         <BoxNameDialog
           onClose={() => setShowBoxNameDialog(false)}
           onSubmit={handleBoxNameSubmit}
+        />
+      )}
+      {/* Render BoxContentDialog */}
+      {showBoxContentDialog && selectedBoxForContent && (
+        <BoxContentDialog
+          boxId={selectedBoxForContent.id}
+          boxName={selectedBoxForContent.name}
+          batches={selectedBoxForContent.batches}
+          onCloseDialog={handleCloseBoxDialog} // 'Back' button
+          onCloseBox={handleCloseBoxAndRemove} // 'Close Box' button
         />
       )}
     </main>
