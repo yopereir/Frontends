@@ -5,6 +5,34 @@ import Batch from "../components/Batch";
 import QuantityDialog from "../components/QuantityDialog";
 import supabase from "../supabase";
 
+// Define the Box component directly in this file for simplicity
+interface BoxProps {
+  id: string;
+}
+
+const Box = ({ id }: BoxProps) => (
+  <button
+    className="box-component-button"
+    style={{
+      background: 'none',
+      border: '2px solid var(--button-color)',
+      borderRadius: '8px',
+      padding: '10px',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      justifyContent: 'center',
+      cursor: 'pointer',
+      height: '10vh',
+      width: '100%', // Take full width of its container
+      marginBottom: '10px', // Space between multiple boxes
+      color: 'var(--text-color)',
+    }}
+  >
+    <span>Box {id.substring(0, 4)}</span> {/* Display a short ID */}
+  </button>
+);
+
 interface Item {
   id: string;
   name: string;
@@ -22,6 +50,11 @@ const ItemsPage = () => {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [selectedTab, setSelectedTab] = useState<'lunch' | 'breakfast' | null>(null);
   const [items, setItems] = useState<Item[]>([]);
+  const [boxes, setBoxes] = useState<{ id: string }[]>([]); // State for boxes
+
+  const handleAddBox = () => {
+    setBoxes(prevBoxes => [...prevBoxes, { id: crypto.randomUUID() }]);
+  };
 
   const handleTabClick = (tab: 'lunch' | 'breakfast') => {
     setSelectedTab(prev => (prev === tab ? null : tab));
@@ -39,11 +72,7 @@ const ItemsPage = () => {
   ) => {
     if (!selectedItem) return;
 
-    const isWeight = selectedItem.unit.toLowerCase() === 'pounds/ounces';
-    const isVolume = selectedItem.unit.toLowerCase() === 'gallons/quarts';
-
     let totalQuantity = 0;
-
     if (typeof quantity === "object") {
       if ("pounds" in quantity && "ounces" in quantity) {
         totalQuantity = quantity.pounds * 16 + quantity.ounces;
@@ -88,7 +117,6 @@ const ItemsPage = () => {
 
   useEffect(() => {
     const fetchItems = async () => {
-      // Fetch Items
       const { data: itemsData, error: itemsError } = await supabase.from('items').select(`*`);
       console.log("Fetched items:", itemsData, itemsError);
       if (itemsError || !itemsData) {
@@ -161,24 +189,63 @@ const ItemsPage = () => {
     </>
   );
 
-  const batchesContainer = <>
-    <h2 className="header-text mt-10">Active Batches</h2>
-    <div className="grid-container">
-      {batches.map((batch) => (
-        <Batch
-          key={batch.id}
-          id={batch.id}
-          itemId={batch.itemId}
-          itemName={batch.itemName}
-          imageUrl={batch.imageUrl}
-          startTime={batch.startTime}
-          holdMinutes={batch.holdMinutes}
-          unit={batch.unit}
-          quantity_amount={batch.quantity_amount}
-        />
-      ))}
+  const batchesContainer = (
+    <div style={{ display: 'flex', gap: '20px', alignItems: 'flex-start' }}> {/* Flex container for the two columns */}
+      <div style={{ flex: '1' }}> {/* Left column takes remaining width */}
+        <h2 className="header-text mt-10">Active Batches</h2>
+        <div className="grid-container">
+          {batches.map((batch) => (
+            <Batch
+              key={batch.id}
+              id={batch.id}
+              itemId={batch.itemId}
+              itemName={batch.itemName}
+              imageUrl={batch.imageUrl}
+              startTime={batch.startTime}
+              holdMinutes={batch.holdMinutes}
+              unit={batch.unit}
+              quantity_amount={batch.quantity_amount}
+            />
+          ))}
+        </div>
+      </div>
+      {/* Right column: 30% width, min-height, and button at bottom */}
+      <div style={{
+        width: '30%',
+        minHeight: '50vh', // Minimum height of 1/3rd viewport height
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'space-between', // Distributes space, pushing button to end
+        marginTop: "0",
+      }}>
+        <div> {/* Wrapper for the header and boxes, to keep them together at the top */}
+            <h2 className="header-text">Open boxes</h2>
+            {/* Render existing Box components */}
+            {boxes.map(box => (
+                <Box key={box.id} id={box.id} />
+            ))}
+        </div>
+        {/* Button to add a new box, always at the bottom */}
+        <button
+            onClick={handleAddBox}
+            style={{
+                backgroundColor: 'var(--button-color)',
+                color: 'white',
+                padding: '15px 20px',
+                borderRadius: '8px',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '1rem',
+                fontWeight: 'bold',
+                width: '100%', // Make button full width of its column
+                // No marginTop: 'auto' needed here because of 'justifyContent: space-between' on parent
+            }}
+        >
+            Create New Box
+        </button>
+      </div>
     </div>
-  </>
+  );
 
   return (
     <main>
