@@ -256,7 +256,7 @@ const ItemsPage = () => {
     return true; // Successfully moved
   };
 
-  // NEW: Handler to close a box and log its batches as waste
+  // Handler to close a box and log its batches as waste
   const handleCloseBoxAndLogWaste = async (boxId: string, boxName: string, batchesInBox: BatchData[]) => {
     if (!session?.user?.id) {
       console.error("User not authenticated for logging waste.");
@@ -264,19 +264,24 @@ const ItemsPage = () => {
       return;
     }
 
-    // --- Step 1: Insert the box into the public.boxes table ---
-    const { error: boxInsertError } = await supabase.from('boxes').insert({
-      name: boxName,
-      user_id: session.user.id,
-    });
+    // --- Step 1: Insert the box into the public.boxes table and get its generated ID ---
+    const { data: newBoxData, error: boxInsertError } = await supabase
+      .from('boxes')
+      .insert({
+        name: boxName,
+        user_id: session.user.id,
+      })
+      .select('id'); // Request the 'id' of the newly inserted row
 
-    if (boxInsertError) {
+    if (boxInsertError || !newBoxData || newBoxData.length === 0) {
       console.error("Error inserting box into Supabase:", boxInsertError);
-      setCloseBoxSupabaseError(`Failed to save box: ${boxInsertError.message}`);
-      return; // Stop here, do not remove box or close dialog
+      setCloseBoxSupabaseError(`Failed to save box: ${boxInsertError?.message || "Unknown error"}`);
+      return; // Stop here, do not proceed with waste logging or UI updates
     }
 
-    // --- Step 2: Log waste entries for batches in the box ---
+    const newSupabaseBoxId = newBoxData[0].id; // Get the generated ID from Supabase
+
+    // --- Step 2: Log waste entries for batches in the box using the newSupabaseBoxId ---
     const wasteEntries = batchesInBox.map(batch => {
       let processedQuantity = batch.quantity_amount;
       const lowerUnit = batch.unit.toLowerCase();
@@ -295,8 +300,7 @@ const ItemsPage = () => {
           itemName: batch.itemName,
           unit: batch.unit,
           originalQuantity: batch.quantity_amount,
-          closedFromBox: boxId,
-          boxName: boxName, // Use the passed boxName
+          boxId: newSupabaseBoxId, // Store the Supabase-generated box ID
         }
       };
     });
@@ -305,10 +309,8 @@ const ItemsPage = () => {
       const { error: wasteInsertError } = await supabase.from('waste_entries').insert(wasteEntries);
       if (wasteInsertError) {
         console.error("Error logging waste entries:", wasteInsertError);
-        // Note: If waste logging fails after box insertion, the box is still inserted.
-        // This scenario might need more complex error handling if rollback is desired.
-        // For now, we'll proceed with closing the box from UI, but alert the user.
-        alert("Failed to log all waste entries, but box was saved. " + wasteInsertError.message);
+        // Alert the user that waste logging failed, but the box was saved.
+        alert("Failed to log all waste entries, but the box was successfully saved. " + wasteInsertError.message);
       } else {
         console.log("Waste entries logged successfully");
       }

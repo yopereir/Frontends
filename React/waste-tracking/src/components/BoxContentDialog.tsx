@@ -63,7 +63,7 @@ const BoxContentDialog = ({
                   <button
                     onClick={() => onRemoveBatchFromBox(boxId, batch.id)}
                     style={{
-                      backgroundColor: 'gray',
+                      backgroundColor: 'var(--error-color)',
                       color: 'white',
                       border: 'none',
                       borderRadius: '4px',
@@ -85,7 +85,7 @@ const BoxContentDialog = ({
             </p>
           )}
           <div style={{ display: 'flex', width: '100%', gap: '10px' }}>
-            <button onClick={onCloseDialog} style={{ background: 'gray', flex: 1 }}>
+            <button onClick={onCloseDialog} style={{ background: 'var(--error-color)', flex: 1 }}>
               Close
             </button>
             <button onClick={handleCloseBox} style={{ flex: 1 }}>Close Box & Log Waste</button>

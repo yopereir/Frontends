@@ -59,7 +59,7 @@ const BoxNameDialog = ({ onClose, onSubmit }: BoxNameDialogProps) => {
 
         <div className="dialog-actions">
           <button onClick={handleSubmit}>Create</button>
-          <button onClick={onClose} style={{ background: 'gray' }}>Cancel</button>
+          <button onClick={onClose} style={{ background: 'var(--error-color)' }}>Cancel</button>
         </div>
       </div>
     </div>
