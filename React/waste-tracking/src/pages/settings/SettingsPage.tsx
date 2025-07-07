@@ -418,7 +418,7 @@ const SettingsPage = () => {
                 />
                 <h2></h2>
                 <h2>Item Settings</h2>
-                { itemSettings.map((itemData, itemIndex) => (
+                { itemSettings.map((itemData) => (
                   itemData.restaurant_id === restaurantData.id &&
                   <div key={itemData.id} className="item-setting"> {/* Use unique ID for key */}
                     <EditableField
