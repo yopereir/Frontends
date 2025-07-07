@@ -246,7 +246,7 @@ const ItemsPage = () => {
 
   const batchesContainer = (
     <div className="batches-column">
-      <h2 className="header-text mt-10">Active Batches</h2>
+      <h2 className="header-text">Active Batches</h2>
       <div className="grid-container scrollable-container">
         {batches.length > 0 ? (
           batches.map((batch) => (
