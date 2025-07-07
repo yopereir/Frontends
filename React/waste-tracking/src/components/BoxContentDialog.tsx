@@ -8,7 +8,8 @@ interface BoxContentDialogProps {
   onCloseDialog: () => void; // For closing the dialog without removing the box
   onRemoveBatchFromBox: (boxId: string, batchId: string) => void; // To remove individual batches
   // New prop to handle closing the box and logging its contents as waste
-  onCloseBoxAndLogWaste: (boxId: string, batchesInBox: BatchData[]) => void;
+  onCloseBoxAndLogWaste: (boxId: string, boxName: string, batchesInBox: BatchData[]) => void;
+  closeBoxError: string | null; // New prop to display Supabase error
 }
 
 const BoxContentDialog = ({
@@ -18,10 +19,11 @@ const BoxContentDialog = ({
   onCloseDialog,
   onRemoveBatchFromBox,
   onCloseBoxAndLogWaste,
+  closeBoxError, // Destructure the new prop
 }: BoxContentDialogProps) => {
   const handleCloseBox = () => {
     // Call the new prop to handle logging waste and then removing the box
-    onCloseBoxAndLogWaste(boxId, batches);
+    onCloseBoxAndLogWaste(boxId, boxName, batches);
   };
 
   return (
@@ -30,7 +32,7 @@ const BoxContentDialog = ({
         <h3 style={{ color: "var(--menu-text)" }}>Contents of {boxName}</h3>
         <div style={{ maxHeight: '300px', overflowY: 'auto', marginBottom: '15px', width: '100%' }}>
           {batches.length === 0 ? (
-            <p>No items in this box yet.</p>
+            <p style={{color: "var(--menu-text)"}}>No items in this box yet.</p>
           ) : (
             <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
               {batches.map((batch) => (
@@ -61,7 +63,7 @@ const BoxContentDialog = ({
                   <button
                     onClick={() => onRemoveBatchFromBox(boxId, batch.id)}
                     style={{
-                      backgroundColor: 'var(--error-color)',
+                      backgroundColor: 'gray',
                       color: 'white',
                       border: 'none',
                       borderRadius: '4px',
@@ -76,11 +78,18 @@ const BoxContentDialog = ({
             </ul>
           )}
         </div>
-        <div className="dialog-actions">
-          <button onClick={onCloseDialog} style={{ background: 'var(--error-color)' }}>
-            Back
-          </button>
-          <button onClick={handleCloseBox}>Close Box & Log Waste</button> {/* Modified button */}
+        <div className="dialog-actions" style={{ flexDirection: 'column' }}> {/* Added flex-direction column for error message */}
+          {closeBoxError && (
+            <p style={{ color: 'var(--error-color)', fontSize: '0.85em', marginBottom: '10px' }}>
+              {closeBoxError}
+            </p>
+          )}
+          <div style={{ display: 'flex', width: '100%', gap: '10px' }}>
+            <button onClick={onCloseDialog} style={{ background: 'gray', flex: 1 }}>
+              Close
+            </button>
+            <button onClick={handleCloseBox} style={{ flex: 1 }}>Close Box & Log Waste</button>
+          </div>
         </div>
       </div>
     </div>

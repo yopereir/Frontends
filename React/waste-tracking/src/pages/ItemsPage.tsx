@@ -84,6 +84,8 @@ const ItemsPage = () => {
   // BoxContentDialog states (local to ItemsPage as they manage UI visibility)
   const [showBoxContentDialog, setShowBoxContentDialog] = useState(false);
   const [selectedBoxForContent, setSelectedBoxForContent] = useState<BoxData | null>(null);
+  // New state for handling Supabase insertion errors when closing a box
+  const [closeBoxSupabaseError, setCloseBoxSupabaseError] = useState<string | null>(null);
 
   const handleAddBoxClick = () => {
     setShowBoxNameDialog(true);
@@ -184,6 +186,7 @@ const ItemsPage = () => {
     const box = boxes.find(b => b.id === boxId);
     if (box) {
       setSelectedBoxForContent(box);
+      setCloseBoxSupabaseError(null); // Reset error when opening a new box dialog
       setShowBoxContentDialog(true);
     }
   };
@@ -191,6 +194,7 @@ const ItemsPage = () => {
   const handleCloseBoxDialog = () => {
     setShowBoxContentDialog(false);
     setSelectedBoxForContent(null);
+    setCloseBoxSupabaseError(null); // Clear error on dialog close
   };
 
   const handleRemoveBatchFromBox = (boxId: string, batchIdToRemove: string) => {
@@ -253,20 +257,33 @@ const ItemsPage = () => {
   };
 
   // NEW: Handler to close a box and log its batches as waste
-  const handleCloseBoxAndLogWaste = async (boxId: string, batchesInBox: BatchData[]) => {
+  const handleCloseBoxAndLogWaste = async (boxId: string, boxName: string, batchesInBox: BatchData[]) => {
     if (!session?.user?.id) {
       console.error("User not authenticated for logging waste.");
       alert("You must be logged in to log waste entries.");
       return;
     }
 
+    // --- Step 1: Insert the box into the public.boxes table ---
+    const { error: boxInsertError } = await supabase.from('boxes').insert({
+      name: boxName,
+      user_id: session.user.id,
+    });
+
+    if (boxInsertError) {
+      console.error("Error inserting box into Supabase:", boxInsertError);
+      setCloseBoxSupabaseError(`Failed to save box: ${boxInsertError.message}`);
+      return; // Stop here, do not remove box or close dialog
+    }
+
+    // --- Step 2: Log waste entries for batches in the box ---
     const wasteEntries = batchesInBox.map(batch => {
       let processedQuantity = batch.quantity_amount;
       const lowerUnit = batch.unit.toLowerCase();
       if (lowerUnit === 'pounds/ounces') {
-        processedQuantity = batch.quantity_amount / 16; // Convert to pounds
+        processedQuantity = batch.quantity_amount / 16; // Convert to pounds for waste logging
       } else if (lowerUnit === 'gallons/quarts') {
-        processedQuantity = batch.quantity_amount / 4; // Convert to gallons
+        processedQuantity = batch.quantity_amount / 4; // Convert to gallons for waste logging
       }
 
       return {
@@ -279,26 +296,29 @@ const ItemsPage = () => {
           unit: batch.unit,
           originalQuantity: batch.quantity_amount,
           closedFromBox: boxId,
-          boxName: boxes.find(b => b.id === boxId)?.name,
+          boxName: boxName, // Use the passed boxName
         }
       };
     });
 
     if (wasteEntries.length > 0) {
-      const { error } = await supabase.from('waste_entries').insert(wasteEntries);
-      if (error) {
-        console.error("Error logging waste entries:", error);
-        alert("Failed to log waste entries. " + error.message);
+      const { error: wasteInsertError } = await supabase.from('waste_entries').insert(wasteEntries);
+      if (wasteInsertError) {
+        console.error("Error logging waste entries:", wasteInsertError);
+        // Note: If waste logging fails after box insertion, the box is still inserted.
+        // This scenario might need more complex error handling if rollback is desired.
+        // For now, we'll proceed with closing the box from UI, but alert the user.
+        alert("Failed to log all waste entries, but box was saved. " + wasteInsertError.message);
       } else {
         console.log("Waste entries logged successfully");
       }
     }
 
-    // Remove the box from the state after logging waste
+    // --- Step 3: Remove the box from the state and close dialog (only if box insertion was successful) ---
     setBoxes(prevBoxes => prevBoxes.filter(box => box.id !== boxId));
-    // Close the dialog
     setShowBoxContentDialog(false);
     setSelectedBoxForContent(null);
+    setCloseBoxSupabaseError(null); // Clear error after successful operation
   };
 
 
@@ -491,6 +511,7 @@ const ItemsPage = () => {
           onCloseDialog={handleCloseBoxDialog}
           onRemoveBatchFromBox={handleRemoveBatchFromBox}
           onCloseBoxAndLogWaste={handleCloseBoxAndLogWaste} // Pass the new handler
+          closeBoxError={closeBoxSupabaseError} // Pass the error state
         />
       )}
     </main>
