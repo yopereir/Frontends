@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
-import { useSession } from "../context/SessionContext";
+import { useSession } from "../context/SessionContext"; // Assuming session provides user.id
 import HeaderBar from "../components/HeaderBar";
 import Batch from "../components/Batch";
 import QuantityDialog from "../components/QuantityDialog";
+import CreateBoxDialog from "../components/CreateBoxDialog"; // New component
+import BoxDetailsDialog from "../components/BoxDetailsDialog"; // New component
 import supabase from "../supabase";
 
 interface Item {
@@ -14,14 +16,25 @@ interface Item {
   tags: string[];
 }
 
+// Updated Box interface to match your provided schema
+interface Box {
+  id: string;
+  created_at: string; // ISO string
+  name: string | null;
+  user_id: string | null; // Changed from restaurant_id to user_id
+}
+
 const ItemsPage = () => {
-  const { batches, setBatches } = useSession();
-  const [now, setNow] = useState(new Date());
+  const { batches, setBatches, session } = useSession(); // Get session to access user.id
+  const [now, setNow] = useState(new Date()); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [view, setView] = useState<'batches' | 'items'>('batches');
-  const [showDialog, setShowDialog] = useState(false);
+  const [showDialog, setShowDialog] = useState(false); // For QuantityDialog
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [selectedTab, setSelectedTab] = useState<'lunch' | 'breakfast' | null>(null);
   const [items, setItems] = useState<Item[]>([]);
+  const [boxes, setBoxes] = useState<Box[]>([]); // State for boxes
+  const [showCreateBoxDialog, setShowCreateBoxDialog] = useState(false); // For CreateBoxDialog
+  const [selectedBox, setSelectedBox] = useState<Box | null>(null); // For BoxDetailsDialog
 
   const handleTabClick = (tab: 'lunch' | 'breakfast') => {
     setSelectedTab(prev => (prev === tab ? null : tab));
@@ -39,11 +52,8 @@ const ItemsPage = () => {
   ) => {
     if (!selectedItem) return;
 
-    const isWeight = selectedItem.unit.toLowerCase() === 'pounds/ounces';
-    const isVolume = selectedItem.unit.toLowerCase() === 'gallons/quarts';
-
+    // Determine total quantity based on unit type
     let totalQuantity = 0;
-
     if (typeof quantity === "object") {
       if ("pounds" in quantity && "ounces" in quantity) {
         totalQuantity = quantity.pounds * 16 + quantity.ounces;
@@ -60,6 +70,7 @@ const ItemsPage = () => {
       );
 
       if (existingBatchIndex !== -1) {
+        // Update existing batch
         const updatedBatches = [...prevBatches];
         updatedBatches[existingBatchIndex] = {
           ...updatedBatches[existingBatchIndex],
@@ -68,6 +79,7 @@ const ItemsPage = () => {
         };
         return updatedBatches;
       } else {
+        // Create new batch
         const newBatch = {
           id: crypto.randomUUID(),
           itemId: selectedItem.id,
@@ -86,8 +98,54 @@ const ItemsPage = () => {
     setSelectedItem(null);
   };
 
+  // Function to create a new box
+  const handleCreateBox = async (boxName: string) => {
+    if (!boxName.trim()) {
+      alert("Box name cannot be empty.");
+      return;
+    }
+
+    // Get the current user's ID from the session
+    const currentUserId = session?.user?.id;
+
+    if (!currentUserId) {
+      alert("You must be logged in to create a box.");
+      console.error("User ID not available from session.");
+      return;
+    }
+
+    try {
+      const { data, error } = await supabase
+        .from('boxes')
+        .insert({
+          name: boxName,
+          user_id: currentUserId // Use the current user's ID
+        })
+        .select(); // Use .select() to get the newly inserted row
+
+      if (error) {
+        throw error;
+      }
+
+      if (data && data.length > 0) {
+        setBoxes(prevBoxes => [...prevBoxes, data[0]]); // Add the new box to state
+        console.log("Box created successfully:", data[0]);
+      }
+    } catch (error: any) {
+      console.error("Error creating box:", error.message);
+      alert("Failed to create box: " + error.message);
+    } finally {
+      setShowCreateBoxDialog(false);
+    }
+  };
+
+  // Function to handle clicking on a box to show details
+  const handleBoxClick = (box: Box) => {
+    setSelectedBox(box);
+  };
+
   useEffect(() => {
-    const fetchItems = async () => {
+    const fetchItemsAndBoxes = async () => {
       // Fetch Items
       const { data: itemsData, error: itemsError } = await supabase.from('items').select(`*`);
       console.log("Fetched items:", itemsData, itemsError);
@@ -104,9 +162,34 @@ const ItemsPage = () => {
         }));
         setItems(parsedItems);
       }
+
+      // Fetch Boxes - Filter by current user_id
+      const currentUserId = session?.user?.id;
+      if (currentUserId) { // Only fetch boxes if user is logged in
+        const { data: boxesData, error: boxesError } = await supabase
+          .from('boxes')
+          .select(`*`)
+          .eq('user_id', currentUserId); // Filter boxes by the current user's ID
+
+        console.log("Fetched boxes:", boxesData, boxesError);
+        if (boxesError || !boxesData) {
+          console.error("Failed to fetch boxes", boxesError);
+        } else {
+          // Map fetched box data to the Box interface
+          const parsedBoxes: Box[] = boxesData.map((box: any) => ({
+            id: box.id,
+            created_at: box.created_at,
+            name: box.name,
+            user_id: box.user_id, // Map user_id
+          }));
+          setBoxes(parsedBoxes);
+        }
+      } else {
+        setBoxes([]); // Clear boxes if no user is logged in
+      }
     };
-    fetchItems();
-  }, []);
+    fetchItemsAndBoxes();
+  }, [session]); // Add session to dependency array so it re-fetches when session changes
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -161,24 +244,67 @@ const ItemsPage = () => {
     </>
   );
 
-  const batchesContainer = <>
-    <h2 className="header-text mt-10">Active Batches</h2>
-    <div className="grid-container">
-      {batches.map((batch) => (
-        <Batch
-          key={batch.id}
-          id={batch.id}
-          itemId={batch.itemId}
-          itemName={batch.itemName}
-          imageUrl={batch.imageUrl}
-          startTime={batch.startTime}
-          holdMinutes={batch.holdMinutes}
-          unit={batch.unit}
-          quantity_amount={batch.quantity_amount}
-        />
-      ))}
+  const batchesContainer = (
+    <div className="batches-column">
+      <h2 className="header-text mt-10">Active Batches</h2>
+      <div className="grid-container scrollable-container">
+        {batches.length > 0 ? (
+          batches.map((batch) => (
+            <Batch
+              key={batch.id}
+              id={batch.id}
+              itemId={batch.itemId}
+              itemName={batch.itemName}
+              imageUrl={batch.imageUrl}
+              startTime={batch.startTime}
+              holdMinutes={batch.holdMinutes}
+              unit={batch.unit}
+              quantity_amount={batch.quantity_amount}
+            />
+          ))
+        ) : (
+          <p className="no-items-message">No active batches. Add an item to create a batch.</p>
+        )}
+      </div>
     </div>
-  </>
+  );
+
+  const boxesContainer = (
+    <div className="boxes-column">
+      <h2 className="header-text">Open Boxes</h2>
+      <div className="grid-container scrollable-container">
+        {boxes.length > 0 ? (
+          boxes.map((box) => (
+            <div className="box-card" key={box.id} onClick={() => handleBoxClick(box)}>
+              <div className="box-card-content">
+                {/* SVG for an open box */}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="40"
+                  height="40"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#FF69B4" /* Pink color for boxes as in image */
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="box-icon"
+                >
+                  <path d="M21 8V5c0-.6-.4-1-1-1H4c-.6 0-1 .4-1 1v3m18 0v8c0 .6-.4 1-1 1H4c-.6 0-1-.4-1-1v-8m18 0H3m14 4h-5" />
+                </svg>
+                <h2 className="box-title">{box.name}</h2>
+              </div>
+            </div>
+          ))
+        ) : (
+          <p className="no-items-message">No open boxes. Create a new box to get started.</p>
+        )}
+      </div>
+      <button className="create-box-button" onClick={() => setShowCreateBoxDialog(true)}>
+        Create New Box
+      </button>
+    </div>
+  );
 
   return (
     <main>
@@ -195,10 +321,15 @@ const ItemsPage = () => {
             className={`toggle-button ${view === 'batches' ? 'active' : ''}`}
             onClick={() => setView('batches')}
           >
-            Batches
+            Batches & Boxes
           </button>
         </div>
-        {view === 'batches' && batchesContainer}
+        {view === 'batches' && (
+          <div className="two-column-layout">
+            {batchesContainer}
+            {boxesContainer}
+          </div>
+        )}
         {view === 'items' && itemsContainer}
       </section>
       {showDialog && selectedItem && (
@@ -207,6 +338,18 @@ const ItemsPage = () => {
           unit={selectedItem.unit}
           onClose={() => setShowDialog(false)}
           onSubmit={handleQuantitySubmit}
+        />
+      )}
+      {showCreateBoxDialog && (
+        <CreateBoxDialog
+          onClose={() => setShowCreateBoxDialog(false)}
+          onSubmit={handleCreateBox}
+        />
+      )}
+      {selectedBox && (
+        <BoxDetailsDialog
+          box={selectedBox}
+          onClose={() => setSelectedBox(null)}
         />
       )}
     </main>
