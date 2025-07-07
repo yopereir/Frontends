@@ -9,7 +9,7 @@ interface BatchProps extends BatchData {
   onMoveToBox: (batch: BatchData) => boolean; // Function to attempt moving batch to box, returns success status
 }
 
-const Batch = ({ id, itemId, itemName, imageUrl, startTime, holdMinutes, unit, quantity_amount, onMoveToBox }: BatchProps) => {
+const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_amount, onMoveToBox }: BatchProps) => {
   const [timeLeft, setTimeLeft] = useState("");
   const [timeColor, setTimeColor] = useState("#3ecf8e");
   const [showDialog, setShowDialog] = useState(false);
