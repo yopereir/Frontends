@@ -1,32 +1,20 @@
 // === ItemsPage.tsx ===
 import { useEffect, useState } from "react";
-import { useSession } from "../context/SessionContext"; // Ensure this import is correct
+import { useSession, BatchData, BoxData } from "../context/SessionContext";
 import HeaderBar from "../components/HeaderBar";
 import Batch from "../components/Batch";
 import QuantityDialog from "../components/QuantityDialog";
 import BoxNameDialog from "../components/BoxNameDialog";
-import BoxContentDialog from "../components/BoxContentDialog";
+import BoxContentDialog from "../components/BoxContentDialog"; // Make sure this is imported
 import supabase from "../supabase";
 
-// Extend the Batch interface for consistent typing in Box
-interface BatchInBox {
-  id: string;
-  itemId: string;
-  itemName: string;
-  imageUrl: string;
-  startTime: Date;
-  holdMinutes: number;
-  unit: string;
-  quantity_amount: number;
-}
-
-// Define the Box component with its own batches
+// The Box component's props should reflect BoxData from SessionContext
 interface BoxProps {
   id: string;
   name: string;
-  batches: BatchInBox[]; // Box still holds a list of batches, but doesn't display them directly
+  batches: BatchData[]; // A box contains a list of batches
   onDropBatch: (batchId: string, targetBoxId: string) => void;
-  onBoxClick: (boxId: string) => void; // New prop to handle click on the box
+  onBoxClick: (boxId: string) => void;
 }
 
 const Box = ({ id, name, batches, onDropBatch, onBoxClick }: BoxProps) => {
@@ -53,7 +41,7 @@ const Box = ({ id, name, batches, onDropBatch, onBoxClick }: BoxProps) => {
         display: 'flex',
         flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center', // Keep center for display
+        justifyContent: 'center',
         cursor: 'pointer',
         minHeight: '10vh',
         width: '100%',
@@ -63,10 +51,9 @@ const Box = ({ id, name, batches, onDropBatch, onBoxClick }: BoxProps) => {
       }}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
-      onClick={() => onBoxClick(id)} // Handle click to open dialog
+      onClick={() => onBoxClick(id)}
     >
-      <h4 style={{ margin: '0', color: 'var(--menu-text)' }}>{name}</h4> {/* Display box name */}
-      {/* No direct display of batches here anymore */}
+      <h4 style={{ margin: '0', color: 'var(--menu-text)' }}>{name}</h4>
       {batches.length > 0 && (
         <p style={{ fontSize: '0.8em', color: 'gray', marginTop: '5px' }}>({batches.length} item{batches.length !== 1 ? 's' : ''})</p>
       )}
@@ -85,8 +72,7 @@ interface Item {
 }
 
 const ItemsPage = () => {
-  // Use batches and setBatches from SessionContext
-  const { batches, setBatches, boxes, setBoxes } = useSession(); // Destructure boxes and setBoxes from useSession as well
+  const { batches, setBatches, boxes, setBoxes, session } = useSession(); // Use boxes and setBoxes from context, also session
   const [now, setNow] = useState(new Date());
   const [view, setView] = useState<'batches' | 'items'>('batches');
   const [showQuantityDialog, setShowQuantityDialog] = useState(false);
@@ -95,16 +81,16 @@ const ItemsPage = () => {
   const [selectedTab, setSelectedTab] = useState<'lunch' | 'breakfast' | null>(null);
   const [items, setItems] = useState<Item[]>([]);
   
-  // State for the BoxContentDialog, still local as it's UI-specific
+  // BoxContentDialog states (local to ItemsPage as they manage UI visibility)
   const [showBoxContentDialog, setShowBoxContentDialog] = useState(false);
-  const [selectedBoxForContent, setSelectedBoxForContent] = useState<{ id: string; name: string; batches: BatchInBox[] } | null>(null);
+  const [selectedBoxForContent, setSelectedBoxForContent] = useState<BoxData | null>(null);
 
   const handleAddBoxClick = () => {
     setShowBoxNameDialog(true);
   };
 
   const handleBoxNameSubmit = (boxName: string) => {
-    setBoxes(prevBoxes => [...prevBoxes, { id: crypto.randomUUID(), name: boxName, batches: [] }]);
+    setBoxes(prevBoxes => [...prevBoxes, { id: crypto.randomUUID(), name: boxName, batches: [] }]); // Initialize with empty batches
     setShowBoxNameDialog(false);
   };
 
@@ -180,7 +166,6 @@ const ItemsPage = () => {
       return;
     }
 
-    // Update boxes state via context
     setBoxes(prevBoxes => prevBoxes.map(box => {
       if (box.id === targetBoxId) {
         return {
@@ -191,7 +176,6 @@ const ItemsPage = () => {
       return box;
     }));
 
-    // Update batches state via context
     setBatches(prevBatches => prevBatches.filter(batch => batch.id !== batchId));
   };
 
@@ -209,26 +193,17 @@ const ItemsPage = () => {
     setSelectedBoxForContent(null);
   };
 
-  const handleCloseBoxAndRemove = (boxId: string) => {
-    // Remove the box from the global boxes state via context
-    setBoxes(prevBoxes => prevBoxes.filter(box => box.id !== boxId));
-    setShowBoxContentDialog(false);
-    setSelectedBoxForContent(null);
-  };
-
-  // Handler to remove a specific batch from a box and add it back to active batches
   const handleRemoveBatchFromBox = (boxId: string, batchIdToRemove: string) => {
-    let removedBatch: BatchInBox | undefined;
+    let removedBatch: BatchData | undefined;
 
-    // 1. Remove the batch from the specific box within the global boxes state
     setBoxes(prevBoxes => prevBoxes.map(box => {
       if (box.id === boxId) {
         const updatedBatchesInBox = box.batches.filter(batch => {
             if (batch.id === batchIdToRemove) {
-                removedBatch = batch; // Capture the batch being removed
-                return false; // Exclude this batch
+                removedBatch = batch;
+                return false;
             }
-            return true; // Keep other batches
+            return true;
         });
         return {
           ...box,
@@ -238,12 +213,10 @@ const ItemsPage = () => {
       return box;
     }));
 
-    // 2. Add the removed batch back to the main batches list if it was found
     if (removedBatch) {
-        setBatches(prevBatches => [...prevBatches, removedBatch!]); // Add it back to batches via context
+        setBatches(prevBatches => [...prevBatches, removedBatch!]);
     }
 
-    // 3. Update the selectedBoxForContent to immediately reflect the change in the dialog
     setSelectedBoxForContent(prev => {
         if (prev && prev.id === boxId) {
             return {
@@ -253,6 +226,79 @@ const ItemsPage = () => {
         }
         return prev;
     });
+  };
+
+  // Handler for moving a batch to the first available box
+  const handleMoveBatchToFirstBox = (batchToMove: BatchData): boolean => {
+    if (boxes.length === 0) {
+      return false; // No boxes to move to
+    }
+
+    const firstBox = boxes[0];
+
+    // Add the batch to the first box's batches list
+    setBoxes(prevBoxes => prevBoxes.map(box => {
+      if (box.id === firstBox.id) {
+        return {
+          ...box,
+          batches: [...box.batches, batchToMove]
+        };
+      }
+      return box;
+    }));
+
+    // Remove the batch from the main batches list
+    setBatches(prevBatches => prevBatches.filter(batch => batch.id !== batchToMove.id));
+    return true; // Successfully moved
+  };
+
+  // NEW: Handler to close a box and log its batches as waste
+  const handleCloseBoxAndLogWaste = async (boxId: string, batchesInBox: BatchData[]) => {
+    if (!session?.user?.id) {
+      console.error("User not authenticated for logging waste.");
+      alert("You must be logged in to log waste entries.");
+      return;
+    }
+
+    const wasteEntries = batchesInBox.map(batch => {
+      let processedQuantity = batch.quantity_amount;
+      const lowerUnit = batch.unit.toLowerCase();
+      if (lowerUnit === 'pounds/ounces') {
+        processedQuantity = batch.quantity_amount / 16; // Convert to pounds
+      } else if (lowerUnit === 'gallons/quarts') {
+        processedQuantity = batch.quantity_amount / 4; // Convert to gallons
+      }
+
+      return {
+        item_id: batch.itemId,
+        user_id: session.user.id,
+        quantity: processedQuantity,
+        metadata: {
+          batchId: batch.id,
+          itemName: batch.itemName,
+          unit: batch.unit,
+          originalQuantity: batch.quantity_amount,
+          closedFromBox: boxId,
+          boxName: boxes.find(b => b.id === boxId)?.name,
+        }
+      };
+    });
+
+    if (wasteEntries.length > 0) {
+      const { error } = await supabase.from('waste_entries').insert(wasteEntries);
+      if (error) {
+        console.error("Error logging waste entries:", error);
+        alert("Failed to log waste entries. " + error.message);
+      } else {
+        console.log("Waste entries logged successfully");
+      }
+    }
+
+    // Remove the box from the state after logging waste
+    setBoxes(prevBoxes => prevBoxes.filter(box => box.id !== boxId));
+    // Close the dialog
+    setShowBoxContentDialog(false);
+    setSelectedBoxForContent(null);
   };
 
 
@@ -351,6 +397,7 @@ const ItemsPage = () => {
                 holdMinutes={batch.holdMinutes}
                 unit={batch.unit}
                 quantity_amount={batch.quantity_amount}
+                onMoveToBox={handleMoveBatchToFirstBox} // Pass the new handler
               />
             </div>
           ))}
@@ -442,8 +489,8 @@ const ItemsPage = () => {
           boxName={selectedBoxForContent.name}
           batches={selectedBoxForContent.batches}
           onCloseDialog={handleCloseBoxDialog}
-          onCloseBox={handleCloseBoxAndRemove}
           onRemoveBatchFromBox={handleRemoveBatchFromBox}
+          onCloseBoxAndLogWaste={handleCloseBoxAndLogWaste} // Pass the new handler
         />
       )}
     </main>

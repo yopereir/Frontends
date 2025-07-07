@@ -1,14 +1,20 @@
+// === Batch.tsx ===
 import { useEffect, useState } from "react";
-import { useSession, BatchData } from "../context/SessionContext";
+import { useSession, BatchData } from "../context/SessionContext"; // Ensure BatchData is imported
 import QuantityDialog from './QuantityDialog';
-import supabase from "../supabase";
+// supabase import removed as waste logging is no longer its direct responsibility
 
-const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_amount }: BatchData) => {
+interface BatchProps extends BatchData {
+  // New prop for handling the "Done" button action
+  onMoveToBox: (batch: BatchData) => boolean; // Function to attempt moving batch to box, returns success status
+}
+
+const Batch = ({ id, itemId, itemName, imageUrl, startTime, holdMinutes, unit, quantity_amount, onMoveToBox }: BatchProps) => {
   const [timeLeft, setTimeLeft] = useState("");
   const [timeColor, setTimeColor] = useState("#3ecf8e");
   const [showDialog, setShowDialog] = useState(false);
+  const [errorMessage, setErrorMessage] = useState(""); // New state for error message
   const { batches, setBatches } = useSession();
-  const { session } = useSession();
 
   const handleUpdateQuantity = (
     newQuantity: number | { pounds?: number; ounces?: number; gallons?: number; quarts?: number }
@@ -32,29 +38,19 @@ const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_
     setShowDialog(false);
   };
 
-  const handleClear = async () => {
-    const updated = batches.filter(batch => batch.id !== id);
-    setBatches(updated);
-    // Save waste entry
-    const removedBatch = batches.filter(batch => batch.id === id)[0];
-    const lowerUnit = unit.toLowerCase();
-    let processedQuantity = quantity_amount;
-    if (lowerUnit === 'pounds/ounces') {
-      processedQuantity = quantity_amount / 16;
-    } else if (lowerUnit === 'gallons/quarts') {
-      processedQuantity = quantity_amount / 4;
-    }
-    const { error } = await supabase.from('waste_entries').insert({
-      item_id: removedBatch.itemId,
-      user_id: session?.user.id,
-      quantity: processedQuantity,
-      metadata: {}
-    });
-    if (error) {
-      console.error("Error logging waste entry:", error);
-      alert("Failed to log waste entry. "+error.message);
-    } else {
-      console.log("Waste entry logged successfully");
+  const handleDone = async () => {
+    setErrorMessage(""); // Clear previous error messages
+
+    // Find the full batch object from the current active batches list
+    const batchToMove = batches.find(b => b.id === id);
+
+    if (batchToMove) {
+      const success = onMoveToBox(batchToMove); // Attempt to move the batch to a box
+      if (!success) {
+        setErrorMessage("Cannot add Batch since no Box exists");
+      }
+      // If successful, the batch will be removed from 'batches' state by ItemsPage
+      // and added to a box, so no further action is needed here.
     }
   };
 
@@ -106,7 +102,12 @@ const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_
         })()}
       </div>
         {holdMinutes > 0 && (<div className="batch-timer" style={{ color: timeColor }}>{timeLeft}</div>)}
-        <button className="batch-button" onClick={handleClear}>Done</button>
+        <button className="batch-button" onClick={handleDone}>Done</button>
+        {errorMessage && (
+          <p style={{ color: 'var(--error-color)', fontSize: '0.75em', marginTop: '5px' }}>
+            {errorMessage}
+          </p>
+        )}
       </div>
       {showDialog && (
         <QuantityDialog

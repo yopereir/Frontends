@@ -1,3 +1,4 @@
+// === BoxNameDialog.tsx ===
 import { useState } from 'react';
 
 interface BoxNameDialogProps {
