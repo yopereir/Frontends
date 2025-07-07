@@ -23,6 +23,13 @@ export interface BatchData {
   quantity_amount: number;
 }
 
+// Extend BatchData for Box content if needed, or just use BatchData directly
+export interface BoxData {
+  id: string;
+  name: string;
+  batches: BatchData[]; // A box contains a list of batches
+}
+
 // === Context Shape ===
 const SessionContext = createContext<{
   session: Session | null;
@@ -30,12 +37,16 @@ const SessionContext = createContext<{
   setTheme: (theme: Theme) => void;
   batches: BatchData[];
   setBatches: React.Dispatch<React.SetStateAction<BatchData[]>>;
+  boxes: BoxData[]; // Add boxes to context
+  setBoxes: React.Dispatch<React.SetStateAction<BoxData[]>>; // Add setBoxes to context
 }>({
   session: null,
   theme: "system",
   setTheme: () => {},
   batches: [],
   setBatches: () => {},
+  boxes: [], // Default empty array for boxes
+  setBoxes: () => {}, // Default empty function for setBoxes
 });
 
 // === Hook ===
@@ -63,6 +74,18 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     ) : [];
   });
 
+  // State for boxes, initialized from localStorage
+  const [boxes, setBoxes] = useState<BoxData[]>(() => {
+    const stored = localStorage.getItem("boxes");
+    return stored ? JSON.parse(stored, (key, value) => {
+        // Parse startTime within batches inside boxes
+        if (key === "startTime") {
+            return new Date(value);
+        }
+        return value;
+    }) : [];
+  });
+
   // Theme toggle logic
   const setTheme = (newTheme: Theme) => {
     setThemeState(newTheme);
@@ -82,9 +105,15 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     document.documentElement.classList.toggle("dark", isDark);
   }, [theme]);
 
+  // Effect to save batches to localStorage
   useEffect(() => {
     localStorage.setItem("batches", JSON.stringify(batches));
   }, [batches]);
+
+  // Effect to save boxes to localStorage
+  useEffect(() => {
+    localStorage.setItem("boxes", JSON.stringify(boxes));
+  }, [boxes]);
 
   // Auth state handling
   useEffect(() => {
@@ -107,6 +136,8 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
         setTheme,
         batches,
         setBatches,
+        boxes, // Provide boxes
+        setBoxes, // Provide setBoxes
       }}
     >
       {isLoading ? <LoadingPage /> : children}

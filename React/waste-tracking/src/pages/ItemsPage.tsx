@@ -1,10 +1,11 @@
+// === ItemsPage.tsx ===
 import { useEffect, useState } from "react";
-import { useSession } from "../context/SessionContext";
+import { useSession } from "../context/SessionContext"; // Ensure this import is correct
 import HeaderBar from "../components/HeaderBar";
 import Batch from "../components/Batch";
 import QuantityDialog from "../components/QuantityDialog";
 import BoxNameDialog from "../components/BoxNameDialog";
-import BoxContentDialog from "../components/BoxContentDialog"; // Import the new BoxContentDialog
+import BoxContentDialog from "../components/BoxContentDialog";
 import supabase from "../supabase";
 
 // Extend the Batch interface for consistent typing in Box
@@ -84,7 +85,8 @@ interface Item {
 }
 
 const ItemsPage = () => {
-  const { batches, setBatches } = useSession();
+  // Use batches and setBatches from SessionContext
+  const { batches, setBatches, boxes, setBoxes } = useSession(); // Destructure boxes and setBoxes from useSession as well
   const [now, setNow] = useState(new Date());
   const [view, setView] = useState<'batches' | 'items'>('batches');
   const [showQuantityDialog, setShowQuantityDialog] = useState(false);
@@ -92,9 +94,8 @@ const ItemsPage = () => {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [selectedTab, setSelectedTab] = useState<'lunch' | 'breakfast' | null>(null);
   const [items, setItems] = useState<Item[]>([]);
-  // Box state now includes an array of batches
-  const [boxes, setBoxes] = useState<{ id: string; name: string; batches: BatchInBox[] }[]>([]);
-  // State for the BoxContentDialog
+  
+  // State for the BoxContentDialog, still local as it's UI-specific
   const [showBoxContentDialog, setShowBoxContentDialog] = useState(false);
   const [selectedBoxForContent, setSelectedBoxForContent] = useState<{ id: string; name: string; batches: BatchInBox[] } | null>(null);
 
@@ -128,7 +129,7 @@ const ItemsPage = () => {
       if ("pounds" in quantity && "ounces" in quantity) {
         totalQuantity = quantity.pounds * 16 + quantity.ounces;
       } else if ("gallons" in quantity && "quarts" in quantity) {
-        totalQuantity = quantity.gallons * 4 + quarts;
+        totalQuantity = quantity.gallons * 4 + quantity.quarts;
       }
     } else {
       totalQuantity = Number(quantity);
@@ -179,6 +180,7 @@ const ItemsPage = () => {
       return;
     }
 
+    // Update boxes state via context
     setBoxes(prevBoxes => prevBoxes.map(box => {
       if (box.id === targetBoxId) {
         return {
@@ -189,6 +191,7 @@ const ItemsPage = () => {
       return box;
     }));
 
+    // Update batches state via context
     setBatches(prevBatches => prevBatches.filter(batch => batch.id !== batchId));
   };
 
@@ -207,9 +210,49 @@ const ItemsPage = () => {
   };
 
   const handleCloseBoxAndRemove = (boxId: string) => {
+    // Remove the box from the global boxes state via context
     setBoxes(prevBoxes => prevBoxes.filter(box => box.id !== boxId));
     setShowBoxContentDialog(false);
     setSelectedBoxForContent(null);
+  };
+
+  // Handler to remove a specific batch from a box and add it back to active batches
+  const handleRemoveBatchFromBox = (boxId: string, batchIdToRemove: string) => {
+    let removedBatch: BatchInBox | undefined;
+
+    // 1. Remove the batch from the specific box within the global boxes state
+    setBoxes(prevBoxes => prevBoxes.map(box => {
+      if (box.id === boxId) {
+        const updatedBatchesInBox = box.batches.filter(batch => {
+            if (batch.id === batchIdToRemove) {
+                removedBatch = batch; // Capture the batch being removed
+                return false; // Exclude this batch
+            }
+            return true; // Keep other batches
+        });
+        return {
+          ...box,
+          batches: updatedBatchesInBox
+        };
+      }
+      return box;
+    }));
+
+    // 2. Add the removed batch back to the main batches list if it was found
+    if (removedBatch) {
+        setBatches(prevBatches => [...prevBatches, removedBatch!]); // Add it back to batches via context
+    }
+
+    // 3. Update the selectedBoxForContent to immediately reflect the change in the dialog
+    setSelectedBoxForContent(prev => {
+        if (prev && prev.id === boxId) {
+            return {
+                ...prev,
+                batches: prev.batches.filter(batch => batch.id !== batchIdToRemove)
+            };
+        }
+        return prev;
+    });
   };
 
 
@@ -332,7 +375,7 @@ const ItemsPage = () => {
                     name={box.name}
                     batches={box.batches}
                     onDropBatch={handleDropBatch}
-                    onBoxClick={handleBoxClick} // Pass the click handler
+                    onBoxClick={handleBoxClick}
                 />
             ))}
         </div>
@@ -398,8 +441,9 @@ const ItemsPage = () => {
           boxId={selectedBoxForContent.id}
           boxName={selectedBoxForContent.name}
           batches={selectedBoxForContent.batches}
-          onCloseDialog={handleCloseBoxDialog} // 'Back' button
-          onCloseBox={handleCloseBoxAndRemove} // 'Close Box' button
+          onCloseDialog={handleCloseBoxDialog}
+          onCloseBox={handleCloseBoxAndRemove}
+          onRemoveBatchFromBox={handleRemoveBatchFromBox}
         />
       )}
     </main>
