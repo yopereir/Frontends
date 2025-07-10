@@ -11,6 +11,10 @@
     --dark-text-color: white;
     --dark-highlight-color: #4a5568;
     --dark-button-color: #4299e1;
+
+    /* New variables for column backgrounds */
+    --light-column-background: black;
+    --dark-column-background: white;
 }
 
 body {
@@ -30,7 +34,7 @@ body.light-mode {
 
 /* Layout */
 main {
-    padding: 20px;
+    padding: 0; /* Remove padding to allow hero and columns to be full width */
     min-height: 80vh;
 }
 
@@ -290,4 +294,154 @@ body.light-mode .learn-more {
 
 body.light-mode .heading {
     color: var(--light-text-color);
+}
+
+/* Big Card */
+.content-bigcard {
+    background-color: #fff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 600px;
+    margin: 40px auto;
+    color: #333;
+}
+
+.content-bigcard h1 {
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+.content-bigcard p {
+    color: #333;
+}
+
+.content-bigcard ul {
+    color: #333;
+    list-style-position: inside;
+    text-align: left;
+}
+
+.content-bigcard .submit-button {
+    display: block;
+    width: 160px;
+    padding: 12px;
+    background-color: #63b3ed;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background-color 0.3s ease;
+    margin: 20px auto 0;
+    text-decoration: none;
+    text-align: center;
+}
+
+.content-bigcard .submit-button:hover {
+    background-color: #4299e1;
+}
+
+/* Updated Styles for Business Intelligence Page */
+.bi-hero {
+    width: 100%; /* Ensure it takes full width */
+    padding: 40px 20px;
+    background-color: var(--dark-background-color); /* A slightly different dark background for the hero */
+    color: var(--dark-text-color);
+    text-align: center;
+    transition: background-color 0.3s, color 0.3s;
+    box-sizing: border-box; /* Include padding in the width calculation */
+}
+
+body.light-mode .bi-hero {
+    background-color: var(--light-header-color); /* A light background for the hero in light mode */
+    color: var(--light-header-text-color);
+}
+
+.bi-hero h1 {
+    font-size: 3em;
+    margin-bottom: 15px;
+}
+
+.bi-hero p {
+    font-size: 1.3em;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.bi-columns-section {
+    width: 100%; /* Ensure it takes full width */
+    padding: 40px 20px;
+    display: flex;
+    justify-content: center;
+    align-items: stretch; /* Ensures columns have equal height */
+    gap: 20px;
+    flex-wrap: wrap;
+    box-sizing: border-box; /* Include padding in the width calculation */
+    background-color: var(--light-background-color);
+}
+
+.bi-column {
+    flex: 1;
+    min-width: 280px; /* Minimum width for responsiveness */
+    max-width: 380px; /* Maximum width for larger screens */
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    background-color: var(--dark-column-background); /* Default to white for dark mode */
+    color: var(--dark-background-color); /* Text color for dark mode columns */
+    transition: background-color 0.3s, color 0.3s, transform 0.3s ease;
+}
+
+body.light-mode .bi-column {
+    background-color: var(--light-background-color); /* Black for light mode */
+    color: var(--light-text-color); /* Text color for light mode columns */
+}
+
+.bi-column:hover {
+    transform: translateY(-5px);
+}
+
+.bi-column h2 {
+    font-size: 1.8em;
+    margin-bottom: 15px;
+}
+
+.bi-column p {
+    font-size: 1.1em;
+    line-height: 1.7;
+}
+
+.cta {
+    text-align: center;
+    padding: 60px 20px; /* More padding for a distinct section */
+    background-color: var(--dark-header-color); /* Similar to hero, or choose another variable */
+    color: var(--dark-text-color);
+    transition: background-color 0.3s, color 0.3s;
+    width: 100%; /* Ensure it's full width */
+    box-sizing: border-box; /* Include padding in width */
+}
+
+body.light-mode .cta {
+    background-color: var(--light-highlight-color);
+    color: var(--light-text-color);
+}
+
+.cta p {
+    font-size: 1.4em;
+    max-width: 800px;
+    margin: 0 auto 30px auto; /* Center text and add space below */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .bi-columns-section {
+        flex-direction: column;
+        align-items: center;
+    }
+    .bi-column {
+        max-width: 90%;
+    }
 }

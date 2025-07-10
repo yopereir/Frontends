@@ -120,17 +120,17 @@ const ContactForm = () => {
         <form onSubmit={handleSubmit} noValidate>
           <div className="form-group">
             <label htmlFor="name">Name:</label>
-            <input type="text" id="name" name="name" value={formData.name} onChange={handleChange} />
+            <input type="text" id="name" name="name" placeholder="Enter your Name" value={formData.name} onChange={handleChange} />
             {errors.name && <div className="error-message">{errors.name}</div>}
           </div>
           <div className="form-group">
             <label htmlFor="email">Email:</label>
-            <input type="email" id="email" name="email" value={formData.email} onChange={handleChange} />
+            <input type="email" id="email" name="email" placeholder="Enter your E-mail" value={formData.email} onChange={handleChange} />
             {errors.email && <div className="error-message">{errors.email}</div>}
           </div>
           <div className="form-group">
             <label htmlFor="message">Message:</label>
-            <textarea id="message" name="message" value={formData.message} onChange={handleChange}></textarea>
+            <textarea id="message" name="message" placeholder="Enter your Message" value={formData.message} onChange={handleChange}></textarea>
             {errors.message && <div className="error-message">{errors.message}</div>}
           </div>
           {errors.form && <div className="error-message">{errors.form}</div>}

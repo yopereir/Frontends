@@ -3,24 +3,28 @@ import { useParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
 
 // Import the markdown file directly
-import socraticDiscussionMarkdown from '../markdown/socratic-discussion.md'; // Adjust path as needed
+import socraticDiscussionMarkdown from '../markdown/socratic-discussion.md';
+import roadRageMarkdown from '../markdown/road-rage.md';
+import elfBowlingMarkdown from '../markdown/elf-bowling.md';
 
 const projectData = {
   'road-rage': {
     name: 'Road Rage',
     description:
       'Inspired by the classic Road Rash game of the 90s, this project aims to keep the same gameplay mechanics, the same humor and the same Grudge theme, while adding modern features like 4K resolution sprites, multiplayer and cloud-saving.',
+    markdown: roadRageMarkdown
   },
   'socratic-discussion': {
     name: 'Socratic Discussion',
     description:
       'This innovative project aims to create a new sub-genre in gaming, specifically focused on Debating.',
-    markdown: socraticDiscussionMarkdown, // Use the imported markdown content
+    markdown: socraticDiscussionMarkdown,
   },
   'elf-bowling': {
     name: 'Elf Bowling',
     description:
       'Inspired by the classic Elf Bowling game of the 90s, this project aims to keep the same gameplay mechanics and humor, while adding modern features like 4K resolution models, multiplayer and cloud-saving.',
+    markdown: elfBowlingMarkdown,
   },
 };
 
