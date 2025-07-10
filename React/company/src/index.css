@@ -409,6 +409,10 @@ body.light-mode .bi-column {
     margin-bottom: 15px;
 }
 
+.bi-column ul {
+    text-align: left;
+}
+
 .bi-column p {
     font-size: 1.1em;
     line-height: 1.7;

@@ -35,9 +35,24 @@ const BusinessIntelligence = () => {
           <p>Step into the future with advanced AI and machine learning. Our intelligent analytics go beyond traditional reporting, offering predictive modeling, anomaly detection, and automated insights for proactive decision-making.</p>
         </div>
       </section>
-      <section className="bi-hero">
-        <h1></h1>
+      <div className="content" style={{ height: '80vh' }}>
+        <h1>Business Intelligence</h1>
+        <p>Transform Your Data into Strategic Advantage.</p>
+        <HashLink to="#bi-hero" className="learn-more">Learn More</HashLink>
+      </div>
+      <section className="bi-columns-section" style={{backgroundColor: "#0000"}}>
+        <div className="bi-column">
+        <h2>Technical benefits</h2>
+        <ul>
+          <li>asd</li>
+          <li>asdasd asd asd asd as das d</li>
+        </ul>
         <p>Unlock the power of your data with Grasent's Business Intelligence services. We provide data-driven insights, custom dashboards, and AI-powered analytics to optimize your operations.</p>
+        </div>
+        <div className="bi-column">
+        <h2>Business benefits</h2>
+        <p>Unlock the power of your data with Grasent's Business Intelligence services. We provide data-driven insights, custom dashboards, and AI-powered analytics to optimize your operations.</p>
+        </div>
       </section>
       <section className="cta">
         <p>Partner with us to achieve your ambitions. We are dedicated to helping you navigate challenges and seize opportunities.</p>
