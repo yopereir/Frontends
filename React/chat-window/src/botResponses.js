@@ -33,6 +33,8 @@ export const handleRequestITConsulting = () => {
 export const handleRequestBusinessIntelligence = () => {
   sendBotMessage("Business Intelligence helps leverages data to make your business more efficient. Briefly describe, where you would find this most useful?");
   chatWidgetSetters.setInputMode('text');
+  chatWidgetSetters.setNextQuestions([
+    handleCollectUserEmail, handleCollectUserAvailability, handleThankYouMessage]);
   // You might set a state for 'awaitingProductInfo'
 };
 
@@ -49,7 +51,7 @@ export const handleGeneralInquiry = () => {
 };
 
 export const handleGreeting = () => {
-  sendBotMessage("Hi there! How can I assist you today?");
+  sendBotMessage("How can I assist you today?");
   chatWidgetSetters.setOptionsMapping(chatOptions);
   chatWidgetSetters.setInputMode('options'); // After a greeting, maybe offer options
 };
@@ -98,7 +100,7 @@ export const handleCollectUserName = () => {
 
 export const handleThankYouMessage = (message = "") => {
     if (message != "") sendBotMessage(message);
-    else sendBotMessage("Thank you for reaching out! We will get back to you soon!");
+    else sendBotMessage("Thank you for reaching out! We will get back to you soon! Do you have anotherinquiry?");
     chatWidgetSetters.setOptionsMapping(yesOrNoOptions);
     chatWidgetSetters.setInputMode('options');
     // Optionally, you can reset the chat or provide further instructions
@@ -106,8 +108,7 @@ export const handleThankYouMessage = (message = "") => {
 
 export const handleCloseChat = () => {
     sendBotMessage("Thank you for chatting with us! If you have any more questions, feel free to reach out again.");
-    setIsOpen(false); // Assuming you have a state to control chat visibility
-    chatWidgetSetters.setInputMode('options');
+    chatWidgetSetters.setInputMode('none');
     // Optionally, you can reset the chat or provide further instructions
 };
 

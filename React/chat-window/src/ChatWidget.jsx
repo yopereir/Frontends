@@ -141,7 +141,7 @@ const ChatWidget = () => {
               />
               <button type="submit">Send</button>
             </form>
-          ) : (
+          ) : inputMode === 'options' ? (
             <div className="chat-options">
               {optionsMapping.map((option) => (
                 <button
@@ -153,7 +153,7 @@ const ChatWidget = () => {
                 </button>
               ))}
             </div>
-          )}
+          ):<></>}
         </div>
       )}
     </div>
