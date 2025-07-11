@@ -3,15 +3,8 @@
 // This object will hold the state setters from ChatWidget
 let chatWidgetSetters = {};
 
-export const chatOptions = [
-    { label: "IT consulting", value: "it_consulting_request" },
-    { label: "Business Intelligence", value: "business_intelligence_request" },
-    { label: "Employee Sourcing", value: "employee_sourcing_request" },
-    { label: "Other", value: "general_inquiry" },
-];
-
-export const initializeBotResponses = (setMessages, setInputMode, setUserEmail, setUserName, setUserInquiry, setUserAvailability, setOptionsMapping, setNextQuestions) => {
-  chatWidgetSetters = { setMessages, setInputMode, setUserEmail, setUserName, setUserInquiry, setUserAvailability, setOptionsMapping, setNextQuestions };
+export const initializeBotResponses = (setMessages, setInputMode, setUserEmail, setUserName, setUserInquiry, setUserAvailability, setOptionsMapping, setOptionsFunctionMapping, setNextQuestions) => {
+  chatWidgetSetters = { setMessages, setInputMode, setUserEmail, setUserName, setUserInquiry, setUserAvailability, setOptionsMapping, setOptionsFunctionMapping, setNextQuestions };
 };
 
 // Simulate a bot typing delay
@@ -57,7 +50,7 @@ export const handleGeneralInquiry = () => {
 
 export const handleGreeting = () => {
   sendBotMessage("Hi there! How can I assist you today?");
-  chatWidgetSetters.setOptionsMapping(botResponseMap);
+  chatWidgetSetters.setOptionsMapping(chatOptions);
   chatWidgetSetters.setInputMode('options'); // After a greeting, maybe offer options
 };
 
@@ -118,20 +111,31 @@ export const handleCloseChat = () => {
     // Optionally, you can reset the chat or provide further instructions
 };
 
+export const chatOptions = [
+    { label: "IT consulting", value: "it_consulting_request" },
+    { label: "Business Intelligence", value: "business_intelligence_request" },
+    { label: "Employee Sourcing", value: "employee_sourcing_request" },
+    { label: "Other", value: "general_inquiry" },
+];
+
 // Map for quick access based on value
-export const botResponseMap = {
+export let botResponseMap = {
   "it_consulting_request": handleRequestITConsulting,
   "business_intelligence_request": handleRequestBusinessIntelligence,
   "employee_sourcing_request": handleRequestEmployeeSourcing,
   "general_inquiry": handleGeneralInquiry,
+  "email": handleCollectUserEmail,
+  "phone": handleCollectUserPhone,
+  "yes": handleGreeting,
+  "no": handleCloseChat,
 };
 
-export const contactOptions = {
-    "email": handleCollectUserEmail,
-    "phone": handleCollectUserPhone,
-}
+export const contactOptions = [
+    { label: "Email", value: "email" },
+    { label: "Phone", value: "phone" },
+];
 
-export let yesOrNoOptions = {
-    "yes": handleCollectUserEmail,
-    "no": handleCloseChat,
-}
+export const yesOrNoOptions = [
+    { label: "Yes", value: "yes" },
+    { label: "No", value: "no" },
+];

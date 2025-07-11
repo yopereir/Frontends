@@ -3,8 +3,6 @@ import {
   chatOptions as importedChatOptions,
   initializeBotResponses,
   botResponseMap,
-  contactOptions,
-  yesOrNoOptions,
   handleGreeting,
   handleDefaultResponse
 } from './botResponses'; // Adjust path as needed
@@ -14,7 +12,8 @@ const ChatWidget = () => {
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
   const [inputMode, setInputMode] = useState('options'); // Default to text input
-  const [optionsMapping, setOptionsMapping] = useState(botResponseMap);
+  const [optionsMapping, setOptionsMapping] = useState(importedChatOptions);
+  const [optionsFunctionMapping, setOptionsFunctionMapping] = useState(botResponseMap);
 
   // New state variables to track user information
   const [userEmail, setUserEmail] = useState('');
@@ -23,19 +22,10 @@ const ChatWidget = () => {
   const [userInquiry, setUserInquiry] = useState('');
   const [nextQuestions, setNextQuestions] = useState([]);
 
-  // Example options for the chat bot
-  const chatOptions = importedChatOptions|| [
-    { label: "Check Order Status", value: "check_order_status" },
-    { label: "Product Information", value: "product_info" },
-    { label: "Contact Support", value: "contact_support" },
-    { label: "General Inquiry", value: "general_inquiry" },
-    { label: "What's my email?", value: "get_email" }, // Example: New option
-  ];
-
   // Initialize bot responses with setters when the component mounts or setters change
   useEffect(() => {
-    initializeBotResponses(setMessages, setInputMode, setUserEmail, setUserName, setUserInquiry, setUserAvailability, setOptionsMapping, setNextQuestions);
-  }, [setMessages, setInputMode, setUserEmail, setUserName, setUserInquiry, setUserAvailability, setOptionsMapping, setNextQuestions]);
+    initializeBotResponses(setMessages, setInputMode, setUserEmail, setUserName, setUserInquiry, setUserAvailability, setOptionsMapping, setOptionsFunctionMapping, setNextQuestions);
+  }, [setMessages, setInputMode, setUserEmail, setUserName, setUserInquiry, setUserAvailability, setOptionsMapping, setOptionsFunctionMapping, setNextQuestions]);
 
 
   const toggleChat = () => {
@@ -69,7 +59,7 @@ const ChatWidget = () => {
   const simulateBotResponse = (userMessage, isOption = false) => {
     setTimeout(() => {
       if (isOption) {
-        const handler = optionsMapping[userMessage];
+        const handler = optionsFunctionMapping[userMessage];
         if (handler) {
           handler();
         } else if (userMessage === "get_email") { // Handle new option directly here for demonstration
@@ -153,7 +143,7 @@ const ChatWidget = () => {
             </form>
           ) : (
             <div className="chat-options">
-              {chatOptions.map((option) => (
+              {optionsMapping.map((option) => (
                 <button
                   key={option.value}
                   className="chat-option-button"
