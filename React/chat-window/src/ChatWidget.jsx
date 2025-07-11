@@ -1,89 +1,119 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import {
+  chatOptions as importedChatOptions,
+  initializeBotResponses,
+  botResponseMap,
+  contactOptions,
+  yesOrNoOptions,
+  handleGreeting,
+  handleDefaultResponse
+} from './botResponses'; // Adjust path as needed
 
 const ChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
-  // New state to control the input mode: 'text' or 'options'
-  const [inputMode, setInputMode] = useState('text'); // Default to text input
+  const [inputMode, setInputMode] = useState('options'); // Default to text input
+  const [optionsMapping, setOptionsMapping] = useState(botResponseMap);
+
+  // New state variables to track user information
+  const [userEmail, setUserEmail] = useState('');
+  const [userName, setUserName] = useState('');
+  const [userAvailability, setUserAvailability] = useState('');
+  const [userInquiry, setUserInquiry] = useState('');
+  const [nextQuestions, setNextQuestions] = useState([]);
 
   // Example options for the chat bot
-  const chatOptions = [
+  const chatOptions = importedChatOptions|| [
     { label: "Check Order Status", value: "check_order_status" },
     { label: "Product Information", value: "product_info" },
     { label: "Contact Support", value: "contact_support" },
     { label: "General Inquiry", value: "general_inquiry" },
+    { label: "What's my email?", value: "get_email" }, // Example: New option
   ];
+
+  // Initialize bot responses with setters when the component mounts or setters change
+  useEffect(() => {
+    initializeBotResponses(setMessages, setInputMode, setUserEmail, setUserName, setUserInquiry, setUserAvailability, setOptionsMapping, setNextQuestions);
+  }, [setMessages, setInputMode, setUserEmail, setUserName, setUserInquiry, setUserAvailability, setOptionsMapping, setNextQuestions]);
+
 
   const toggleChat = () => {
     setIsOpen(!isOpen);
-    // Optionally reset input mode when closing/opening
     if (!isOpen) {
-      setInputMode('text'); // Reset to text when opening
+      setInputMode('options'); // Reset to text when opening
+      setMessages([]); // Clear messages when opening a new chat session
+      // Optionally reset other user states
+      // setUserEmail('');
+      // setUserName('');
+      // setUserInquiry('');
     }
   };
 
   const handleSendMessage = (e) => {
     e.preventDefault();
     if (inputValue.trim()) {
-      setMessages([...messages, { text: inputValue, sender: 'user' }]);
+      const userMessage = inputValue.trim();
+      setMessages([...messages, { text: userMessage, sender: 'user' }]);
       setInputValue('');
-      // Simulate bot reply and potentially change input mode
-      simulateBotResponse(inputValue);
+      simulateBotResponse(userMessage, false);
     }
   };
 
   const handleOptionClick = (optionLabel, optionValue) => {
     setMessages([...messages, { text: optionLabel, sender: 'user' }]);
-    // Simulate bot reply based on the chosen option
-    simulateBotResponse(optionValue, true); // Pass true to indicate it's an option click
+    simulateBotResponse(optionValue, true);
   };
 
   // Function to simulate bot responses and manage input mode
   const simulateBotResponse = (userMessage, isOption = false) => {
-    let botReply = "Thanks for your message! We'll get back to you shortly.";
-    let nextInputMode = 'text'; // Default next mode
-
-    if (isOption) {
-      switch (userMessage) {
-        case "check_order_status":
-          botReply = "Please provide your order number to check its status.";
-          nextInputMode = 'text'; // After choosing this option, switch to text for order number
-          break;
-        case "product_info":
-          botReply = "What product are you interested in?";
-          nextInputMode = 'text'; // Switch to text to get product details
-          break;
-        case "contact_support":
-          botReply = "Please describe your issue, and we'll connect you with a representative. Would you like to leave a message or speak with someone now?";
-          nextInputMode = 'options'; // Offer new options for contact
-          // Example of dynamic options after this choice:
-          // You might set a different set of options here, for simplicity, we're sticking to the main ones
-          break;
-        case "general_inquiry":
-          botReply = "How can I help you with a general inquiry?";
-          nextInputMode = 'text';
-          break;
-        default:
-          break;
-      }
-    } else {
-      // Logic for text-based replies if needed, e.g., if user types "hello"
-      if (userMessage.toLowerCase().includes('hello')) {
-        botReply = "Hi there! How can I assist you today?";
-        nextInputMode = 'options'; // After a greeting, maybe offer options
-      }
-    }
-
     setTimeout(() => {
-      setMessages((prevMessages) => [
-        ...prevMessages,
-        { text: botReply, sender: 'bot' }
-      ]);
-      setInputMode(nextInputMode); // Set the next input mode
+      if (isOption) {
+        const handler = optionsMapping[userMessage];
+        if (handler) {
+          handler();
+        } else if (userMessage === "get_email") { // Handle new option directly here for demonstration
+          if (userEmail) {
+            setMessages((prevMessages) => [
+              ...prevMessages,
+              { text: `Your current email is: ${userEmail}`, sender: 'bot' }
+            ]);
+          } else {
+            setMessages((prevMessages) => [
+              ...prevMessages,
+              { text: "I don't have your email address yet.", sender: 'bot' }
+            ]);
+            // If we don't have it, prompt to collect it.
+            initializeBotResponses(setMessages, setInputMode, setUserEmail, setUserName, setUserInquiry, setUserAvailability).handleCollectUserEmail();
+          }
+          setInputMode('text');
+        } else {
+          handleDefaultResponse();
+        }
+      } else {
+        // Logic for text-based replies if needed
+        if (userMessage.toLowerCase().includes('hello')) {
+          handleGreeting();
+        } else if (userMessage.toLowerCase().includes('email is')) {
+          const emailMatch = userMessage.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/gi);
+          if (emailMatch && emailMatch[0]) {
+            setUserEmail(emailMatch[0]);
+            setMessages((prevMessages) => [
+              ...prevMessages,
+              { text: `Thanks, I've noted your email as ${emailMatch[0]}.`, sender: 'bot' }
+            ]);
+            setInputMode('options'); // Go back to options after email is collected
+          } else {
+            handleDefaultResponse();
+          }
+        } else {
+          handleDefaultResponse();
+        }
+      }
+      nextQuestions[0]()
+      setNextQuestions(nextQuestions.slice(1));
     }, 1000);
   };
-
 
   return (
     <div className="chat-widget-container">
