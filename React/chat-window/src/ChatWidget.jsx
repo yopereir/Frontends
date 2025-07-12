@@ -21,13 +21,42 @@ const ChatWidget = () => {
   const [userName, setUserName] = useState('');
   const [userAvailability, setUserAvailability] = useState('');
   const [userInquiry, setUserInquiry] = useState('');
-  const [infoToSet, setInfoToSet] = useState();
+  const [infoToSet, setInfoToSet] = useState('');
   const [nextQuestions, setNextQuestions] = useState([]);
+
+  const setSpecificInfo = (info) => {
+    switch (infoToSet) {
+      case 'email':
+        return setUserEmail(info);
+      case 'phone':
+        return setUserPhone(info);
+      case 'name':
+        return setUserName(info);
+      case 'availability':
+        return setUserAvailability(info);
+      case 'inquiry':
+        return setUserInquiry(info);
+      default:
+        return null; // No specific setter found
+    }
+  }
+
+  const sendInfo = () => {
+    // This function can be used to send the collected user information to a server or API
+    // For now, we'll just log it to the console
+    console.log({
+      email: userEmail,
+      phone: userPhone,
+      name: userName,
+      availability: userAvailability,
+      inquiry: userInquiry
+    });
+  }
 
   // Initialize bot responses with setters when the component mounts or setters change
   useEffect(() => {
-    initializeBotResponses(setMessages, setInputMode, setUserEmail, setUserPhone, setUserName, setUserInquiry, setInfoToSet, setUserAvailability, setOptionsMapping, setOptionsFunctionMapping, setNextQuestions);
-  }, [setMessages, setInputMode, setUserEmail, setUserPhone, setUserName, setUserInquiry, setInfoToSet, setUserAvailability, setOptionsMapping, setOptionsFunctionMapping, setNextQuestions]);
+    initializeBotResponses(setMessages, setInputMode, setUserEmail, setUserPhone, setUserName, setUserInquiry, setInfoToSet, setUserAvailability, setOptionsMapping, setOptionsFunctionMapping, setNextQuestions, sendInfo);
+  }, [setMessages, setInputMode, setUserEmail, setUserPhone, setUserName, setUserInquiry, setInfoToSet, setUserAvailability, setOptionsMapping, setOptionsFunctionMapping, setNextQuestions, sendInfo]);
 
 
   const toggleChat = () => {
@@ -60,51 +89,50 @@ const ChatWidget = () => {
   // Function to simulate bot responses and manage input mode
   const simulateBotResponse = (userMessage, isOption = false) => {
     setTimeout(() => {
+      const handler = optionsFunctionMapping[userMessage];
+      if (handler) {
+        handler();
+      } 
       if (isOption) {
-        const handler = optionsFunctionMapping[userMessage];
-        if (handler) {
-          handler();
-        } else if (userMessage === "get_email") { // Handle new option directly here for demonstration
-          if (userEmail) {
-            setMessages((prevMessages) => [
-              ...prevMessages,
-              { text: `Your current email is: ${userEmail}`, sender: 'bot' }
-            ]);
-          } else {
-            setMessages((prevMessages) => [
-              ...prevMessages,
-              { text: "I don't have your email address yet.", sender: 'bot' }
-            ]);
-            // If we don't have it, prompt to collect it.
-            initializeBotResponses(setMessages, setInputMode, setUserEmail, setUserName, setUserInquiry, setUserAvailability).handleCollectUserEmail();
-          }
-          setInputMode('text');
-        } else {
-          handleDefaultResponse();
-        }
+        // if (userMessage === "get_email") { // Handle new option directly here for demonstration
+        //   if (userEmail) {
+        //     setMessages((prevMessages) => [
+        //       ...prevMessages,
+        //       { text: `Your current email is: ${userEmail}`, sender: 'bot' }
+        //     ]);
+        //   } else {
+        //     setMessages((prevMessages) => [
+        //       ...prevMessages,
+        //       { text: "I don't have your email address yet.", sender: 'bot' }
+        //     ]);
+        //     // If we don't have it, prompt to collect it.
+        //     initializeBotResponses(setMessages, setInputMode, setUserEmail, setUserName, setUserInquiry, setUserAvailability).handleCollectUserEmail();
+        //   }
+        //   setInputMode('text');
+        // } else {
+        //   handleDefaultResponse();
+        // }
       } else {
-        // Logic for text-based replies if needed
-        if (userMessage.toLowerCase().includes('hello')) {
-          handleGreeting();
-        } else if (userMessage.toLowerCase().includes('email is')) {
-          const emailMatch = userMessage.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/gi);
-          if (emailMatch && emailMatch[0]) {
-            setUserEmail(emailMatch[0]);
-            setMessages((prevMessages) => [
-              ...prevMessages,
-              { text: `Thanks, I've noted your email as ${emailMatch[0]}.`, sender: 'bot' }
-            ]);
-            setInputMode('options'); // Go back to options after email is collected
-          } else {
-            handleDefaultResponse();
-          }
-        } else {
-          handleDefaultResponse();
-        }
+        // // Logic for text-based replies if needed
+        // if (userMessage.toLowerCase().includes('hello')) {
+        //   handleGreeting();
+        // } else if (userMessage.toLowerCase().includes('email is')) {
+        //   const emailMatch = userMessage.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/gi);
+        //   if (emailMatch && emailMatch[0]) {
+        //     setUserEmail(emailMatch[0]);
+        //     setMessages((prevMessages) => [
+        //       ...prevMessages,
+        //       { text: `Thanks, I've noted your email as ${emailMatch[0]}.`, sender: 'bot' }
+        //     ]);
+        //     setInputMode('options'); // Go back to options after email is collected
+        //   } else {
+        //     handleDefaultResponse();
+        //   }
+        // } else {
+        //   handleDefaultResponse();
+        // }
       }
-      console.log("infoToSet", infoToSet);
-      infoToSet && infoToSet(userMessage); // Call the setter if defined
-      console.log(userEmail, userPhone, userName, userAvailability, userInquiry);
+      setSpecificInfo(userMessage); // Call the setter if defined
       if (nextQuestions.length != 0) {
         nextQuestions[0]();
         setNextQuestions(nextQuestions.slice(1));
