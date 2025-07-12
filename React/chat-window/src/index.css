@@ -5,6 +5,21 @@
   --button-hover-color: #2ebd80; /* Slightly brighter Supabase green for hover */
   --error-color: #ff4d4d;
   background-color: #242424;
+  --light-background-color: white;
+  --light-header-color: black;
+  --light-header-text-color: white;
+  --light-text-color: black;
+  --light-highlight-color: #e2e8f0;
+  --light-button-color: #63b3ed;
+  --dark-background-color: #1a202c;
+  --dark-header-color: #2d3748;
+  --dark-text-color: white;
+  --dark-highlight-color: #4a5568;
+  --dark-button-color: #4299e1;
+
+  /* New variables for column backgrounds */
+  --light-column-background: black;
+  --dark-column-background: white;
 }
 
 .chat-widget-container {
@@ -15,8 +30,8 @@
 }
 
 .chat-toggle-button {
-  background-color: #007bff;
-  color: white;
+  background-color: var(--dark-header-color);
+  color: var(--dark-text-color);
   border: none;
   border-radius: 50%;
   width: 60px;
@@ -28,6 +43,11 @@
   cursor: pointer;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
   transition: background-color 0.3s ease;
+}
+
+.chat-toggle-button.light-mode {
+  background-color: var(--light-header-color);
+  color: var(--light-header-text-color);
 }
 
 .chat-toggle-button:hover {
@@ -47,14 +67,19 @@
 }
 
 .chat-header {
-  background-color: #007bff;
-  color: white;
+  background-color: var(--dark-header-color);
+  color: var(--dark-text-color);
   padding: 15px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   border-top-left-radius: 8px;
   border-top-right-radius: 8px;
+}
+
+.chat-header.light-mode {
+  background-color: var(--light-header-color);
+  color: var(--light-header-text-color);
 }
 
 .chat-header h3 {
@@ -101,7 +126,7 @@
 
 .message.user {
   align-self: flex-end;
-  background-color: #dcf8c6; /* Light green for user messages */
+  background-color: var(--button-hover-color); /* Light green for user messages */
 }
 
 .message.bot {
@@ -127,7 +152,7 @@
 }
 
 .chat-input-form button {
-  background-color: #28a745; /* Green for send button */
+  background-color: var(--button-color); /* Green for send button */
   color: white;
   border: none;
   border-radius: 5px;
@@ -137,7 +162,7 @@
 }
 
 .chat-input-form button:hover {
-  background-color: #218838;
+  background-color: var(--button-hover-color);
 }
 
 /* --- Styles for Options Button Section --- */
@@ -151,7 +176,7 @@
 }
 
 .chat-option-button {
-  background-color: #6c757d; /* A muted color for options */
+  background-color: var(--dark-background-color); /* A muted color for options */
   color: white;
   border: none;
   border-radius: 5px;
@@ -160,6 +185,11 @@
   font-size: 1em;
   text-align: center;
   transition: background-color 0.3s ease;
+}
+
+.chat-option-button.light-mode {
+  background-color: var(--light-header-color);
+  color: var(--light-header-text-color);
 }
 
 .chat-option-button:hover {

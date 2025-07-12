@@ -11,11 +11,10 @@ const ChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([]);
   const [inputValue, setInputValue] = useState('');
-  const [inputMode, setInputMode] = useState('options'); // Default to text input
+  const [inputMode, setInputMode] = useState('options');
   const [optionsMapping, setOptionsMapping] = useState(importedChatOptions);
   const [optionsFunctionMapping, setOptionsFunctionMapping] = useState(botResponseMap);
 
-  // New state variables to track user information
   const [userEmail, setUserEmail] = useState('');
   const [userPhone, setUserPhone] = useState('');
   const [userName, setUserName] = useState('');
@@ -23,6 +22,28 @@ const ChatWidget = () => {
   const [userInquiry, setUserInquiry] = useState('');
   const [infoToSet, setInfoToSet] = useState('');
   const [nextQuestions, setNextQuestions] = useState([]);
+
+  // INFO: Either set shouldSetTheme to false OR Comment out for production. This is for Manually setting theme
+  useEffect(() => {
+    let shouldManuallySetTheme = false;
+    if (shouldManuallySetTheme) {
+      let manualTheme = 'light-mode';
+      const addClassRecursively = (element) => {
+        if (element && element.classList) {element.classList.add(manualTheme)}
+        if (element && element.children) {Array.from(element.children).forEach(child => {addClassRecursively(child)})}
+      };
+      const removeClassRecursively = (element) => {
+        if (element && element.classList) {element.classList.remove(manualTheme)}
+        if (element && element.children) {Array.from(element.children).forEach(child => {removeClassRecursively(child)})}
+      };
+      if (isOpen) {
+        if (document.body) {addClassRecursively(document.body)}
+      } else {
+        if (document.body) {removeClassRecursively(document.body)}
+      }
+      return () => {if (document.body) {removeClassRecursively(document.body)}};
+    }
+  }, [isOpen]);
 
   const setSpecificInfo = (info) => {
     switch (infoToSet) {
@@ -43,13 +64,11 @@ const ChatWidget = () => {
       case 'inquiry':
         return setUserInquiry(info);
       default:
-        return null; // No specific setter found
+        return null;
     }
   }
 
   const sendInfo = () => {
-    // This function can be used to send the collected user information to a server or API
-    // For now, we'll just log it
     console.log({
       email: userEmail,
       phone: userPhone,
@@ -59,21 +78,15 @@ const ChatWidget = () => {
     });
   }
 
-  // Initialize bot responses with setters when the component mounts or setters change
   useEffect(() => {
     initializeBotResponses(setMessages, setInputMode, setUserEmail, setUserPhone, setUserName, setUserInquiry, setInfoToSet, setUserAvailability, setOptionsMapping, setOptionsFunctionMapping, setNextQuestions, sendInfo);
   }, [setMessages, setInputMode, setUserEmail, setUserPhone, setUserName, setUserInquiry, setInfoToSet, setUserAvailability, setOptionsMapping, setOptionsFunctionMapping, setNextQuestions, sendInfo]);
 
-
   const toggleChat = () => {
     setIsOpen(!isOpen);
     if (!isOpen) {
-      setInputMode('options'); // Reset to text when opening
-      setMessages([]); // Clear messages when opening a new chat session
-      // Optionally reset other user states
-      // setUserEmail('');
-      // setUserName('');
-      // setUserInquiry('');
+      setInputMode('options');
+      setMessages([]);
     }
   };
 
@@ -92,55 +105,15 @@ const ChatWidget = () => {
     simulateBotResponse(optionValue, true);
   };
 
-  // Function to simulate bot responses and manage input mode
   const simulateBotResponse = (userMessage, isOption = false) => {
     setTimeout(() => {
       const handler = optionsFunctionMapping[userMessage];
       if (handler) {
         handler();
-      } 
-      if (isOption) {
-        // if (userMessage === "get_email") { // Handle new option directly here for demonstration
-        //   if (userEmail) {
-        //     setMessages((prevMessages) => [
-        //       ...prevMessages,
-        //       { text: `Your current email is: ${userEmail}`, sender: 'bot' }
-        //     ]);
-        //   } else {
-        //     setMessages((prevMessages) => [
-        //       ...prevMessages,
-        //       { text: "I don't have your email address yet.", sender: 'bot' }
-        //     ]);
-        //     // If we don't have it, prompt to collect it.
-        //     initializeBotResponses(setMessages, setInputMode, setUserEmail, setUserName, setUserInquiry, setUserAvailability).handleCollectUserEmail();
-        //   }
-        //   setInputMode('text');
-        // } else {
-        //   handleDefaultResponse();
-        // }
-      } else {
-        // // Logic for text-based replies if needed
-        // if (userMessage.toLowerCase().includes('hello')) {
-        //   handleGreeting();
-        // } else if (userMessage.toLowerCase().includes('email is')) {
-        //   const emailMatch = userMessage.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/gi);
-        //   if (emailMatch && emailMatch[0]) {
-        //     setUserEmail(emailMatch[0]);
-        //     setMessages((prevMessages) => [
-        //       ...prevMessages,
-        //       { text: `Thanks, I've noted your email as ${emailMatch[0]}.`, sender: 'bot' }
-        //     ]);
-        //     setInputMode('options'); // Go back to options after email is collected
-        //   } else {
-        //     handleDefaultResponse();
-        //   }
-        // } else {
-        //   handleDefaultResponse();
-        // }
       }
       try {
         setSpecificInfo(userMessage);
-        if (nextQuestions.length != 0) {
+        if (nextQuestions.length !== 0) {
           nextQuestions[0]();
           setNextQuestions(nextQuestions.slice(1));
         }
@@ -175,7 +148,6 @@ const ChatWidget = () => {
               ))
             )}
           </div>
-          {/* Conditional rendering for input section */}
           {inputMode === 'text' ? (
             <form className="chat-input-form" onSubmit={handleSendMessage}>
               <input
