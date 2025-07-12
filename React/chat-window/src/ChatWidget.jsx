@@ -27,7 +27,13 @@ const ChatWidget = () => {
   const setSpecificInfo = (info) => {
     switch (infoToSet) {
       case 'email':
-        return setUserEmail(info);
+        const emailMatch = info.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/gi);
+        if (emailMatch && emailMatch[0]) {
+          return setUserEmail(info);
+        } else {
+          setMessages([...messages, { text: "That was an invalid email. Could you please provide a valid email address?", sender: 'bot' }]);
+          throw new Error("Invalid email format");
+        }
       case 'phone':
         return setUserPhone(info);
       case 'name':
@@ -43,7 +49,7 @@ const ChatWidget = () => {
 
   const sendInfo = () => {
     // This function can be used to send the collected user information to a server or API
-    // For now, we'll just log it to the console
+    // For now, we'll just log it
     console.log({
       email: userEmail,
       phone: userPhone,
@@ -132,10 +138,14 @@ const ChatWidget = () => {
         //   handleDefaultResponse();
         // }
       }
-      setSpecificInfo(userMessage); // Call the setter if defined
-      if (nextQuestions.length != 0) {
-        nextQuestions[0]();
-        setNextQuestions(nextQuestions.slice(1));
+      try {
+        setSpecificInfo(userMessage);
+        if (nextQuestions.length != 0) {
+          nextQuestions[0]();
+          setNextQuestions(nextQuestions.slice(1));
+        }
+      } catch (error) {
+        console.error("Error setting specific info:", error);
       }
     }, 1000);
   };
