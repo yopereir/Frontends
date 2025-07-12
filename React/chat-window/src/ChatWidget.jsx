@@ -17,15 +17,17 @@ const ChatWidget = () => {
 
   // New state variables to track user information
   const [userEmail, setUserEmail] = useState('');
+  const [userPhone, setUserPhone] = useState('');
   const [userName, setUserName] = useState('');
   const [userAvailability, setUserAvailability] = useState('');
   const [userInquiry, setUserInquiry] = useState('');
+  const [infoToSet, setInfoToSet] = useState();
   const [nextQuestions, setNextQuestions] = useState([]);
 
   // Initialize bot responses with setters when the component mounts or setters change
   useEffect(() => {
-    initializeBotResponses(setMessages, setInputMode, setUserEmail, setUserName, setUserInquiry, setUserAvailability, setOptionsMapping, setOptionsFunctionMapping, setNextQuestions);
-  }, [setMessages, setInputMode, setUserEmail, setUserName, setUserInquiry, setUserAvailability, setOptionsMapping, setOptionsFunctionMapping, setNextQuestions]);
+    initializeBotResponses(setMessages, setInputMode, setUserEmail, setUserPhone, setUserName, setUserInquiry, setInfoToSet, setUserAvailability, setOptionsMapping, setOptionsFunctionMapping, setNextQuestions);
+  }, [setMessages, setInputMode, setUserEmail, setUserPhone, setUserName, setUserInquiry, setInfoToSet, setUserAvailability, setOptionsMapping, setOptionsFunctionMapping, setNextQuestions]);
 
 
   const toggleChat = () => {
@@ -100,8 +102,13 @@ const ChatWidget = () => {
           handleDefaultResponse();
         }
       }
-      nextQuestions[0]()
-      setNextQuestions(nextQuestions.slice(1));
+      console.log("infoToSet", infoToSet);
+      infoToSet && infoToSet(userMessage); // Call the setter if defined
+      console.log(userEmail, userPhone, userName, userAvailability, userInquiry);
+      if (nextQuestions.length != 0) {
+        nextQuestions[0]();
+        setNextQuestions(nextQuestions.slice(1));
+      }
     }, 1000);
   };
 

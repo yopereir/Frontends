@@ -3,8 +3,8 @@
 // This object will hold the state setters from ChatWidget
 let chatWidgetSetters = {};
 
-export const initializeBotResponses = (setMessages, setInputMode, setUserEmail, setUserName, setUserInquiry, setUserAvailability, setOptionsMapping, setOptionsFunctionMapping, setNextQuestions) => {
-  chatWidgetSetters = { setMessages, setInputMode, setUserEmail, setUserName, setUserInquiry, setUserAvailability, setOptionsMapping, setOptionsFunctionMapping, setNextQuestions };
+export const initializeBotResponses = (setMessages, setInputMode, setUserEmail, setUserPhone, setUserName, setUserInquiry, setInfoToSet, setUserAvailability, setOptionsMapping, setOptionsFunctionMapping, setNextQuestions) => {
+  chatWidgetSetters = { setMessages, setInputMode, setUserEmail, setUserPhone, setUserName, setUserInquiry, setInfoToSet, setUserAvailability, setOptionsMapping, setOptionsFunctionMapping, setNextQuestions };
 };
 
 // Simulate a bot typing delay
@@ -35,6 +35,7 @@ export const handleRequestBusinessIntelligence = () => {
   chatWidgetSetters.setInputMode('text');
   chatWidgetSetters.setNextQuestions([
     handleCollectUserEmail, handleCollectUserAvailability, handleThankYouMessage]);
+  chatWidgetSetters.setInfoToSet(chatWidgetSetters.setUserInquiry);
   // You might set a state for 'awaitingProductInfo'
 };
 
@@ -43,11 +44,13 @@ export const handleRequestEmployeeSourcing = () => {
   // For simplicity, we'll keep the input mode as 'text' after this.
   // In a real scenario, you might offer new options here (e.g., "Leave Message", "Speak Now")
   chatWidgetSetters.setInputMode('text');
+  chatWidgetSetters.setInfoToSet(chatWidgetSetters.setUserInquiry);
 };
 
 export const handleGeneralInquiry = () => {
   sendBotMessage("How can we help you?");
   chatWidgetSetters.setInputMode('text');
+  chatWidgetSetters.setInfoToSet(chatWidgetSetters.setUserInquiry);
 };
 
 export const handleGreeting = () => {
@@ -64,12 +67,14 @@ export const handleDefaultResponse = () => {
 export const handleCollectUserEmail = () => {
     sendBotMessage("Could you please provide your email address?");
     chatWidgetSetters.setInputMode('text');
+    chatWidgetSetters.setInfoToSet(chatWidgetSetters.setUserEmail);
     // You might set a state flag like `awaitingEmail` to process the next input specifically as an email.
 }
 
 export const handleCollectUserPhone = () => {
     sendBotMessage("Could you please provide your number? We won't contact you for anything else.");
     chatWidgetSetters.setInputMode('text');
+    chatWidgetSetters.setInfoToSet(chatWidgetSetters.setUserPhone);
     // You might set a state flag like `awaitingEmail` to process the next input specifically as an email.
 }
 
@@ -89,12 +94,14 @@ export const handleCollectUserContact = () => {
 export const handleCollectUserAvailability = () => {
     sendBotMessage("What are you free to talk? Please provide a date and time that works for you.");
     chatWidgetSetters.setInputMode('text');
+    chatWidgetSetters.setInfoToSet(chatWidgetSetters.setUserAvailability);
     // You might set a state flag like `awaitingUserName`
 }
 
 export const handleCollectUserName = () => {
     sendBotMessage("What's your name, please?");
     chatWidgetSetters.setInputMode('text');
+    chatWidgetSetters.setInfoToSet(chatWidgetSetters.setUserName);
     // You might set a state flag like `awaitingUserName`
 }
 
