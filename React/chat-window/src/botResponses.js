@@ -42,6 +42,8 @@ export const handleRequestBusinessIntelligence = () => {
 
 export const handleRequestEmployeeSourcing = () => {
   sendBotMessage("Unlike traditional recruiting, we have a trusted network on subject matter experts who can guarantee you a reliable and skilled employee. Please describe the ideal candidate you are looking for.");
+  chatWidgetSetters.setNextQuestions([
+    handleCollectUserEmail, handleCollectUserAvailability, handleThankYouMessage]);
   // For simplicity, we'll keep the input mode as 'text' after this.
   // In a real scenario, you might offer new options here (e.g., "Leave Message", "Speak Now")
   chatWidgetSetters.setInputMode('text');
