@@ -25,7 +25,7 @@
     --chat-message-user-bg: var(--button-hover-color); /* From your ChatWidget CSS */
     --chat-message-user-text: white;
     --chat-message-bot-bg: #e0e0e0;
-    --chat-message-bot-text: var(--text-color); /* Will be black in light mode, white in dark */
+    --chat-message-bot-text: var(--header-color); /* Will be black in light mode, white in dark */
     --chat-input-form-bg: white;
     --chat-input-border: #ddd;
     --chat-input-text: var(--text-color);
