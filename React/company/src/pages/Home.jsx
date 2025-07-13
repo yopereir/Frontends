@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import AboutUsContent from '../components/AboutUsContent';
+import ChatWidget from '../components/chat-window/ChatWidget';
 
 const Home = () => {
   return (
@@ -11,6 +12,7 @@ const Home = () => {
         <Link to="/about" className="learn-more">About Us</Link>
       </div>
       <AboutUsContent/>
+      <ChatWidget />
       {/* You can add other sections/components here as needed */}
     </div>
   );
