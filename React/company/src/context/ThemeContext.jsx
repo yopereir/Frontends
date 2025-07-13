@@ -3,15 +3,17 @@ import React, { createContext, useState, useEffect, useMemo } from 'react';
 export const ThemeContext = createContext();
 
 export const ThemeProvider = ({ children }) => {
-  const [theme, setTheme] = useState('dark'); // Default theme
-
-  // On mount, read theme from localStorage
-  useEffect(() => {
+  // Function to get the initial theme from localStorage or system preference
+  const getInitialTheme = () => {
     const storedTheme = localStorage.getItem('theme');
     if (storedTheme) {
-      setTheme(storedTheme);
+      return storedTheme;
     }
-  }, []);
+    // Check for system preference if no theme is stored
+    return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+  };
+
+  const [theme, setTheme] = useState(getInitialTheme);
 
   // Effect to update the body class and localStorage when the theme changes
   useEffect(() => {
