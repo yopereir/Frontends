@@ -1,197 +1,272 @@
-/* index.css */
+/* Global Styles & Variables */
 :root {
-  /* Global variables */
-  --button-color: #229f65; /* Supabase green */
-  --button-hover-color: #2ebd80; /* Slightly brighter Supabase green for hover */
-  --error-color: #ff4d4d;
-  background-color: #242424;
-  --light-background-color: white;
-  --light-header-color: black;
-  --light-header-text-color: white;
-  --light-text-color: black;
-  --light-highlight-color: #e2e8f0;
-  --light-button-color: #63b3ed;
-  --dark-background-color: #1a202c;
-  --dark-header-color: #2d3748;
-  --dark-text-color: white;
-  --dark-highlight-color: #4a5568;
-  --dark-button-color: #4299e1;
+    /* Default (Dark) Theme Variables */
+    --background-color: #1a202c;
+    --header-color: rgb(31 41 55); /* Original dark header color */
+    --header-text-color: #ffffff;
+    --text-color: white;
+    --highlight-color: #4a5568; /* Used for hover states, dropdowns etc. */
+    --button-color: #4299e1;
+    --button-hover-color: oklch(0.488 0.243 264.376); /* Your existing hover color */
 
-  /* New variables for column backgrounds */
-  --light-column-background: black;
-  --dark-column-background: white;
+    /* Column backgrounds - these are swapped */
+    --column-background: white; /* Default for dark mode columns */
+    --column-text-color: #1a202c; /* Text for dark mode columns */
+
+    /* Chat Widget Specific Variables (Defaults to Dark Mode appearance) */
+    --chat-toggle-button-bg: var(--button-color); /* Matches general button */
+    --chat-toggle-button-text: var(--header-text-color);
+    --chat-window-bg: white;
+    --chat-header-bg: var(--header-color);
+    --chat-header-text: var(--header-text-color);
+    --chat-close-button-color: white;
+    --chat-messages-bg: #f9f9f9;
+    --chat-no-messages-color: #888;
+    --chat-message-user-bg: var(--button-hover-color); /* From your ChatWidget CSS */
+    --chat-message-user-text: white;
+    --chat-message-bot-bg: #e0e0e0;
+    --chat-message-bot-text: var(--header-color); /* Will be black in light mode, white in dark */
+    --chat-input-form-bg: white;
+    --chat-input-border: #ddd;
+    --chat-input-text: var(--text-color);
+    --chat-input-placeholder-color: #888;
+    --chat-input-button-bg: var(--button-color);
+    --chat-input-button-text: white;
+    --chat-option-button-bg: #6c757d; /* From your ChatWidget CSS */
+    --chat-option-button-text: white;
+    --chat-option-button-hover-bg: #5a6268;
 }
 
+/* INFO: remove all the above if you are importing into another project.
+   All the below are specific to the chat Widget and must be copied as is.
+*/
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    background-color: var(--background-color); /* Use generic variable */
+    color: var(--text-color); /* Use generic variable */
+    transition: background-color 0.3s, color 0.3s;
+}
+
+body.light-mode {
+    /* Light Mode Overrides */
+    --background-color: white;
+    --header-color: black;
+    --header-text-color: white;
+    --text-color: black;
+    --highlight-color: #e2e8f0;
+    --button-color: #63b3ed;
+    --button-hover-color: #4299e1; /* Original light mode hover color */
+
+    /* Column backgrounds - these are swapped */
+    --column-background: black; /* For light mode, columns are black */
+    --column-text-color: white; /* Text for light mode columns */
+
+    /* Chat Widget Specific Variables (Light Mode appearance) */
+    --chat-toggle-button-bg: var(--button-color);
+    --chat-toggle-button-text: var(--header-text-color);
+    --chat-window-bg: #f5f5f5; /* Lighter background for chat window */
+    --chat-header-bg: var(--header-color);
+    --chat-header-text: var(--header-text-color);
+    --chat-close-button-color: white;
+    --chat-messages-bg: var(--background-color); /* Use global background for chat messages */
+    --chat-no-messages-color: #888;
+    --chat-message-user-bg: #63b3ed; /* Light mode specific user message color */
+    --chat-message-user-text: white;
+    --chat-message-bot-bg: #f0f0f0;
+    --chat-message-bot-text: var(--text-color);
+    --chat-input-form-bg: white;
+    --chat-input-border: #ccc;
+    --chat-input-text: var(--text-color);
+    --chat-input-placeholder-color: #aaa;
+    --chat-input-button-bg: var(--button-color);
+    --chat-input-button-text: white;
+    --chat-option-button-bg: #007bff; /* Different option button for light mode */
+    --chat-option-button-text: white;
+    --chat-option-button-hover-bg: #0056b3;
+}
+
+/* src/components/ChatWidget/index.css */
 .chat-widget-container {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 1000; /* Ensure it's on top of other content */
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
 }
 
 .chat-toggle-button {
-  background-color: var(--dark-header-color);
-  color: var(--dark-text-color);
-  border: none;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  font-size: 1.2em;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-  transition: background-color 0.3s ease;
+    background-color: var(--chat-toggle-button-bg); /* Use chat specific variable */
+    color: var(--chat-toggle-button-text); /* Use chat specific variable */
+    border: none;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    font-size: 1.2em;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.chat-toggle-button.light-mode {
-  background-color: var(--light-header-color);
-  color: var(--light-header-text-color);
-}
+/* Remove .chat-toggle-button.light-mode */
 
 .chat-toggle-button:hover {
-  background-color: #0056b3;
+    background-color: var(--button-hover-color); /* Or a specific chat toggle hover color */
 }
 
 .chat-window {
-  width: 350px;
-  height: 450px;
-  background-color: white;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+    width: 350px;
+    height: 450px;
+    background-color: var(--chat-window-bg); /* Use chat specific variable */
+    border: 1px solid var(--chat-input-border); /* Use chat specific variable */
+    border-radius: 8px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .chat-header {
-  background-color: var(--dark-header-color);
-  color: var(--dark-text-color);
-  padding: 15px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-top-left-radius: 8px;
-  border-top-right-radius: 8px;
+    background-color: var(--chat-header-bg); /* Use chat specific variable */
+    color: var(--chat-header-text); /* Use chat specific variable */
+    padding: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.chat-header.light-mode {
-  background-color: var(--light-header-color);
-  color: var(--light-header-text-color);
-}
+/* Remove .chat-header.light-mode */
 
 .chat-header h3 {
-  margin: 0;
-  font-size: 1.1em;
+    margin: 0;
+    font-size: 1.1em;
 }
 
 .close-chat-button {
-  background: none;
-  border: none;
-  color: white;
-  font-size: 1.8em;
-  cursor: pointer;
-  line-height: 1; /* Aligns the 'x' better */
+    background: none;
+    border: none;
+    color: var(--chat-close-button-color); /* Use chat specific variable */
+    font-size: 1.8em;
+    cursor: pointer;
+    line-height: 1;
+    transition: color 0.3s ease;
 }
 
 .close-chat-button:hover {
-  color: #f0f0f0;
+    color: var(--highlight-color); /* Using global highlight for hover */
 }
 
 .chat-messages {
-  flex-grow: 1;
-  padding: 15px;
-  overflow-y: auto;
-  background-color: #f9f9f9;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+    flex-grow: 1;
+    padding: 15px;
+    overflow-y: auto;
+    background-color: var(--chat-messages-bg); /* Use chat specific variable */
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    transition: background-color 0.3s ease;
 }
 
 .no-messages {
-  text-align: center;
-  color: #888;
-  font-style: italic;
-  margin-top: 20px;
+    text-align: center;
+    color: var(--chat-no-messages-color); /* Use chat specific variable */
+    font-style: italic;
+    margin-top: 20px;
+    transition: color 0.3s ease;
 }
 
 .message {
-  padding: 8px 12px;
-  border-radius: 15px;
-  max-width: 80%;
-  word-wrap: break-word;
+    padding: 8px 12px;
+    border-radius: 15px;
+    max-width: 80%;
+    word-wrap: break-word;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .message.user {
-  align-self: flex-end;
-  background-color: var(--button-hover-color); /* Light green for user messages */
+    align-self: flex-end;
+    background-color: var(--chat-message-user-bg); /* Use chat specific variable */
+    color: var(--chat-message-user-text); /* Use chat specific variable */
 }
 
 .message.bot {
-  align-self: flex-start;
-  background-color: #e0e0e0; /* Light gray for bot messages */
+    align-self: flex-start;
+    background-color: var(--chat-message-bot-bg); /* Use chat specific variable */
+    color: var(--chat-message-bot-text); /* Use chat specific variable */
 }
 
 /* Styles for text input form */
 .chat-input-form {
-  display: flex;
-  padding: 10px;
-  border-top: 1px solid #ddd;
-  background-color: white;
+    display: flex;
+    padding: 10px;
+    border-top: 1px solid var(--chat-input-border); /* Use chat specific variable */
+    background-color: var(--chat-input-form-bg); /* Use chat specific variable */
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .chat-input-form input {
-  flex-grow: 1;
-  padding: 10px;
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  margin-right: 10px;
-  font-size: 1em;
+    flex-grow: 1;
+    padding: 10px;
+    border: 1px solid var(--chat-input-border); /* Use chat specific variable */
+    border-radius: 5px;
+    margin-right: 10px;
+    font-size: 1em;
+    background-color: var(--chat-input-form-bg); /* Use chat specific variable */
+    color: var(--chat-input-text); /* Use chat specific variable */
+    transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+}
+
+.chat-input-form input::placeholder {
+    color: var(--chat-input-placeholder-color); /* Use chat specific variable */
 }
 
 .chat-input-form button {
-  background-color: var(--button-color); /* Green for send button */
-  color: white;
-  border: none;
-  border-radius: 5px;
-  padding: 10px 15px;
-  cursor: pointer;
-  transition: background-color 0.3s ease;
+    background-color: var(--chat-input-button-bg); /* Use chat specific variable */
+    color: var(--chat-input-button-text); /* Use chat specific variable */
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .chat-input-form button:hover {
-  background-color: var(--button-hover-color);
+    background-color: var(--button-hover-color); /* Using global button hover */
 }
 
 /* --- Styles for Options Button Section --- */
 .chat-options {
-  display: flex;
-  flex-direction: column; /* Stack buttons vertically */
-  gap: 10px; /* Space between buttons */
-  padding: 10px;
-  border-top: 1px solid #ddd;
-  background-color: white;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding: 10px;
+    border-top: 1px solid var(--chat-input-border); /* Use chat specific variable */
+    background-color: var(--chat-input-form-bg); /* Use chat specific variable */
+    transition: background-color 0.3s ease, border-color 0.3s ease;
 }
 
 .chat-option-button {
-  background-color: var(--dark-background-color); /* A muted color for options */
-  color: white;
-  border: none;
-  border-radius: 5px;
-  padding: 10px 15px;
-  cursor: pointer;
-  font-size: 1em;
-  text-align: center;
-  transition: background-color 0.3s ease;
+    background-color: var(--chat-option-button-bg); /* Use chat specific variable */
+    color: var(--chat-option-button-text); /* Use chat specific variable */
+    border: none;
+    border-radius: 5px;
+    padding: 10px 15px;
+    cursor: pointer;
+    font-size: 1em;
+    text-align: center;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.chat-option-button.light-mode {
-  background-color: var(--light-header-color);
-  color: var(--light-header-text-color);
-}
+/* Remove .chat-option-button.light-mode */
 
 .chat-option-button:hover {
-  background-color: #5a6268;
+    background-color: var(--chat-option-button-hover-bg); /* Use chat specific variable */
 }
