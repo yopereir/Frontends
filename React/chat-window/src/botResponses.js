@@ -88,7 +88,7 @@ export const handleCollectUserPhone = () => {
 }
 
 export const handleCollectUserContactOption = () => {
-    sendBotMessage("What is your preferrece for contact? Email or Phone?");
+    sendBotMessage("What is your preference for contact? Email or Phone?");
     chatWidgetSetters.setOptionsMapping(contactOptions);
     chatWidgetSetters.setInputMode('options');
     chatWidgetSetters.setInfoToSet('');
@@ -111,7 +111,7 @@ export const handleCollectUserAvailability = () => {
 }
 
 export const handleCollectUserName = () => {
-    sendBotMessage("What's your name, please?");
+    sendBotMessage("Please state your name and/or company name.");
     chatWidgetSetters.setInputMode('text');
     chatWidgetSetters.setInfoToSet('name');
     // You might set a state flag like `awaitingUserName`
