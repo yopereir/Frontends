@@ -5,6 +5,7 @@
     --header-color: rgb(31 41 55); /* Original dark header color */
     --header-text-color: #ffffff;
     --text-color: white;
+    --input-text-color: black;
     --highlight-color: #4a5568; /* Used for hover states, dropdowns etc. */
     --button-color: #4299e1;
     --button-hover-color: oklch(0.488 0.243 264.376); /* Your existing hover color */
@@ -28,7 +29,7 @@
     --chat-message-bot-text: var(--header-color); /* Will be black in light mode, white in dark */
     --chat-input-form-bg: white;
     --chat-input-border: #ddd;
-    --chat-input-text: var(--text-color);
+    --chat-input-text: var(--input-text-color);
     --chat-input-placeholder-color: #888;
     --chat-input-button-bg: var(--button-color);
     --chat-input-button-text: white;

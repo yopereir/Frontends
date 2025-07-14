@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react'; // Import useRef
 import {
   chatOptions as importedChatOptions,
   initializeBotResponses,
   botResponseMap,
   handleGreeting,
   handleDefaultResponse
-} from './botResponses.js'; // Adjust path as needed
+} from './botResponses'; // Adjust path as needed
 import './index.css';
 
 const ChatWidget = () => {
@@ -24,6 +24,30 @@ const ChatWidget = () => {
   const [infoToSet, setInfoToSet] = useState('');
   const [nextQuestions, setNextQuestions] = useState([]);
 
+  // Create a ref for the chat messages container
+  const messagesEndRef = useRef(null);
+
+  // INFO: Either set shouldSetTheme to false OR Comment out for production. This is for Manually setting theme
+  useEffect(() => {
+    let shouldManuallySetTheme = false;
+    if (shouldManuallySetTheme) {
+      let manualTheme = 'light-mode';
+      const addClassRecursively = (element) => {
+        if (element && element.classList) {element.classList.add(manualTheme)}
+        if (element && element.children) {Array.from(element.children).forEach(child => {addClassRecursively(child)})}
+      };
+      const removeClassRecursively = (element) => {
+        if (element && element.classList) {element.classList.remove(manualTheme)}
+        if (element && element.children) {Array.from(element.children).forEach(child => {removeClassRecursively(child)})}
+      };
+      if (isOpen) {
+        if (document.body) {addClassRecursively(document.body)}
+      } else {
+        if (document.body) {removeClassRecursively(document.body)}
+      }
+      return () => {if (document.body) {removeClassRecursively(document.body)}};
+    }
+  }, [isOpen]);
 
   const setSpecificInfo = (info) => {
     switch (infoToSet) {
@@ -48,7 +72,7 @@ const ChatWidget = () => {
     }
   }
 
-  const sendInfo = async () => {
+  const sendInfo = () => {
     console.log({
       email: userEmail,
       phone: userPhone,
@@ -56,28 +80,18 @@ const ChatWidget = () => {
       availability: userAvailability,
       inquiry: userInquiry
     });
-    const body = new URLSearchParams();
-    body.append('name', userName || '');
-    body.append('email', userEmail || '');
-    body.append('phone', userPhone || '');
-    body.append('availability', userAvailability || '');
-    body.append('message', userInquiry || '');
-    try {
-      await fetch(GOOGLE_APPSCRIPT_CONTACT_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: body.toString(),
-      });
-      setIsSubmitted(true);
-    } catch (error) {
-      console.error('Error submitting form:', error);
-      setErrors({ form: 'There was an error submitting the form. Please try again.' });
-    }
   }
 
   useEffect(() => {
     initializeBotResponses(setMessages, setInputMode, setUserEmail, setUserPhone, setUserName, setUserInquiry, setInfoToSet, setUserAvailability, setOptionsMapping, setOptionsFunctionMapping, setNextQuestions, sendInfo);
   }, [setMessages, setInputMode, setUserEmail, setUserPhone, setUserName, setUserInquiry, setInfoToSet, setUserAvailability, setOptionsMapping, setOptionsFunctionMapping, setNextQuestions, sendInfo]);
+
+  // Scroll to the bottom whenever messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
+    }
+  }, [messages]);
 
   const toggleChat = () => {
     setIsOpen(!isOpen);
@@ -134,7 +148,7 @@ const ChatWidget = () => {
               &times;
             </button>
           </div>
-          <div className="chat-messages">
+          <div className="chat-messages" ref={messagesEndRef}> {/* Apply the ref here */}
             {messages.length === 0 ? (
               <p className="no-messages">Type a message or select an option to start chatting!</p>
             ) : (

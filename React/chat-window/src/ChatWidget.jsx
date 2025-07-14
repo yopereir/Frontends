@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react'; // Import useRef
 import {
   chatOptions as importedChatOptions,
   initializeBotResponses,
@@ -22,6 +22,9 @@ const ChatWidget = () => {
   const [userInquiry, setUserInquiry] = useState('');
   const [infoToSet, setInfoToSet] = useState('');
   const [nextQuestions, setNextQuestions] = useState([]);
+
+  // Create a ref for the chat messages container
+  const messagesEndRef = useRef(null);
 
   // INFO: Either set shouldSetTheme to false OR Comment out for production. This is for Manually setting theme
   useEffect(() => {
@@ -82,6 +85,13 @@ const ChatWidget = () => {
     initializeBotResponses(setMessages, setInputMode, setUserEmail, setUserPhone, setUserName, setUserInquiry, setInfoToSet, setUserAvailability, setOptionsMapping, setOptionsFunctionMapping, setNextQuestions, sendInfo);
   }, [setMessages, setInputMode, setUserEmail, setUserPhone, setUserName, setUserInquiry, setInfoToSet, setUserAvailability, setOptionsMapping, setOptionsFunctionMapping, setNextQuestions, sendInfo]);
 
+  // Scroll to the bottom whenever messages change
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollTop = messagesEndRef.current.scrollHeight;
+    }
+  }, [messages]);
+
   const toggleChat = () => {
     setIsOpen(!isOpen);
     if (!isOpen) {
@@ -137,7 +147,7 @@ const ChatWidget = () => {
               &times;
             </button>
           </div>
-          <div className="chat-messages">
+          <div className="chat-messages" ref={messagesEndRef}> {/* Apply the ref here */}
             {messages.length === 0 ? (
               <p className="no-messages">Type a message or select an option to start chatting!</p>
             ) : (

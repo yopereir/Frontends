@@ -111,7 +111,7 @@ export const handleCollectUserName = () => {
 
 export const handleThankYouMessage = (message = "") => {
     if (message != "") sendBotMessage(message);
-    else sendBotMessage("Thank you for reaching out! We will get back to you soon! Do you have anotherinquiry?");
+    else sendBotMessage("Thank you for reaching out! We will get back to you soon! Do you have another inquiry?");
     chatWidgetSetters.setOptionsMapping(yesOrNoOptions);
     chatWidgetSetters.setInputMode('options');
     // Optionally, you can reset the chat or provide further instructions
