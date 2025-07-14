@@ -12,13 +12,13 @@ const ProjectList = () => {
     {
       id: 'socratic-discussion',
       name: 'Socratic Discussion',
-      image: '/assets/socratic-discussion.webp',
+      image: '/assets/socraticDiscussion.webp',
       description: 'This innovative project aims to create a new sub-genre in gaming, specifically focused on Debating.',
     },
     {
       id: 'elf-bowling',
       name: 'Elf Bowling',
-      image: '/assets/elf-bowling.webp',
+      image: '/assets/elfBowlingPoster.webp',
       description: 'Inspired by the classic Elf Bowling game of the 90s, this project aims to keep the same gameplay mechanics and humor, while adding modern features like 4K resolution models, multiplayer and cloud-saving.',
     },
   ];
