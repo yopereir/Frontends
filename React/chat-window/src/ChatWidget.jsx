@@ -6,6 +6,7 @@ import {
   handleGreeting,
   handleDefaultResponse
 } from './botResponses'; // Adjust path as needed
+import './index.css';
 
 const ChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -79,6 +80,7 @@ const ChatWidget = () => {
       availability: userAvailability,
       inquiry: userInquiry
     });
+    // INFO: Here you can send the collected information to your backend or API
   }
 
   useEffect(() => {

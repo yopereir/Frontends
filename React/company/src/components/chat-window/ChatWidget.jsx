@@ -72,7 +72,7 @@ const ChatWidget = () => {
     }
   }
 
-  const sendInfo = () => {
+  const sendInfo = async () => {
     console.log({
       email: userEmail,
       phone: userPhone,
@@ -80,6 +80,25 @@ const ChatWidget = () => {
       availability: userAvailability,
       inquiry: userInquiry
     });
+
+    const body = new URLSearchParams();
+    body.append('name', userName);
+    body.append('email', userEmail);
+    body.append('phone', userPhone);
+    body.append('inquiry', userInquiry);
+    body.append('availability', userAvailability);
+    const GOOGLE_APPSCRIPT_CONTACT_URL = "https://script.google.com/macros/s/AKfycbyjTNX8KlQT7vmJZPhSNgvDQ2NlkIm8uux8Lud1dNijnKQ7x7066fdS0jLEtXKiZiQwOA/exec";
+    try {
+      await fetch(GOOGLE_APPSCRIPT_CONTACT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString(),
+      });
+      setIsSubmitted(true);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setErrors({ form: 'There was an error submitting the form. Please try again.' });
+    }
   }
 
   useEffect(() => {
