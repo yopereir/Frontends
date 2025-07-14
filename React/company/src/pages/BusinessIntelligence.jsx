@@ -15,7 +15,6 @@ const BusinessIntelligence = () => {
       <section id="bi-hero" className="bi-hero">
         <h1></h1>
         <p>At Grasent, we don't just process data; we empower you with actionable insights that drive growth and optimize performance. Our Business Intelligence solutions are tailored to unlock your organization's full potential.</p>
-        <p>Unlock the power of your data with Grasent's Business Intelligence services. We provide data-driven insights, custom dashboards, and AI-powered analytics to optimize your operations.</p>
       </section>
 
       {/* Three-Column Features Section */}
@@ -26,35 +25,40 @@ const BusinessIntelligence = () => {
         </div>
 
         <div className="bi-column">
-          <h2>Customizable Dashboards</h2>
+          <h2>Insightful Dashboards</h2>
           <p>Visualize your success with intuitive, interactive dashboards. Tailored to your specific KPIs, our dashboards offer real-time monitoring and reporting, putting critical information at your fingertips.</p>
         </div>
 
         <div className="bi-column">
           <h2>AI-Powered Analytics</h2>
-          <p>Step into the future with advanced AI and machine learning. Our intelligent analytics go beyond traditional reporting, offering predictive modeling, anomaly detection, and automated insights for proactive decision-making.</p>
+          <p>Step into the future with advanced AI and machine learning. Our intelligent analytics go beyond reporting, offering predictive modeling, anomaly detection, and automated insights for proactive decision-making.</p>
         </div>
       </section>
-      <div className="content" style={{ height: '80vh' }}>
-        <h1>Business Intelligence</h1>
-        <p>Transform Your Data into Strategic Advantage.</p>
-        <HashLink to="#bi-hero" className="learn-more">Learn More</HashLink>
-      </div>
+      <section id="bi-hero" className="bi-hero">
+        <h1></h1>
+        <p>Unlock the power of your data with Grasent's Business Intelligence services. We provide data-driven insights, custom dashboards, and AI-powered analytics to optimize your operations.</p>
+      </section>
       <section className="bi-columns-section" style={{backgroundColor: "#0000"}}>
         <div className="bi-column">
         <h2>Technical benefits</h2>
-        <ul>
-          <li>asd</li>
-          <li>asdasd asd asd asd as das d</li>
+        <ul style={{fontSize: "1.2em"}}>
+          <li>Efficient Data Modeling and Design</li>
+          <li>Automated Data Pipelines and Reporting</li>
+          <li>Data Visualizations for better insights</li>
+          <li>Predictive Analytics and Machine Learning Integration</li>
         </ul>
-        <p>Unlock the power of your data with Grasent's Business Intelligence services. We provide data-driven insights, custom dashboards, and AI-powered analytics to optimize your operations.</p>
         </div>
         <div className="bi-column">
         <h2>Business benefits</h2>
-        <p>Unlock the power of your data with Grasent's Business Intelligence services. We provide data-driven insights, custom dashboards, and AI-powered analytics to optimize your operations.</p>
+        <ul style={{fontSize: "1.2em"}}>
+          <li>Optimize Operational Efficiency</li>
+          <li>Identify Key Business Trends and Opportunities</li>
+          <li>Drive efficient resource allocation</li>
+          <li>Proactive Risk Management</li>
+        </ul>
         </div>
       </section>
-      <section className="cta">
+      <section className="cta" style={{backgroundColor: "#0000"}}>
         <p>Partner with us to achieve your ambitions. We are dedicated to helping you navigate challenges and seize opportunities.</p>
         <Link to="/contact" className="learn-more">Contact Us Today</Link> {/* Reusing learn-more for consistency */}
       </section>
