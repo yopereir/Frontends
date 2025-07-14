@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-const GOOGLE_APPSCRIPT_CONTACT_URL = "https://script.google.com/macros/s/AKfycbwzNvD6kqGtGEsluak9ZzQ0e5yKyure0na2HvkifUlUjlo0iZt2uWvnHWhGcEGnmW_qWg/exec";
+const GOOGLE_APPSCRIPT_CONTACT_URL = "https://script.google.com/macros/s/AKfycbyjTNX8KlQT7vmJZPhSNgvDQ2NlkIm8uux8Lud1dNijnKQ7x7066fdS0jLEtXKiZiQwOA/exec";
 
 const ContactForm = () => {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
