@@ -23,6 +23,7 @@ const ChatWidget = () => {
   const [userInquiry, setUserInquiry] = useState('');
   const [infoToSet, setInfoToSet] = useState('');
   const [nextQuestions, setNextQuestions] = useState([]);
+  const [waitForInput, setWaitForInput] = useState(false);
 
   // Create a ref for the chat messages container
   const messagesEndRef = useRef(null);
@@ -84,8 +85,8 @@ const ChatWidget = () => {
   }
 
   useEffect(() => {
-    initializeBotResponses(setMessages, setInputMode, setUserEmail, setUserPhone, setUserName, setUserInquiry, setInfoToSet, setUserAvailability, setOptionsMapping, setOptionsFunctionMapping, setNextQuestions, sendInfo);
-  }, [setMessages, setInputMode, setUserEmail, setUserPhone, setUserName, setUserInquiry, setInfoToSet, setUserAvailability, setOptionsMapping, setOptionsFunctionMapping, setNextQuestions, sendInfo]);
+    initializeBotResponses(setMessages, setInputMode, setUserEmail, setUserPhone, setUserName, setUserInquiry, setInfoToSet, setUserAvailability, setOptionsMapping, setOptionsFunctionMapping, setNextQuestions, sendInfo, setWaitForInput);
+  }, [setMessages, setInputMode, setUserEmail, setUserPhone, setUserName, setUserInquiry, setInfoToSet, setUserAvailability, setOptionsMapping, setOptionsFunctionMapping, setNextQuestions, sendInfo, setWaitForInput]);
 
   // Scroll to the bottom whenever messages change
   useEffect(() => {
@@ -125,9 +126,13 @@ const ChatWidget = () => {
       }
       try {
         setSpecificInfo(userMessage);
-        if (nextQuestions.length !== 0) {
-          nextQuestions[0]();
-          setNextQuestions(nextQuestions.slice(1));
+        if (waitForInput) {
+          setWaitForInput(false);
+        } else {
+          if (nextQuestions.length !== 0) {
+            nextQuestions[0]();
+            setNextQuestions(nextQuestions.slice(1));
+          }
         }
       } catch (error) {
         console.error("Error setting specific info:", error);
