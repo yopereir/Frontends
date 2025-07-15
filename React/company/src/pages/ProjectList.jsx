@@ -6,7 +6,7 @@ const ProjectList = () => {
     {
       id: 'road-rage',
       name: 'Road Rage',
-      image: '/assets/road-rage.webp',
+      image: '/assets/RoadRage.webp',
       description: 'Inspired by the classic Road Rash game of the 90s, this project aims to keep the same gameplay mechanics, the same humor and the same Grudge theme, while adding modern features like 4K resolution sprites, multiplayer and cloud-saving.',
     },
     {

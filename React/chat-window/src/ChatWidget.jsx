@@ -167,7 +167,7 @@ const ChatWidget = () => {
           </div>
           {inputMode === 'text' ? (
             <form className="chat-input-form" onSubmit={handleSendMessage}>
-              <input
+              <textarea
                 type="text"
                 value={inputValue}
                 onChange={(e) => setInputValue(e.target.value)}
