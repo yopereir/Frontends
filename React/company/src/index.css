@@ -54,13 +54,10 @@ body.light-mode {
     --header-color: black;
     --header-text-color: white;
     --text-color: black;
+    --header-text-color: white;
     --highlight-color: #e2e8f0;
     --button-color: #63b3ed;
     --button-hover-color: #4299e1; /* Original light mode hover color */
-
-    /* Column backgrounds - these are swapped */
-    --column-background: black; /* For light mode, columns are black */
-    --column-text-color: white; /* Text for light mode columns */
 
     /* Chat Widget Specific Variables (Light Mode appearance) */
     --chat-toggle-button-bg: var(--button-color);
@@ -167,7 +164,7 @@ header .theme-toggle {
 /* Footer */
 footer {
     background-color: var(--header-color); /* Use generic variable */
-    color: var(--text-color); /* Use generic variable */
+    color: var(--header-text-color); /* Use generic variable */
     padding: 20px;
     text-align: center;
     display: flex;
@@ -181,13 +178,16 @@ footer a {
     margin-bottom: 10px;
     flex: 1;
     text-align: center;
-    color: var(--text-color); /* Use generic variable */
     text-decoration: none;
     transition: color 0.3s;
 }
 
 footer a:hover {
     text-decoration: underline;
+}
+
+footer a:visited {
+    color: var(--header-text-color);
 }
 
 footer p {
@@ -402,7 +402,7 @@ footer p {
     gap: 20px;
     flex-wrap: wrap;
     box-sizing: border-box;
-    background-color: var(--background-color); /* Use general background color */
+    background-color: var(--header-color); /* Use general background color */
     transition: background-color 0.3s;
 }
 

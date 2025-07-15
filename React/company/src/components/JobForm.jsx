@@ -126,8 +126,8 @@ const JobForm = () => {
     <>
       <style>{styles}</style>
       <div className="job-form-container">
-        <h1>Employee Sourcing</h1>
-        <h3>We work with a network of Subject Matter Experts instead of Recruiters to source qualified Candidates and guarantee Candidate retention for at least 6 months.</h3>
+        <h1>Job Form</h1>
+        <p>Our efficient sourcing and vetting processes means you fill critical roles faster, usually within 2-4 weeks.</p>
         <form onSubmit={handleSubmit} noValidate>
           <div className="form-group">
             <label htmlFor="companyname">Company Name:</label>

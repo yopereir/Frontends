@@ -4,6 +4,37 @@ import JobForm from '../components/JobForm';
 const JobRequest = () => {
   return (
     <div>
+      {/* Hero Section for About Us */}
+      <section className="bi-hero" style={{backgroundColor: "#0000"}}> {/* Reusing bi-hero for consistent full-width header style */}
+        <h1>Employee Sourcing</h1>
+        <p>We work with a network of Subject Matter Experts instead of Recruiters to source qualified Candidates and guarantee Candidate retention for at least 6 months.</p>
+      </section>
+      <div className="content-bigcard">
+        <h1>What we do</h1>
+        <ul>
+          <li><strong>Direct Hire:</strong> Find the perfect long-term addition to your team with our comprehensive direct hire solutions.</li>
+          <li><strong>Contract Staffing:</strong> Scale your workforce up or down with flexibility, leveraging our skilled contract IT professionals for short-term projects or ongoing support.</li>
+          <li><strong>Web3 Hiring:</strong> Navigate the world of Web3 with confidence. We specialize in sourcing talent for blockchain, decentralized finance (DeFi), NFTs, and other emerging Web3 technologies.</li>
+          <li><strong>International Payroll:</strong> We streamline your global payroll, making it effortless to pay your talent, no matter where they are.</li>
+        </ul>
+        <br />
+      </div>
+      <section className="bi-columns-section">
+        <div className="bi-column">
+          <h2>Retention guaranteed</h2>
+          <p>We guarantee finding quality candidates and will refund any commission if issues arise.</p>
+        </div>
+
+        <div className="bi-column">
+          <h2>Industry Expertise</h2>
+          <p>Instead of using traditional recruiters, we network with Subject Matter Experts and people already working in similar roles to get genuine candidates.</p>
+        </div>
+
+        <div className="bi-column">
+          <h2>Global Payroll, Local Currency</h2>
+          <p>We streamline complexities of international payroll while you pay to single account in your local currency.</p>
+        </div>
+      </section>
       <JobForm />
     </div>
   );

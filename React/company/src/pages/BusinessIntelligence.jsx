@@ -58,7 +58,7 @@ const BusinessIntelligence = () => {
         </ul>
         </div>
       </section>
-      <section className="cta" style={{backgroundColor: "#0000"}}>
+      <section className="cta" style={{backgroundColor: "#0000", color: "#000"}}>
         <p>Partner with us to achieve your ambitions. We are dedicated to helping you navigate challenges and seize opportunities.</p>
         <Link to="/contact" className="learn-more">Contact Us Today</Link> {/* Reusing learn-more for consistency */}
       </section>
