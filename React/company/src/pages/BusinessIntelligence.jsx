@@ -2,6 +2,7 @@ import React from 'react';
 import { HashLink } from 'react-router-hash-link';
 import { Link } from 'react-router-dom';
 import '../index.css'; // Ensure your CSS is imported
+import ChatWidget from '../components/chat-window/ChatWidget';
 
 const BusinessIntelligence = () => {
   return (
@@ -62,6 +63,7 @@ const BusinessIntelligence = () => {
         <p>Partner with us to achieve your ambitions. We are dedicated to helping you navigate challenges and seize opportunities.</p>
         <Link to="/contact" className="learn-more">Contact Us Today</Link> {/* Reusing learn-more for consistency */}
       </section>
+      <ChatWidget />
     </>
   );
 };

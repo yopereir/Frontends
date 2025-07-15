@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import ChatWidget from '../components/chat-window/ChatWidget';
 
 const ProjectList = () => {
   const projects = [
@@ -58,8 +59,8 @@ const ProjectList = () => {
       <p>Got a groundbreaking project but need the right resources to make it a reality? We're your all-in-one solution for turning brilliant ideas into impactful successes.</p>
         <Link to="/contact" className="learn-more">Contact Us Today</Link> {/* Reusing learn-more for consistency */}
       </section>
+      <ChatWidget />
       </>
-
   );
 };
 

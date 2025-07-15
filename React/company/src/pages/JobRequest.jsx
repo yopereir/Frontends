@@ -1,5 +1,6 @@
 import React from 'react';
 import JobForm from '../components/JobForm';
+import ChatWidget from '../components/chat-window/ChatWidget';
 
 const JobRequest = () => {
   return (
@@ -36,6 +37,7 @@ const JobRequest = () => {
         </div>
       </section>
       <JobForm />
+      <ChatWidget />
     </div>
   );
 };
