@@ -1,36 +1,48 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import ReactMarkdown from 'react-markdown';
-
-// Import the markdown file directly
-import socraticDiscussionMarkdown from '../markdown/socratic-discussion.md';
-import roadRageMarkdown from '../markdown/road-rage.md';
-import elfBowlingMarkdown from '../markdown/elf-bowling.md';
-
-const projectData = {
-  'road-rage': {
-    name: 'Road Rage',
-    description:
-      'Inspired by the classic Road Rash game of the 90s, this project aims to keep the same gameplay mechanics, the same humor and the same Grudge theme, while adding modern features like 4K resolution sprites, multiplayer and cloud-saving.',
-    markdown: roadRageMarkdown
-  },
-  'socratic-discussion': {
-    name: 'Socratic Discussion',
-    description:
-      'This innovative project aims to create a new sub-genre in gaming, specifically focused on Debating.',
-    markdown: socraticDiscussionMarkdown,
-  },
-  'elf-bowling': {
-    name: 'Elf Bowling',
-    description:
-      'Inspired by the classic Elf Bowling game of the 90s, this project aims to keep the same gameplay mechanics and humor, while adding modern features like 4K resolution models, multiplayer and cloud-saving.',
-    markdown: elfBowlingMarkdown,
-  },
-};
+import projectData from './projects.json';
 
 const ProjectInfo = () => {
   const { projectId } = useParams();
-  const project = projectData[projectId];
+  const project = projectData['projects'].find((p) => p.id === projectId);
+  
+  // State to hold the fetched markdown content
+  const [markdownContent, setMarkdownContent] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    // Reset states
+    setLoading(true);
+    setError(null);
+    setMarkdownContent(''); // Clear previous content
+
+    if (!project || !project.markdown) {
+      setError(new Error('No project or markdown path found for this ID.'));
+      setLoading(false);
+      return;
+    }
+
+    // Fetch the markdown file
+    fetch(project.markdown)
+      .then(response => {
+        if (!response.ok) {
+          // If the response is not OK (e.g., 404), throw an error
+          throw new Error(`Failed to fetch markdown: ${response.statusText} (${response.status})`);
+        }
+        return response.text(); // Get the response as plain text
+      })
+      .then(text => {
+        setMarkdownContent(text); // Set the markdown content
+        setLoading(false); // Set loading to false
+      })
+      .catch(err => {
+        console.error("Error fetching markdown:", err);
+        setError(err); // Store the error
+        setLoading(false); // Set loading to false
+      });
+  }, [project]);
 
   const styles = `
     .content-projectinfo {
@@ -103,6 +115,15 @@ const ProjectInfo = () => {
         background: #ccc;
         margin: 40px 0;
     }
+
+    .centered-image {
+      display: block; /* Essential for margin: auto to work */
+      margin-left: auto;
+      margin-right: auto;
+      /* Optional: Set a max-width for responsiveness */
+      max-width: 100%;
+      height: auto; /* Maintain aspect ratio */
+    }
   `;
 
   if (!project) {
@@ -121,22 +142,28 @@ const ProjectInfo = () => {
     <>
       <style>{styles}</style>
       <div className="content-projectinfo">
-        {project.markdown ? (
+        {loading ? (<h1></h1>):
+        markdownContent != ''? (
           <ReactMarkdown 
             components={{
+              img: ({ node, ...props }) => (
+                <img {...props} className="centered-image" />
+              ),
               a: ({ node, ...props }) => (
-                <div style={{ textAlign: 'center' }}>
-                  <a className="submit-button" {...props} />
-                </div>
+                  <a style={{ textAlign: 'center' }} className="submit-button" {...props} />
+              ),
+              p: ({ node, ...props }) => (
+                  <p style={{ textAlign: 'center' }} {...props} />
               ),
             }}
-          >{project.markdown}</ReactMarkdown>
+          >{markdownContent}</ReactMarkdown>
           ) : (
           <>
-            <h1>{project.name}</h1>
-            <p>{project.description}</p>
+            <h1>{project['name']}</h1>
+            <p>{project['description']}</p>
           </>
-        )}
+        )
+      }
       </div>
     </>
   );
