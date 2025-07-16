@@ -1,0 +1,465 @@
+/* Global Styles & Variables */
+:root {
+    /* Default (Dark) Theme Variables */
+    --background-color: #1a202c;
+    --header-color: rgb(31 41 55); /* Original dark header color */
+    --header-text-color: #ffffff;
+    --text-color: white;
+    --input-text-color: black;
+    --highlight-color: #4a5568; /* Used for hover states, dropdowns etc. */
+    --button-color: #4299e1;
+    --button-hover-color: oklch(0.488 0.243 264.376); /* Your existing hover color */
+
+    /* Column backgrounds - these are swapped */
+    --column-background: white; /* Default for dark mode columns */
+    --column-text-color: #1a202c; /* Text for dark mode columns */
+
+    /* Chat Widget Specific Variables (Defaults to Dark Mode appearance) */
+    --chat-toggle-button-bg: var(--button-color); /* Matches general button */
+    --chat-toggle-button-text: var(--header-text-color);
+    --chat-window-bg: white;
+    --chat-header-bg: var(--header-color);
+    --chat-header-text: var(--header-text-color);
+    --chat-close-button-color: white;
+    --chat-messages-bg: #f9f9f9;
+    --chat-no-messages-color: #888;
+    --chat-message-user-bg: var(--button-hover-color); /* From your ChatWidget CSS */
+    --chat-message-user-text: white;
+    --chat-message-bot-bg: #e0e0e0;
+    --chat-message-bot-text: var(--header-color); /* Will be black in light mode, white in dark */
+    --chat-input-form-bg: white;
+    --chat-input-border: #ddd;
+    --chat-input-text: var(--input-text-color);
+    --chat-input-placeholder-color: #888;
+    --chat-input-button-bg: var(--button-color);
+    --chat-input-button-text: white;
+    --chat-option-button-bg: #6c757d; /* From your ChatWidget CSS */
+    --chat-option-button-text: white;
+    --chat-option-button-hover-bg: #5a6268;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    background-color: var(--background-color); /* Use generic variable */
+    color: var(--text-color); /* Use generic variable */
+    transition: background-color 0.3s, color 0.3s;
+}
+
+body.light-mode {
+    /* Light Mode Overrides */
+    --background-color: white;
+    --header-color: black;
+    --header-text-color: white;
+    --text-color: black;
+    --header-text-color: white;
+    --highlight-color: #e2e8f0;
+    --button-color: #63b3ed;
+    --button-hover-color: #4299e1; /* Original light mode hover color */
+
+    /* Chat Widget Specific Variables (Light Mode appearance) */
+    --chat-toggle-button-bg: var(--button-color);
+    --chat-toggle-button-text: var(--header-text-color);
+    --chat-window-bg: #f5f5f5; /* Lighter background for chat window */
+    --chat-header-bg: var(--header-color);
+    --chat-header-text: var(--header-text-color);
+    --chat-close-button-color: white;
+    --chat-messages-bg: var(--background-color); /* Use global background for chat messages */
+    --chat-no-messages-color: #888;
+    --chat-message-user-bg: #63b3ed; /* Light mode specific user message color */
+    --chat-message-user-text: white;
+    --chat-message-bot-bg: #f0f0f0;
+    --chat-message-bot-text: var(--text-color);
+    --chat-input-form-bg: white;
+    --chat-input-border: #ccc;
+    --chat-input-text: var(--text-color);
+    --chat-input-placeholder-color: #aaa;
+    --chat-input-button-bg: var(--button-color);
+    --chat-input-button-text: white;
+    --chat-option-button-bg: #007bff; /* Different option button for light mode */
+    --chat-option-button-text: white;
+    --chat-option-button-hover-bg: #0056b3;
+}
+
+/* Layout */
+main {
+    padding: 0;
+    min-height: 80vh;
+}
+
+/* Header */
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background-color: var(--header-color); /* Use generic variable */
+    color: var(--header-text-color); /* Use generic variable */
+    height: 10vh;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+header .logo {
+    font-size: 1.5em;
+    font-weight: bold;
+    margin-right: auto;
+}
+
+header nav ul {
+    list-style: none;
+    display: flex;
+    margin-left: auto;
+    align-items: center;
+}
+
+header nav li {
+    margin-left: 20px;
+    position: relative;
+}
+
+header nav a, header div a {
+    text-decoration: none;
+    color: var(--header-text-color); /* Use generic variable */
+    transition: color 0.3s;
+}
+
+header .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: var(--header-color); /* Use generic variable */
+    text-align: center;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+    transition: background-color 0.3s;
+}
+
+header .dropdown-content a {
+    color: var(--header-text-color); /* Use generic variable */
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    transition: color 0.3s;
+}
+
+header .dropdown-content a:hover {
+    background-color: var(--highlight-color); /* Use generic variable */
+}
+
+header .services:hover .dropdown-content {
+    display: block;
+}
+
+header .theme-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--header-text-color); /* Use generic variable */
+    font-size: 1.2em;
+    transition: color 0.3s;
+}
+
+/* Footer */
+footer {
+    background-color: var(--header-color); /* Use generic variable */
+    color: var(--header-text-color); /* Use generic variable */
+    padding: 20px;
+    text-align: center;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    flex-wrap: wrap;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+footer a {
+    margin-bottom: 10px;
+    flex: 1;
+    text-align: center;
+    text-decoration: none;
+    transition: color 0.3s;
+}
+
+footer a:hover {
+    text-decoration: underline;
+}
+
+footer a:visited {
+    color: var(--header-text-color);
+}
+
+footer p {
+    margin-top: 20px;
+    width: 100%;
+    text-align: center;
+}
+
+/* Content & Page Specific */
+.content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    min-height: 70vh;
+}
+
+.content h1 {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+}
+
+.content p {
+    font-size: 1.2em;
+    margin-bottom: 30px;
+}
+
+.learn-more {
+    background-color: var(--button-color); /* Use generic variable */
+    width: 10em;
+    color: #ffffff;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1.1em;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.3s;
+}
+
+.learn-more:hover {
+    background-color: var(--button-hover-color); /* Use generic variable */
+}
+
+/* Project List */
+.projectlist {
+    margin: auto;
+    padding: 2rem 1rem;
+    max-width: 1200px;
+}
+
+.heading {
+    font-size: 1.875rem;
+    font-weight: 600;
+    text-align: center;
+    margin-bottom: 1.5rem;
+    color: var(--text-color); /* Make heading color dynamic */
+    transition: color 0.3s;
+}
+
+.project-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+}
+
+.project-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1),
+                0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    cursor: pointer;
+    flex: 1;
+    min-width: 200px;
+    max-width: 300px;
+    height: 400px;
+    color: white; /* Text inside overlay remains white */
+    text-decoration: none;
+    transition: transform 0.3s ease;
+}
+
+.project-card:hover {
+    transform: translateY(-0.5rem);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2), 0 4px 6px -2px rgba(0, 0, 0, 0.1);
+}
+
+.project-card img {
+    width: 100%;
+    height: 100%;
+    object-fit: fill;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+.project-card-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.6);
+    z-index: 2;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    color: white;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    overflow-y: auto;
+}
+
+.project-card:hover .project-card-overlay {
+    opacity: 1;
+}
+
+.project-card-overlay h3 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.project-card-overlay p {
+    font-size: 1rem;
+}
+
+
+/* Big Card */
+.content-bigcard {
+    background-color: var(--column-background); /* Use column background variable */
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 600px;
+    margin: 40px auto;
+    color: var(--column-text-color); /* Use column text color variable */
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.content-bigcard h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: var(--column-text-color); /* Ensure heading inside card changes color */
+}
+
+.content-bigcard p {
+    color: var(--column-text-color); /* Ensure paragraphs inside card change color */
+}
+
+.content-bigcard ul {
+    color: var(--column-text-color); /* Ensure list items inside card change color */
+    list-style-position: inside;
+    text-align: left;
+}
+
+.content-bigcard .submit-button {
+    display: block;
+    width: 160px;
+    padding: 12px;
+    background-color: var(--button-color); /* Use generic button color */
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 18px;
+    transition: background-color 0.3s ease;
+    margin: 20px auto 0;
+    text-decoration: none;
+    text-align: center;
+}
+
+.content-bigcard .submit-button:hover {
+    background-color: var(--button-hover-color); /* Use generic hover color */
+}
+
+/* Updated Styles for Business Intelligence Page */
+.bi-hero {
+    width: 100%;
+    padding: 40px 20px;
+    background-color: var(--background-color); /* Use general background color */
+    color: var(--text-color); /* Use general text color */
+    text-align: center;
+    transition: background-color 0.3s, color 0.3s;
+    box-sizing: border-box;
+}
+
+.bi-hero h1 {
+    font-size: 3em;
+    margin-bottom: 15px;
+}
+
+.bi-hero p {
+    font-size: 1.3em;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.bi-columns-section {
+    width: 100%;
+    padding: 40px 20px;
+    display: flex;
+    justify-content: center;
+    align-items: stretch;
+    gap: 20px;
+    flex-wrap: wrap;
+    box-sizing: border-box;
+    background-color: var(--header-color); /* Use general background color */
+    transition: background-color 0.3s;
+}
+
+.bi-column {
+    flex: 1;
+    min-width: 280px;
+    max-width: 380px;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    background-color: var(--column-background); /* Use column variable */
+    color: var(--column-text-color); /* Use column text variable */
+    transition: background-color 0.3s, color 0.3s, transform 0.3s ease;
+}
+
+.bi-column:hover {
+    transform: translateY(-5px);
+}
+
+.bi-column h2 {
+    font-size: 1.8em;
+    margin-bottom: 15px;
+}
+
+.bi-column ul {
+    text-align: left;
+}
+
+.bi-column p {
+    font-size: 1.1em;
+    line-height: 1.7;
+}
+
+.cta {
+    text-align: center;
+    padding: 60px 20px;
+    background-color: var(--header-color); /* Use generic header color */
+    color: var(--header-text-color); /* Use generic header text color */
+    transition: background-color 0.3s, color 0.3s;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.cta p {
+    font-size: 1.4em;
+    max-width: 800px;
+    margin: 0 auto 30px auto;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .bi-columns-section {
+        flex-direction: column;
+        align-items: center;
+    }
+    .bi-column {
+        max-width: 90%;
+    }
+}

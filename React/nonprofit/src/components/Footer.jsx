@@ -8,7 +8,7 @@ const Footer = () => {
       <Link to="/contact">Contact Us</Link>
       <Link to="/publishing">Projects</Link>
       <p style={{ display: 'block' }}>
-        &copy;{new Date().getFullYear()} Grasent.
+        &copy;{new Date().getFullYear()} GraceSent.
       </p>
     </footer>
   );

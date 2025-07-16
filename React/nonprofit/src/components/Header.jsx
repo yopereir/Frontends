@@ -26,7 +26,7 @@ const Header = () => {
 
   return (
     <header>
-      <div className="logo"><Link to="/">Grasent</Link></div>
+      <div className="logo"><Link to="/">GraceSent</Link></div>
       <nav>
         <ul>
           <li className="services">

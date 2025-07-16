@@ -10,12 +10,12 @@ const BusinessIntelligence = () => {
       {/* Hero Section */}
       <div className="content" style={{ height: '80vh' }}>
         <h1>Business Intelligence</h1>
-        <p>Transform Your Data into Strategic Advantage.</p>
+        <p>Transform Your Data into a strategic advantage for Kingdom work.</p>
         <HashLink to="#bi-hero" className="learn-more">Learn More</HashLink>
       </div>
       <section id="bi-hero" className="bi-hero">
         <h1></h1>
-        <p>At Grasent, we don't just process data; we empower you with actionable insights that drive growth and optimize performance. Our Business Intelligence solutions are tailored to unlock your organization's full potential.</p>
+        <p>We create pipelines for data collection and empower you with actionable insights that drive growth and optimize performance. Our Business Intelligence solutions are tailored to help your organization in Gospel Sharing.</p>
       </section>
 
       {/* Three-Column Features Section */}
@@ -37,7 +37,7 @@ const BusinessIntelligence = () => {
       </section>
       <section id="bi-hero" className="bi-hero">
         <h1></h1>
-        <p>Unlock the power of your data with Grasent's Business Intelligence services. We provide data-driven insights, custom dashboards, and AI-powered analytics to optimize your operations.</p>
+        <p>Unlock the power of your data with GraceSent's Business Intelligence services. We provide data-driven insights, custom dashboards, and AI-powered analytics to optimize your operations.</p>
       </section>
       <section className="bi-columns-section" style={{backgroundColor: "#0000"}}>
         <div className="bi-column">
@@ -60,7 +60,7 @@ const BusinessIntelligence = () => {
         </div>
       </section>
       <section className="cta" style={{backgroundColor: "#0000", color: "var(--text-color)"}}>
-        <p>Partner with us to achieve your ambitions. We are dedicated to helping you navigate challenges and seize opportunities.</p>
+        <p>Partner with us to achieve your vision. We are dedicated to helping you navigate challenges and seize opportunities for Kingdom work.</p>
         <Link to="/contact" className="learn-more">Contact Us Today</Link> {/* Reusing learn-more for consistency */}
       </section>
       <ChatWidget />

@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import ChatWidget from '../components/chat-window/ChatWidget';
 import projectData from './projects.json';
 
-const ProjectList = () => {
+const Publishing = () => {
   return (
     <>
       <div className="projectlist">
@@ -44,4 +44,4 @@ const ProjectList = () => {
   );
 };
 
-export default ProjectList;
+export default Publishing;

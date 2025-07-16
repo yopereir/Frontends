@@ -14,7 +14,7 @@ export default defineConfig({
       },
     },
     Sitemap({
-      hostname: 'https://www.grasent.com',
+      hostname: 'https://www.gracesent.com',
       dynamicRoutes: [
         '/',
         '/about',
@@ -22,9 +22,9 @@ export default defineConfig({
         '/jobrequest',
         '/businessintelligence',
         '/publishing',
-        '/projects/road-rage',
-        '/projects/socratic-discussion',
-        '/projects/elf-bowling',
+        '/projects/bible-blockchain',
+        '/projects/christian-boardgames',
+        '/projects/light-pictures',
       ],
     }),
   ],
