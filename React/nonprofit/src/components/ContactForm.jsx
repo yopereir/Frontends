@@ -7,6 +7,8 @@ const ContactForm = () => {
   const [formData, setFormData] = useState({ name: '', email: '', message: '' });
   const [errors, setErrors] = useState({});
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false); // New state to track submission in progress
+  const [submissionError, setSubmissionError] = useState(null); // New state for general submission errors
 
   const styles = `
     .contact-form-container {
@@ -49,8 +51,19 @@ const ContactForm = () => {
         cursor: pointer;
         font-size: 18px;
         margin: 0 auto;
+        transition: background-color 0.3s ease;
+    }
+    .submit-button:disabled {
+        background-color: #a0aec0; /* Lighter color when disabled */
+        cursor: not-allowed;
     }
     .thank-you-message { text-align: center; font-size: 1.2em; padding: 20px; }
+    .submission-error-message {
+        color: red;
+        text-align: center;
+        margin-top: 15px;
+        font-size: 15px;
+    }
   `;
 
   const validate = () => {
@@ -67,12 +80,23 @@ const ContactForm = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Prevent multiple submissions if already submitting
+    if (isSubmitting) {
+      return;
+    }
+
     const newErrors = validate();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
+      setSubmissionError(null); // Clear any previous submission errors
       return;
     }
-    
+
+    setIsSubmitting(true); // Set submitting state to true
+    setSubmissionError(null); // Clear any previous submission errors
+    setErrors({}); // Clear field-specific errors
+
     const body = new URLSearchParams();
     body.append('name', formData.name);
     body.append('email', formData.email);
@@ -87,14 +111,21 @@ const ContactForm = () => {
       setIsSubmitted(true);
     } catch (error) {
       console.error('Error submitting form:', error);
-      setErrors({ form: 'There was an error submitting the form. Please try again.' });
+      setSubmissionError('There was an error submitting the form. Please try again.');
+    } finally {
+      setIsSubmitting(false); // Reset submitting state
     }
   };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    // Clear the specific field error when the user starts typing
     if (errors[e.target.name]) {
       setErrors({ ...errors, [e.target.name]: null });
+    }
+    // Clear general submission error if it exists
+    if (submissionError) {
+      setSubmissionError(null);
     }
   };
 
@@ -106,7 +137,10 @@ const ContactForm = () => {
           <div className="thank-you-message">
             Thank you for reaching out!<br />We will get back to you soon!
           </div>
-          <button className="submit-button" href="/"><Link to="/">Home Page</Link></button>
+          {/* Using a regular button with an onClick handler for navigation */}
+          <button className="submit-button" onClick={() => window.location.href = "/"}>
+            Home Page
+          </button>
         </div>
       </>
     );
@@ -133,8 +167,10 @@ const ContactForm = () => {
             <textarea id="message" name="message" placeholder="Enter your Message" value={formData.message} onChange={handleChange}></textarea>
             {errors.message && <div className="error-message">{errors.message}</div>}
           </div>
-          {errors.form && <div className="error-message">{errors.form}</div>}
-          <button type="submit" className="submit-button">Submit</button>
+          {submissionError && <div className="submission-error-message">{submissionError}</div>}
+          <button type="submit" className="submit-button" disabled={isSubmitting}>
+            {isSubmitting ? 'Submitting...' : 'Submit'}
+          </button>
         </form>
       </div>
     </>
