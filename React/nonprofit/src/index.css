@@ -175,6 +175,7 @@ footer {
 }
 
 footer a {
+    color: var(--header-text-color);
     margin-bottom: 10px;
     flex: 1;
     text-align: center;
