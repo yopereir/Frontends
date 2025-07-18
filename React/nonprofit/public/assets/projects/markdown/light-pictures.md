@@ -2,7 +2,7 @@
 
 ![The Light Pictures Poster](/assets/projects/images/light-pictures.webp)
 
-Inspired by the Cinematic Horror genre games like The Dark Pictures Anthology, Walking Dead, this Game aims to be a Cinematic story and choice driven game based on the Acts of the Apostles.
+Inspired by the Cinematic Thriller genre games like The Dark Pictures Anthology, Walking Dead, this Game aims to be a Cinematic story and choice driven game based on the Acts of the Apostles.
 
 Unreal Engine 5 will be used with mocap and create cinematic graphics in par with top games in the industry.
 
