@@ -7,7 +7,9 @@ import ChatWidget from '../components/chat-window/ChatWidget';
 const AboutUs = () => {
   return (
     <>
-      <AboutUsContent />
+      <div className="content-section">
+        <AboutUsContent />
+      </div>
       {/* Hero Section for About Us */}
       <section className="bi-hero"> {/* Reusing bi-hero for consistent full-width header style */}
         <h1>Complete IT Solutions</h1>

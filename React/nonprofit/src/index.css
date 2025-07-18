@@ -324,6 +324,17 @@ footer p {
 
 
 /* Big Card */
+.content-section{
+    display: flex; /* Enable flexbox */
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    min-height: 100vh; /* Make this section at least the full viewport height */
+    /* Add padding to prevent content from touching screen edges on small devices */
+    padding: 20px;
+    box-sizing: border-box; /* Include padding in element's total width and height */
+    transition: background-color 0.3s;
+}
+
 .content-bigcard {
     background-color: var(--column-background); /* Use column background variable */
     padding: 40px;
@@ -331,7 +342,6 @@ footer p {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     width: 100%;
     max-width: 600px;
-    margin: 40px auto;
     color: var(--column-text-color); /* Use column text color variable */
     transition: background-color 0.3s, color 0.3s;
 }
@@ -462,5 +472,8 @@ footer p {
     }
     .bi-column {
         max-width: 90%;
+    }
+    .content-section {
+        min-height: auto;
     }
 }

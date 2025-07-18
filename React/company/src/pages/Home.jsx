@@ -11,7 +11,9 @@ const Home = () => {
         <p>Committed to resolving bottlenecks for businesses and raising capital.</p>
         <Link to="/about" className="learn-more">About Us</Link>
       </div>
-      <AboutUsContent/>
+      <div className="content-section">
+        <AboutUsContent/>
+      </div>
       <ChatWidget />
       {/* You can add other sections/components here as needed */}
     </div>

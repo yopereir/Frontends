@@ -10,15 +10,17 @@ const JobRequest = () => {
         <h1>Employee Sourcing</h1>
         <p>We work with a network of Subject Matter Experts instead of Recruiters to source qualified Candidates and guarantee Candidate retention for at least 6 months.</p>
       </section>
-      <div className="content-bigcard">
-        <h1>What we do</h1>
-        <ul>
-          <li><strong>Direct Hire:</strong> Find the perfect long-term addition to your team with our comprehensive direct hire solutions.</li>
-          <li><strong>Contract Staffing:</strong> Scale your workforce up or down with flexibility, leveraging our skilled contract IT professionals for short-term projects or ongoing support.</li>
-          <li><strong>Web3 Hiring:</strong> Navigate the world of Web3 with confidence. We specialize in sourcing talent for blockchain, decentralized finance (DeFi), NFTs, and other emerging Web3 technologies.</li>
-          <li><strong>International Payroll:</strong> We streamline your global payroll, making it effortless to pay your talent, no matter where they are.</li>
-        </ul>
-        <br />
+      <div className="content-section">
+        <div className="content-bigcard">
+          <h1>What we do</h1>
+          <ul>
+            <li><strong>Direct Hire:</strong> Find the perfect long-term addition to your team with our comprehensive direct hire solutions.</li>
+            <li><strong>Contract Staffing:</strong> Scale your workforce up or down with flexibility, leveraging our skilled contract IT professionals for short-term projects or ongoing support.</li>
+            <li><strong>Web3 Hiring:</strong> Navigate the world of Web3 with confidence. We specialize in sourcing talent for blockchain, decentralized finance (DeFi), NFTs, and other emerging Web3 technologies.</li>
+            <li><strong>International Payroll:</strong> We streamline your global payroll, making it effortless to pay your talent, no matter where they are.</li>
+          </ul>
+          <br />
+        </div>
       </div>
       <section className="bi-columns-section">
         <div className="bi-column">
