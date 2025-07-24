@@ -74,8 +74,7 @@ const Background = () => {
     // Draw the centered cross on the canvas
     const drawCross = () => {
       if (!elementColor || !canvasWidth || !canvasHeight) return;
-
-      const crossWidth = canvasWidth * CROSS_LENGTH_H_RATIO;
+      const crossWidth = canvasWidth * CROSS_LENGTH_H_RATIO * ((window.innerWidth > 750)? 1:2);
       const crossHeight = canvasHeight * CROSS_LENGTH_V_RATIO;
       const centerX = canvasWidth / 2;
       const centerY = canvasHeight*1.5 / 2;
