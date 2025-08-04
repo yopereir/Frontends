@@ -37,7 +37,6 @@ url = "https://facebook.com/username"
 
 [languages]
 [languages.en]
-title = "Ananke"
 weight = 1
 contentDir = "content/"
 # languageDirection = 'rtl' for Right-To-Left languages

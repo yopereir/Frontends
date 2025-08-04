@@ -1,9 +1,9 @@
 ---
-title: "Trusted Plumbing Services in Charlotte"
-description: "Your reliable Charlotte plumbing company for repairs, installations, and emergencies."
+title: ""
+description: ""
 ---
 
-# Welcome to Charlotte Plumbing Pros
+# Welcome to {{< param city >}} Plumbing Pros
 
 We are your local, licensed plumbers serving the Charlotte area with honesty and quality.
 
