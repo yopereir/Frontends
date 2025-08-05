@@ -1,0 +1,5 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ .Site.Title }}</title>
+{{ $style := resources.Get "css/style.css" | minify }}
+<link rel="stylesheet" href="{{ $style.RelPermalink }}">

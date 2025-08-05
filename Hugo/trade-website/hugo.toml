@@ -1,0 +1,12 @@
+baseURL = 'https://example.org/'
+languageCode = 'en-us'
+title = 'My New Hugo Site'
+
+[params]
+# My params
+city = "Charlotte"
+trade = "Plumbing"
+phone = "(704) 555-1234"
+email = "info@charlotteplumbers.com"
+company = "Charlotte Plumbing Pros"
+text_color = ""

@@ -1,0 +1,31 @@
+<header>
+    <div class="header-container">
+        <div class="title">
+            <h1>{{ .Site.Params.city }} - {{ .Site.Params.trade }}</h1>
+        </div>
+        <nav class="nav-container">
+            <a href="/articles">Articles</a>
+            <a href="/about">About Us</a>
+            <a href="/contact">Contact Us</a>
+            <button id="theme-toggle">Toggle Theme</button>
+        </nav>
+    </div>
+</header>
+
+<style>
+    .header-container {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 1rem;
+    }
+    .title {
+        width: 50%;
+    }
+    .nav-container {
+        display: flex;
+        justify-content: space-around;
+        align-items: center;
+        width: 50%;
+    }
+</style>

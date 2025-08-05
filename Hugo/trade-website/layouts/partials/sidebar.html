@@ -1,0 +1,8 @@
+<aside>
+    <h2>Recent Articles</h2>
+    <ul>
+        {{ range first 5 .Site.RegularPages }}
+        <li><a href="{{ .Permalink }}">{{ .Title }}</a></li>
+        {{ end }}
+    </ul>
+</aside>
