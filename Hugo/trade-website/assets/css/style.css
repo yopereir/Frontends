@@ -286,6 +286,44 @@ body {
     opacity: 0.9;
 }
 
+/* Homepage Content Styles */
+.homepage-content {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.homepage-content h1 {
+    font-size: 3em;
+    color: var(--text-color);
+    margin-bottom: 0.5em;
+}
+
+.homepage-content p {
+    font-size: 1.2em;
+    color: var(--text-color);
+    margin-bottom: 1em;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.homepage-content ul {
+    list-style: none;
+    padding: 0;
+    margin: 2em auto;
+    max-width: 600px;
+}
+
+.homepage-content li {
+    background-color: var(--input-bg);
+    margin-bottom: 10px;
+    padding: 15px;
+    border-radius: 5px;
+    font-size: 1.1em;
+    color: var(--input-text);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
 /* Footer styles */
 footer {
     background-color: var(--footer-bg);
