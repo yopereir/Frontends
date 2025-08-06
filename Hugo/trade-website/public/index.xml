@@ -55,7 +55,14 @@
       <link>http://localhost:1313/contact/</link>
       <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
       <guid>http://localhost:1313/contact/</guid>
-      <description>&lt;p&gt;Get in touch with our {{ .Site.Params.city }} plumbing team.&lt;/p&gt;&#xA;&lt;!-- raw HTML omitted --&gt;</description>
+      <description>&lt;div class=&#34;container&#34;&gt;&#xA;&lt;h2&gt;Contact Us&lt;/h2&gt;&#xA;&lt;form id=&#34;contact-form&#34; method=&#34;GET&#34; action=&#34;http://localhost:1313/thankyou&#34;&gt;&#xA;  &lt;p&gt;&#xA;    &lt;label for=&#34;name&#34;&gt;Name:&lt;/label&gt;&lt;br&gt;&#xA;    &lt;input type=&#34;text&#34; id=&#34;name&#34; name=&#34;name&#34; required&gt;&#xA;  &lt;/p&gt;&#xA;  &lt;p&gt;&#xA;    &lt;label for=&#34;email&#34;&gt;Email:&lt;/label&gt;&lt;br&gt;&#xA;    &lt;input type=&#34;email&#34; id=&#34;email&#34; name=&#34;email&#34; required&gt;&#xA;  &lt;/p&gt;&#xA;  &lt;p&gt;&#xA;    &lt;label for=&#34;message&#34;&gt;Message:&lt;/label&gt;&lt;br&gt;&#xA;    &lt;textarea id=&#34;message&#34; name=&#34;message&#34; required&gt;&lt;/textarea&gt;&#xA;  &lt;/p&gt;&#xA;  &lt;p&gt;&#xA;    &lt;button type=&#34;submit&#34;&gt;Send Message&lt;/button&gt;&#xA;  &lt;/p&gt;&#xA;&lt;/form&gt;&#xA;&lt;/div&gt;&#xA;&lt;script&gt;&#xA;  document.getElementById(&#39;contact-form&#39;).addEventListener(&#39;submit&#39;, function(event) {&#xA;    const emailInput = document.getElementById(&#39;email&#39;);&#xA;    const email = emailInput.value;&#xA;    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;&#xA;&#xA;    if (!emailPattern.test(email)) {&#xA;      alert(&#39;Please enter a valid email address.&#39;);&#xA;      event.preventDefault();&#xA;    }&#xA;  });&#xA;&lt;/script&gt;</description>
+    </item>
+    <item>
+      <title>Thank You</title>
+      <link>http://localhost:1313/thankyou/</link>
+      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
+      <guid>http://localhost:1313/thankyou/</guid>
+      <description>&lt;h2&gt;Thank You!&lt;/h2&gt;&#xA;&lt;p&gt;Your message has been sent. We will get back to you shortly.&lt;/p&gt;</description>
     </item>
   </channel>
 </rss>
