@@ -58,7 +58,7 @@ body {
     box-shadow: 0 0 15px rgba(0,0,0,0.1);
 }
 
-.form-container h2 {
+.container h2 {
     text-align: center;
     margin-bottom: 1.5rem;
 }
@@ -202,6 +202,77 @@ body {
     margin: 1.5em auto;
     border-radius: 8px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Article List styles */
+.article-list-container {
+    padding: 20px;
+}
+
+.list-heading {
+    font-size: 2em;
+    color: var(--text-color);
+    margin-bottom: 1.5em;
+    text-align: center;
+}
+
+.article-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 25px;
+}
+
+.article-list-item {
+    background-color: var(--background-color);
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.article-list-item:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.article-list-title {
+    font-size: 1.5em;
+    margin-top: 0;
+    margin-bottom: 0.5em;
+}
+
+.article-list-title a {
+    color: var(--nav-link-color);
+    text-decoration: none;
+}
+
+.article-list-title a:hover {
+    color: var(--nav-link-hover-color);
+}
+
+.article-list-date {
+    color: #6c757d;
+    font-size: 0.85em;
+    margin-bottom: 1em;
+}
+
+.article-list-summary {
+    font-size: 0.95em;
+    color: var(--text-color);
+    margin-bottom: 1.5em;
+}
+
+.read-more {
+    display: inline-block;
+    color: var(--btn-bg);
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease;
+}
+
+.read-more:hover {
+    color: var(--nav-link-hover-color);
 }
 
 /* Footer styles */
