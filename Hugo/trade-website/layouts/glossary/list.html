@@ -1,0 +1,12 @@
+{{ define "main" }}
+<div class="container">
+    <header class="article-header">
+        <h1 class="article-title">Plumbing Glossary</h1>
+    </header>
+    <div class="content article-content">
+        {{ range .Site.Data.plumbing_terms }}
+            {{ partial "term_entry.html" . }}
+        {{ end }}
+    </div>
+</div>
+{{ end }}
