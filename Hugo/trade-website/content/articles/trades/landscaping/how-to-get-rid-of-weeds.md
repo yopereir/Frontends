@@ -40,5 +40,4 @@ Weeds thrive in weak lawns. Regular mowing, watering, aeration, and fertilizatio
 One weed can produce thousands of seeds. Remove them before flowering or seeding to prevent future outbreaks. Dispose of weed debris carefully — don’t compost seed heads.
 
 ---
-
-If you value your time more than navigating the intricacies of Landscaping, contact us and we'll take care of it
+{{< include_content "marketing/callToAction" >}}

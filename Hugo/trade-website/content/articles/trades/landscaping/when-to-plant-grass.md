@@ -51,4 +51,4 @@ If you’re overseeding a thinning lawn, time your efforts just like new seeding
 - **Transition Zones**: Choose your grass carefully — hybrid blends might work best — and consult local extension services if in doubt.
 
 ---
-If you value your time more than navigating the intricacies of Landscaping, contact us and we'll take care of it
+{{< include_content "marketing/callToAction" >}}

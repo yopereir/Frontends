@@ -54,4 +54,4 @@ There are four main types of faucets, and the repair process will vary slightly 
 Once you've replaced the worn parts, reassemble the faucet in the reverse order you took it apart. Turn the water supply back on slowly and check for any leaks. Run both hot and cold water for a few minutes to make sure everything is working correctly.
 
 ---
-If you value your time more than navigating the intricacies of plumbing, contact us and we'll take care of it
+{{< include_content "marketing/callToAction" >}}
