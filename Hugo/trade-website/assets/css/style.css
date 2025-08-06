@@ -8,6 +8,8 @@
     --nav-link-color: #333;
     --nav-link-hover-color: #007bff;
     --header-bg: #fff;
+    --footer-bg: #f8f9fa;
+    --footer-text-color: #6c757d;
 }
 
 [data-theme="dark"] {
@@ -20,6 +22,13 @@
     --nav-link-color: #fff;
     --nav-link-hover-color: #007bff;
     --header-bg: #222;
+    --footer-bg: #222;
+    --footer-text-color: #aaa;
+}
+
+html, body {
+    height: 100%;
+    margin: 0;
 }
 
 body {
@@ -27,6 +36,18 @@ body {
     color: var(--text-color);
     font-family: sans-serif;
     transition: background-color 0.3s ease, color 0.3s ease;
+    display: flex;
+    flex-direction: column;
+}
+
+.page-container {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+.content-wrap {
+    flex: 1;
 }
 
 .container {
@@ -129,4 +150,14 @@ body {
 
 #moon-icon {
     color: #f1c40f;
+}
+
+/* Footer styles */
+footer {
+    background-color: var(--footer-bg);
+    color: var(--footer-text-color);
+    padding: 1rem;
+    text-align: center;
+    margin-top: auto;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }

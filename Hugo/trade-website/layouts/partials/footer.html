@@ -1,16 +1,6 @@
 <footer>
-    <div class="footer-container">
-        <p>&copy; {{ now.Year }} {{ .Site.Params.company }}. All rights reserved.</p>
-    </div>
+    <p>&copy; {{ now.Year }} {{ .Site.Params.company }}. All rights reserved.</p>
 </footer>
 
 {{ $script := resources.Get "js/theme.js" | minify }}
 <script src="{{ $script.RelPermalink }}"></script>
-
-<style>
-    .footer-container {
-        text-align: center;
-        padding: 1rem;
-        margin-top: 2rem;
-    }
-</style>
