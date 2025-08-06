@@ -2,4 +2,15 @@
 <div class="container homepage-content">
   {{ .Content }}
 </div>
+{{ with .Site.GetPage "/about" }}
+  <section class="about-section">
+    {{ .Content }}
+  </section>
+{{ end }}
+
+{{ with .Site.GetPage "/contact" }}
+  <section class="contact-section">
+    {{ .Content }}
+  </section>
+{{ end }}
 {{ end }}
