@@ -1,10 +1,10 @@
 {{ define "main" }}
 <div class="container">
     <header class="article-header">
-        <h1 class="article-title">Plumbing Glossary</h1>
+        <h1 class="article-title">{{ .Site.Params.trade }} Glossary</h1>
     </header>
     <div class="content article-content">
-        {{ range .Site.Data.plumbing_terms }}
+        {{ range index .Site.Data (printf "%s_glossary" (.Site.Params.trade | lower)) }}
             {{ partial "term_entry.html" . }}
         {{ end }}
     </div>
