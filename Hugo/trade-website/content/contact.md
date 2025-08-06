@@ -17,7 +17,7 @@ title: "Contact Us"
     <textarea id="message" name="message" required></textarea>
   </p>
   <p>
-    <button type="submit">Send Message</button>
+    <button type="submit" class="button">Send Message</button>
   </p>
 </form>
 </div>
