@@ -1,0 +1,40 @@
+# Hugo build output
+/public/
+/resources/_gen/
+/hugo_stats.json
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# IDEs and editors
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Node.js dependencies (if using Tailwind, PostCSS, etc.)
+node_modules/
+package-lock.json
+yarn.lock
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Backup files
+*.bak
+*.tmp
+*.swp
+
+# Environment files (if you use any)
+.env
+.env.*
+
+# Netlify/Vercel build output (if used)
+.netlify/
+.vercel/
+
+# Optional: Static CMS admin config cache
+/content/.cache/
