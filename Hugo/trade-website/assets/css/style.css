@@ -5,6 +5,9 @@
     --input-text: #333;
     --btn-bg: #007bff;
     --btn-text: #fff;
+    --nav-link-color: #333;
+    --nav-link-hover-color: #007bff;
+    --header-bg: #fff;
 }
 
 [data-theme="dark"] {
@@ -14,12 +17,16 @@
     --input-text: #fff;
     --btn-bg: #0056b3;
     --btn-text: #fff;
+    --nav-link-color: #fff;
+    --nav-link-hover-color: #007bff;
+    --header-bg: #222;
 }
 
 body {
     background-color: var(--background-color);
     color: var(--text-color);
     font-family: sans-serif;
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .container {
@@ -62,4 +69,64 @@ body {
 
 .container button:hover {
     opacity: 0.9;
+}
+
+/* Header styles */
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 2rem;
+    background-color: var(--header-bg);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: background-color 0.3s ease;
+}
+
+.title h1 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.nav-container {
+    display: flex;
+    align-items: center;
+}
+
+.nav-container a {
+    margin: 0 1rem;
+    text-decoration: none;
+    color: var(--nav-link-color);
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.nav-container a:hover {
+    color: var(--nav-link-hover-color);
+}
+
+.theme-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    display: flex;
+    align-items: center;
+}
+
+.theme-toggle svg {
+    width: 24px;
+    height: 24px;
+    transition: transform 0.3s ease;
+}
+
+.theme-toggle:hover svg {
+    transform: scale(1.1);
+}
+
+#sun-icon {
+    color: #f39c12;
+}
+
+#moon-icon {
+    color: #f1c40f;
 }
