@@ -22,13 +22,7 @@ title: "About Us"
 
 ---
 
-## Serving All of {{< param city >}} and Surrounding Areas
-
-Whether you're in {{< param city >}} proper or a nearby neighborhood, our technicians are just minutes away and ready to help.
-
-<div style="text-align: center; margin-top: 20px;">
-  <img src="/images/places/charlotte/1.webp" alt="Charlotte Area" style="max-width: 100%; height: auto; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1);">
-</div>
+{{< include_content "marketing/serving" >}}
 
 ---
 
