@@ -65,6 +65,7 @@ body {
 }
 
 .container input[type="text"],
+.container input[type="tel"],
 .container input[type="email"],
 .container textarea {
     width: 100%;
