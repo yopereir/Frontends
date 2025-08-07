@@ -7,7 +7,11 @@
     {{ .Content }}
   </section>
 {{ end }}
-
+<div class="banner homepage-content">
+{{ with .Site.GetPage "marketing/serving" }}
+  {{ .Content }}
+{{ end }}
+</div>
 {{ with .Site.GetPage "/contact" }}
   <section class="contact-section">
     {{ .Content }}
