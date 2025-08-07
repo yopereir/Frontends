@@ -1,7 +1,7 @@
 ---
 title: "About Us"
 ---
-<div class="container">
+<div class="container homepage-content">
   <h2>About us</h2>
 # 🚰 Reliable Plumbing Services in {{< param city >}}
 
@@ -11,14 +11,16 @@ title: "About Us"
 
 ## ✅ Why Choose {{< param city >}} Plumbing Pros?
 
-- 🔧 Licensed & Insured Local Plumbers  
-- 🚽 Fast Drain Cleaning & Unclogging  
-- 🛠️ Leak Detection & Repairs  
-- 🏠 Water Heater Installation & Service  
-- 🚿 Faucet, Toilet, and Pipe Repairs  
-- 📞 24/7 Emergency Plumbing Available  
-- 💰 Transparent, Upfront Pricing  
-- ⭐ 5-Star Rated by Homeowners Like You
+## What do we
+<h3 style="text-align: center;">Full-Service {{< param trade >}} solutions</h3>
+
+Our team handles it all — from small fixes to large-scale installations:
+
+- 🔧 Repairs & Maintenance  
+- 🏗️ New Installations & Upgrades  
+- 🏠 Home Renovations & Custom Projects  
+- 🏢 Commercial & Industrial Work  
+- 🔍 Inspections, Troubleshooting & Safety Checks  
 
 ---
 
@@ -26,11 +28,12 @@ title: "About Us"
 
 ---
 
-## Plumbing Problem? Don’t Wait!
-
-Clogs, leaks, and water damage can escalate quickly. Let us fix it before it becomes a major headache.
-
-  <p>
-    <a href="/contact" class="button">Contact Us</a>
-  </p>
+## {{< param trade >}} Problem?
+<p>
+  <a href="/contact" class="button">Contact Us</a>
+</p>
+<div style="text-align: center;">
+  <p>OR</p>
+  <h3>Call us at {{< param phone >}}</h3>
+</div>
 </div>

@@ -293,7 +293,7 @@ body {
 .banner {
     width: 100vw;
     background-color: var(--header-bg);
-    color: var(--text-color);
+    color: var(--header-text-color);
     padding: 40px 20px;
     text-align: center;
 }

@@ -3,24 +3,24 @@ title: "Contact Us"
 ---
 <div class="container">
 <h2>Contact Us</h2>
-<p style="text-align: center">Call us at {{< param phone >}} or fill out the form below and we'll reach out to you.</p>
+<div style="text-align: center">Call us at {{< param phone >}} or fill out the form below and we'll reach out to you.</div>
 <form id="contact-form" method="GET" action="/thankyou">
-  <p>
+  <div>
     <label for="name">Name:</label><br>
     <input type="text" id="name" name="name" required>
-  </p>
-  <p>
+  </div>
+  <div>
     <label for="contact">Email or Phone:</label><br>
     <input type="text" id="contact" name="contact">
     <span id="contact-error" class="error-message" style="color: red;"></span>
-  </p>
-  <p>
+  </div>
+  <div>
     <label for="message">Message:</label><br>
     <textarea id="message" name="message" required></textarea>
-  </p>
-  <p>
+  </div>
+  <div>
     <button type="submit" class="button">Send Message</button>
-  </p>
+  </div>
   <div id="form-error" class="error-message" style="color: red; text-align: center; margin-top: 10px;"></div>
 </form>
 </div>
