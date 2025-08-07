@@ -1,0 +1,7 @@
+{{ if and (.Page.Param "isLicensed") (.Page.Param "isBonded") (.Page.Param "isInsured") }}
+    licensed, bonded and insured
+{{ else if and (.Page.Param "isLicensed") (.Page.Param "isInsured") }}
+    licensed and insured
+{{ else if .Page.Param "isLicensed" }}
+    licensed
+{{ end }}

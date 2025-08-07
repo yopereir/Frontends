@@ -6,6 +6,9 @@ title = 'My New Hugo Site'
 # My params
 city = "Charlotte"
 trade = "Plumbing"
+isLicensed = true
+isInsured = true
+isBonded = true
 phone = "(704) 555-1234"
 email = "info@charlotteplumbers.com"
 company = "Charlotte Plumbing Pros"

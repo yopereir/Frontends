@@ -5,7 +5,7 @@ description: ""
 
 # Welcome to {{< param city >}} Plumbing Pros
 
-We are your local, licensed plumbers serving the Charlotte area with honesty and quality.
+We are your local {{< licenseInsuredBonded_status >}} plumbers serving the Charlotte area with honesty and quality.
 
 - ✅ Emergency plumbing
 - 🚽 Drain cleaning
