@@ -12,7 +12,6 @@ isBonded = true
 phone = "(704) 555-1234"
 email = "info@charlotteplumbers.com"
 company = "Charlotte Plumbing Pros"
-text_color = ""
 
 [markup.goldmark.renderer]
 unsafe = true
