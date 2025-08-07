@@ -12,6 +12,12 @@ isBonded = true
 phone = "(704) 555-1234"
 email = "info@charlotteplumbers.com"
 company = "Charlotte Plumbing Pros"
+aboutUsContent = """
+## About us
+At {{< param city >}} {{< param trade >}} Pros, we are a network of {{< param trade >}} professionals dedicated to providing **Reliable** and **Honest** {{< param trade >}} Services in {{< param city >}}.
+
+When you have an issue, we leverage our network of {{< param trade >}} professionals to give you the **best value** for your money. We are able to beat market rates for the **quality** of work done as our network of professionals operate at a volume level and are able to offer deeper discounts.
+"""
 
 [markup.goldmark.renderer]
 unsafe = true
