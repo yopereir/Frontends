@@ -1,20 +1,20 @@
 ---
 title: "Contact Us"
 ---
-<div class="container">
+<div class="container" style="max-width: 480px;">
 <h2>Contact Us</h2>
 <div style="text-align: center">Call us at {{< param phone >}} or fill out the form below and we'll reach out to you.</div>
 <form id="contact-form" method="GET" action="/thankyou">
-  <div>
+  <div style="text-align: left;">
     <label for="name">Name:</label><br>
     <input type="text" id="name" name="name" required>
   </div>
-  <div>
+  <div style="text-align: left;">
     <label for="contact">Email or Phone:</label><br>
     <input type="text" id="contact" name="contact">
     <span id="contact-error" class="error-message" style="color: red;"></span>
   </div>
-  <div>
+  <div style="text-align: left;">
     <label for="message">Message:</label><br>
     <textarea id="message" name="message" required></textarea>
   </div>
