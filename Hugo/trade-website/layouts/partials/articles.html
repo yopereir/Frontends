@@ -1,0 +1,25 @@
+{{ $allArticles := site.RegularPages }}
+{{ $tradeArticles := slice }}
+
+{{ range $allArticles }}
+  {{ if and (eq .Section "articles") (strings.HasPrefix (string .File.Dir) "articles/trades/plumbing") }}
+    {{ $tradeArticles = $tradeArticles | append . }}
+  {{ end }}
+{{ end }}
+
+{{ $latestArticles := first 3 (sort $tradeArticles "Date" "desc") }}
+
+<div style="display: flex; justify-content: space-around; align-items: flex-start; flex-wrap: wrap; gap: 2rem;">
+  {{ range $latestArticles }}
+    <div class="container" style="max-width: 300px">
+      <article class="article-single">
+        <h2 class="article-title">{{ .Title }}</h2>
+        <p class="article-date">Posted on {{ .Date.Format "January 2, 2006" }}</p>
+        <section class="article-content">
+          {{ .Description }}
+          <p><a href="{{ .RelPermalink }}">Read more →</a></p>
+        </section>
+      </article>
+    </div>
+  {{ end }}
+</div>
