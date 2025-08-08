@@ -16,16 +16,11 @@
     align-items: stretch;
     flex-wrap: wrap;
     gap: 2rem;
-    /* --- CHANGE --- */
-    /* Add horizontal padding to prevent boxes from touching screen edges */
     padding: 0 1rem;
 }
 
 .article-box {
-    /* This rule is now powerful enough to handle all screen sizes */
-    /* It will be 360px wide when there is space, and will shrink to fit on smaller screens */
     flex: 0 1 360px;
-    
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -53,9 +48,11 @@
     font-size: 1rem;
 }
 
-/* --- CHANGE --- */
-/* The media query is no longer needed and has been removed. */
-
+/* --- ADDED --- */
+.article-read-more {
+    margin-top: auto;
+    text-align: center;
+}
 </style>
 
 <h2 class="list-heading">Recent Articles</h2>
@@ -64,7 +61,7 @@
     <div class="article-box">
       <h2 class="article-title">{{ .Title }}</h2>
       <div class="article-content">
-        <p><a href="{{ .RelPermalink }}">Read more</a></p>
+        <p class="article-read-more"><a href="{{ .RelPermalink }}">Read more</a></p>
       </div>
     </div>
   {{ end }}
