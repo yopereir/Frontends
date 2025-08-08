@@ -9,8 +9,8 @@
     --nav-link-hover-color: #007bff;
     --header-bg: #222;
     --header-text-color: #fff;
-    --footer-bg: #f8f9fa;
-    --footer-text-color: #6c757d;
+    --footer-bg: #222;
+    --footer-text-color: #fff;
 }
 
 [data-theme="dark"] {
@@ -24,7 +24,6 @@
     --nav-link-hover-color: #007bff;
     --header-bg: #222;
     --footer-bg: #222;
-    --footer-text-color: #aaa;
 }
 
 html, body {
