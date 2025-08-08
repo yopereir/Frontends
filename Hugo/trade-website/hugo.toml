@@ -9,6 +9,7 @@ trade = "Plumbing"
 isLicensed = true
 isInsured = true
 isBonded = true
+freeConsultation = false
 phone = "(704) 555-1234"
 email = "info@charlotteplumbers.com"
 company = "Charlotte Plumbing Pros"

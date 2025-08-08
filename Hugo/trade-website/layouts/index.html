@@ -1,17 +1,20 @@
 {{ define "main" }}
-{{ partial "showcase.html" . }}
-<div class="container homepage-content">
-  {{ .Content }}
-</div>
+{{ partial "showcase.html" (dict "image" (printf "/images/trades/%s/1.webp" .Site.Params.trade) "contentPath" "marketing/headline" "context" .) }}
 
-{{ with .Site.GetPage "/about" }}
-  <section class="about-section">
+{{ with .Site.GetPage "/marketing/whatWeDo" }}
+  <section class="container homepage-content">
     {{ .Content }}
   </section>
 {{ end }}
 
 {{ with .Site.GetPage "marketing/serving" }}
   <section class="banner homepage-content">
+    {{ .Content }}
+  </section>
+{{ end }}
+
+{{ with .Site.GetPage "marketing/aboutUs" }}
+  <section class="homepage-content">
     {{ .Content }}
   </section>
 {{ end }}
