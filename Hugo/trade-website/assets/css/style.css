@@ -288,15 +288,6 @@ body {
     opacity: 0.9;
 }
 
-/* Banner Styles */
-.banner {
-    width: 100vw;
-    background-color: var(--header-bg);
-    color: var(--header-text-color);
-    padding: 40px 20px;
-    text-align: center;
-}
-
 /* Homepage Content Styles */
 .homepage-content {
     text-align: center;
@@ -333,6 +324,19 @@ body {
     font-size: 1.1em;
     color: var(--input-text);
     box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+}
+
+/* Banner Styles */
+.banner {
+    width: 100vw;
+    background-color: var(--header-bg);
+    color: var(--header-text-color);
+    padding: 40px 20px;
+    text-align: center;
+}
+
+.banner p{
+    color: var(--header-text-color);
 }
 
 /* Footer styles */

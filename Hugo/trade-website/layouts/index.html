@@ -10,7 +10,7 @@
 {{ partial "showcase.html" (dict "image" (printf "/images/places/%s/1.webp" .Site.Params.city) "contentPath" "marketing/servingTextOnly" "context" .) }}
 
 {{ with .Site.GetPage "marketing/aboutUs" }}
-  <section class="banner homepage-content">
+  <section class="homepage-content banner">
     {{ .Content }}
   </section>
 {{ end }}
