@@ -7,14 +7,10 @@
   </section>
 {{ end }}
 
-{{ with .Site.GetPage "marketing/serving" }}
-  <section class="banner homepage-content">
-    {{ .Content }}
-  </section>
-{{ end }}
+{{ partial "showcase.html" (dict "image" (printf "/images/places/%s/1.webp" .Site.Params.city) "contentPath" "marketing/servingTextOnly" "context" .) }}
 
 {{ with .Site.GetPage "marketing/aboutUs" }}
-  <section class="homepage-content">
+  <section class="banner homepage-content">
     {{ .Content }}
   </section>
 {{ end }}
