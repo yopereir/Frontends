@@ -1,4 +1,4 @@
 ---
-title: "Plumbing Glossary"
+title: "{{< param trade >}} Glossary"
 layout: "glossary"
 ---
