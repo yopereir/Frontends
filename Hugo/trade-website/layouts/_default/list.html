@@ -1,6 +1,7 @@
 {{ define "main" }}
 <div class="container article-list-container">
     <h2 class="list-heading">Articles</h2>
+    <h3 style="text-align: center">Want to learn the {{ .Site.Params.trade }} jargon? Visit our <a href="{{ "/glossary/" | relURL }}">Glossary</a> page.</h3>
     <div class="article-list">
         {{ range .Pages }}
             <div class="article-list-item">

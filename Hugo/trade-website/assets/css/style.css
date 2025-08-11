@@ -267,6 +267,10 @@ body {
     color: var(--nav-link-hover-color);
 }
 
+a,a:visited {
+    color: var(--btn-bg);
+}
+
 .button {
     display: block;
     width: 100%;
