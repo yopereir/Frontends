@@ -69,13 +69,21 @@ title: "Contact Us"
     if (isValid) {
       const form = event.target;
       const formData = new FormData(form);
-      const queryString = new URLSearchParams(formData).toString();
-      const url = form.action + '?' + queryString;
+      /*const queryString = new URLSearchParams(formData).toString();
+      const url = form.action + '?' + queryString;*/
+      const body = new URLSearchParams();
+      body.append('name', formData.get('name'));
+      body.append('trade', '{{< param trade >}}');
+      body.append('city', '{{< param city >}}');
+      body.append('contact', formData.get('contact'));
+      body.append('message', formData.get('message'));
 
       try {
-        const response = await fetch(url, {
-          method: 'GET',
-          // No headers needed for a simple GET request with query parameters
+        document.querySelector('#contact-form button[type="submit"]').textContent = 'Sending...';
+        const response = await fetch("https://script.google.com/macros/s/AKfycbzaZwi6rGGwxw4PFUY-B0u0apQs_B7rdR79gquqKm7GFa4zVXm0XbeGUzsL6t3FYjqiCw/exec", {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: body.toString(),
         });
 
         if (response.ok) {

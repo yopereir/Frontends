@@ -270,6 +270,12 @@ body {
 a,a:visited {
     color: var(--btn-bg);
 }
+a.header,a.header:visited {
+    color: var(--header-text-color);
+}
+a.button,a.button:visited {
+    color: var(--header-text-color);
+}
 
 .button {
     display: block;
