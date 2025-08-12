@@ -1,5 +1,5 @@
 {{ define "main" }}
-{{ partial "showcase.html" (dict "image" (printf "/images/trades/%s/1.webp" (.Site.Params.trade | lower | strings.TrimSpace)) "contentPath" "marketing/headline" "context" .) }}
+{{ partial "showcase.html" (dict "image" (printf "/images/trades/%s/1.webp" (.Site.Params.tradeslug | lower )) "contentPath" "marketing/headline" "context" .) }}
 
 {{ with .Site.GetPage "/marketing/whatWeDo" }}
   <section class="container homepage-content">
@@ -7,7 +7,7 @@
   </section>
 {{ end }}
 
-{{ partial "showcase.html" (dict "image" (printf "/images/places/%s/1.webp" (.Site.Params.city | lower | strings.TrimSpace)) "contentPath" "marketing/servingTextOnly" "context" .) }}
+{{ partial "showcase.html" (dict "image" (printf "/images/places/%s/1.webp" (.Site.Params.cityslug | lower )) "contentPath" "marketing/servingTextOnly" "context" .) }}
 
 {{ with .Site.GetPage "marketing/aboutUs" }}
   <section class="homepage-content">

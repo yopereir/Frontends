@@ -5,7 +5,9 @@ title = 'My New Hugo Site'
 [params]
 # My params
 city = "Charlotte"
+cityslug = "charlotte"
 trade = "Plumbing"
+tradeslug = "plumbing"
 isLicensed = true
 isInsured = true
 isBonded = true
