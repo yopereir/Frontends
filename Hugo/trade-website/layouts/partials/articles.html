@@ -2,7 +2,7 @@
 {{ $tradeArticles := slice }}
 
 {{ range $allArticles }}
-  {{ if and (eq .Section "articles") (strings.HasPrefix (string .File.Dir) (printf "articles/trades/%s" (site.Params.trade | lower))) }}
+  {{ if and (eq .Section "articles") (strings.HasPrefix (string .File.Dir) (printf "articles/trades/%s" (site.Params.tradeslug | lower))) }}
     {{ $tradeArticles = $tradeArticles | append . }}
   {{ end }}
 {{ end }}
