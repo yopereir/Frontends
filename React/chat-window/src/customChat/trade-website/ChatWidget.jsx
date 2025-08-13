@@ -84,9 +84,10 @@ const ChatWidget = () => {
     // INFO: Here you can send the collected information to your backend or API
 
     const body = new URLSearchParams();
+    body.append('trade', "{{ .Site.Params.trade }}");
+    body.append('city', "{{ .Site.Params.city }}");
     body.append('name', userName);
-    body.append('email', userEmail);
-    body.append('phone', userPhone);
+    body.append('contact', "email: " + userEmail + "phone: " + userPhone);
     body.append('message', userMessage);
     body.append('availability', userAvailability);
     const GOOGLE_APPSCRIPT_CONTACT_URL = "{{ .Site.Params.contactserver }}";
