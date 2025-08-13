@@ -15,6 +15,7 @@
         {{ partial "footer.html" . }}
     </div>
     <div id="root"></div>
-    <script type="module" src="/js/chat-widget.js"></script>
+    {{ $chatWidget := resources.Get "js/chat-widget.js" | resources.ExecuteAsTemplate "js/chat-widget.js" . }}
+    <script type="module" src="{{ $chatWidget.Permalink }}"></script>
 </body>
 </html>
