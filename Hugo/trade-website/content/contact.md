@@ -80,7 +80,7 @@ title: "Contact Us"
 
       try {
         document.querySelector('#contact-form button[type="submit"]').textContent = 'Sending...';
-        const response = await fetch("https://script.google.com/macros/s/AKfycbzaZwi6rGGwxw4PFUY-B0u0apQs_B7rdR79gquqKm7GFa4zVXm0XbeGUzsL6t3FYjqiCw/exec", {
+        const response = await fetch("{{< param contactserver >}}", {
           method: 'POST',
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
           body: body.toString(),

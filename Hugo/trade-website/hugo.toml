@@ -8,6 +8,7 @@ city = "Charlotte"
 cityslug = "charlotte"
 trade = "Plumbing"
 tradeslug = "plumbing"
+contactserver = ""
 isLicensed = true
 isInsured = true
 isBonded = true

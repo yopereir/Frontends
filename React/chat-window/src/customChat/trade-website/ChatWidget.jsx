@@ -6,7 +6,7 @@ import {
   handleGreeting,
   handleDefaultResponse
 } from './botResponses'; // Adjust path as needed
-import './index.css';
+import '../../index.css';
 
 const ChatWidget = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -20,7 +20,7 @@ const ChatWidget = () => {
   const [userPhone, setUserPhone] = useState('');
   const [userName, setUserName] = useState('');
   const [userAvailability, setUserAvailability] = useState('');
-  const [userInquiry, setUserInquiry] = useState('');
+  const [userMessage, setUserMessage] = useState('');
   const [infoToSet, setInfoToSet] = useState('');
   const [nextQuestions, setNextQuestions] = useState([]);
   const [waitForInput, setWaitForInput] = useState(false);
@@ -66,27 +66,46 @@ const ChatWidget = () => {
         return setUserName(info);
       case 'availability':
         return setUserAvailability(info);
-      case 'inquiry':
-        return setUserInquiry(info);
+      case 'message':
+        return setUserMessage(info);
       default:
         return null;
     }
   }
 
-  const sendInfo = () => {
+  const sendInfo = async () => {
     console.log({
       email: userEmail,
       phone: userPhone,
       name: userName,
       availability: userAvailability,
-      inquiry: userInquiry
+      message: userMessage
     });
     // INFO: Here you can send the collected information to your backend or API
+
+    const body = new URLSearchParams();
+    body.append('name', userName);
+    body.append('email', userEmail);
+    body.append('phone', userPhone);
+    body.append('message', userMessage);
+    body.append('availability', userAvailability);
+    const GOOGLE_APPSCRIPT_CONTACT_URL = "{{ .Site.Params.contactserver }}";
+    try {
+      await fetch(GOOGLE_APPSCRIPT_CONTACT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: body.toString(),
+      });
+      setIsSubmitted(true);
+    } catch (error) {
+      console.error('Error submitting form:', error);
+      setErrors({ form: 'There was an error submitting the form. Please try again.' });
+    }
   }
 
   useEffect(() => {
-    initializeBotResponses(setMessages, setInputMode, setUserEmail, setUserPhone, setUserName, setUserInquiry, setInfoToSet, setUserAvailability, setOptionsMapping, setOptionsFunctionMapping, setNextQuestions, sendInfo, setWaitForInput);
-  }, [setMessages, setInputMode, setUserEmail, setUserPhone, setUserName, setUserInquiry, setInfoToSet, setUserAvailability, setOptionsMapping, setOptionsFunctionMapping, setNextQuestions, sendInfo, setWaitForInput]);
+    initializeBotResponses(setMessages, setInputMode, setUserEmail, setUserPhone, setUserName, setUserMessage, setInfoToSet, setUserAvailability, setOptionsMapping, setOptionsFunctionMapping, setNextQuestions, sendInfo, setWaitForInput);
+  }, [setMessages, setInputMode, setUserEmail, setUserPhone, setUserName, setUserMessage, setInfoToSet, setUserAvailability, setOptionsMapping, setOptionsFunctionMapping, setNextQuestions, sendInfo, setWaitForInput]);
 
   // Scroll to the bottom whenever messages change
   useEffect(() => {

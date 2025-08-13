@@ -2,6 +2,7 @@
 <html>
 <head>
     {{ partial "head.html" . }}
+    <link rel="stylesheet" href="/css/chat-widget.css">
 </head>
 <body>
     <div class="page-container">
@@ -13,5 +14,7 @@
         </div>
         {{ partial "footer.html" . }}
     </div>
+    <div id="root"></div>
+    <script type="module" src="/js/chat-widget.js"></script>
 </body>
 </html>
