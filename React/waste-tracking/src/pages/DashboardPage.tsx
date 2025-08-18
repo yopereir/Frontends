@@ -31,6 +31,7 @@ const DashboardPage = () => {
                 created_at: wasteEntry.created_at,
                 quantity: wasteEntry.quantity,
                 restaurant_id: itemData?.restaurant_id,
+                metadata: wasteEntry.metadata || {},
               })
             })
           )
