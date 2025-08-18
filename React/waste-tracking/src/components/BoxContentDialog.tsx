@@ -87,7 +87,7 @@ const BoxContentDialog = ({
           )}
           <div style={{ display: 'flex', width: '100%', gap: '10px' }}>
             <button onClick={onCloseDialog} style={{ background: 'var(--error-color)', flex: 1 }}>
-              Close
+              Back
             </button>
             <button onClick={handleCloseBox} style={{ flex: 1 }}>Close Box & Log Waste</button>
           </div>
