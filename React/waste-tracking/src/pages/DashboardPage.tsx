@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "../context/SessionContext";
 import HeaderBar from "../components/HeaderBar";
+import TotalItemsCard from "../components/TotalItems/TotalItemsCard";
 import ItemsLineChart from "../components/ItemsLineChart";
 import ItemsTable from "../components/ItemsTable/ItemsTable";
 import supabase from "../supabase";
@@ -90,6 +91,7 @@ const DashboardPage = () => {
           <p style={{ color: "var(--error-color)", marginTop: "0.25rem" }}>{loadingText}</p>
         ) : (
           <>
+            <TotalItemsCard items={items} />
             <ItemsLineChart items={items} />
             <ItemsTable items={items} />
           </>
