@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useSession } from "../context/SessionContext";
 import HeaderBar from "../components/HeaderBar";
-import TotalItemsCard from "../components/TotalItems/TotalItemsCard";
+import TotalItemsCard from "../components/TotalItemsCard";
 import ItemsLineChart from "../components/ItemsLineChart";
 import ItemsTable from "../components/ItemsTable/ItemsTable";
 import supabase from "../supabase";
