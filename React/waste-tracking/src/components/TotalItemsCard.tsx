@@ -27,7 +27,6 @@ function formatQuantity(quantity: number, unit: string): string {
 
 const TotalItemsCard = ({ items }: { items: Item[] }) => {
   const [range, setRange] = useState<"1d" | "30d" | "6m" | "1y" | "all">("30d");
-  const [totalCount, setTotalCount] = useState<number>(0);
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
 
   const getStartDate = () => {
@@ -45,9 +44,6 @@ const TotalItemsCard = ({ items }: { items: Item[] }) => {
       (item) => new Date(item.created_at) >= startDate
     );
     setFilteredItems(filtered);
-
-    const total = filtered.reduce((sum, item) => sum + (item.quantity ?? 1), 0);
-    setTotalCount(total);
   }, [items, range]);
 
   // Group items by name and sum their quantities
@@ -93,7 +89,6 @@ const TotalItemsCard = ({ items }: { items: Item[] }) => {
             <option value="all">All Time</option>
           </select>
         </div>
-        <p style={{ fontSize: "2rem", fontWeight: "bold" }}>{totalCount}</p>
       </div>
       {/* Section 2 - Grouped Items Table */}
       <div style={{ width: "100%" }}>
