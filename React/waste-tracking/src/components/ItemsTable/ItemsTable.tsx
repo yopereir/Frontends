@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import { format } from "date-fns";
 import "./ItemsTable.css";
+import ItemSelectMultiple from "../widgets/itemselectmultiple";
 
 type Item = {
   id: number;
@@ -47,43 +48,16 @@ const ItemsTable = ({ items }: Props) => {
     } else {
       setSortKey(key);
       setSortAsc(true);
-    }
+    };
   };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-        <button
-          className="batch-button"
-          style={{
-            backgroundColor:
-              selectedNames.length === 0 ? "var(--button-color)" : "var(--error-color)",
-          }}
-          onClick={() => setSelectedNames([])}
-        >
-          All
-        </button>
-        {itemNames.map((name) => (
-          <button
-            key={name}
-            className="batch-button"
-            style={{
-              backgroundColor: selectedNames.includes(name)
-                ? "var(--button-color)"
-                : "var(--error-color)",
-            }}
-            onClick={() =>
-              setSelectedNames((prev) =>
-                prev.includes(name)
-                  ? prev.filter((n) => n !== name)
-                  : [...prev, name]
-              )
-            }
-          >
-            {name}
-          </button>
-        ))}
-      </div>
+      <ItemSelectMultiple
+        itemNames={itemNames}
+        selectedNames={selectedNames}
+        onSelectionChange={setSelectedNames}
+      />
 
       <div className="items-table-container">
       <table className="items-table">
