@@ -1,9 +1,12 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { format, isWithinInterval } from "date-fns";
 import { subDays } from "date-fns";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 import "./ItemsTable.css";
 import ItemSelectMultiple from "../widgets/itemselectmultiple";
 import DateRange from "../widgets/daterange";
+import DownloadPDF from "../widgets/downloadpdf";
 
 type Item = {
   id: number;
@@ -22,6 +25,7 @@ const ItemsTable = ({ items }: Props) => {
   const [selectedNames, setSelectedNames] = useState<string[]>([]);
   const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 30));
   const [endDate, setEndDate] = useState<Date>(new Date());
+  const tableRef = useRef<HTMLDivElement>(null);
 
   const itemNames = useMemo(() => [...new Set(items.map((item) => item.name))], [items]);
 
@@ -64,16 +68,57 @@ const ItemsTable = ({ items }: Props) => {
     setEndDate(end);
   };
 
+  const handleDownloadPdf = async () => {
+    if (tableRef.current) {
+      // Temporarily apply styles for PDF generation
+      const tableElement = tableRef.current.querySelector('.items-table');
+      if (tableElement) {
+        tableElement.querySelectorAll('th, td').forEach((el) => {
+          (el as HTMLElement).style.color = '#000'; // Set text color to black
+        });
+      }
+
+      const canvas = await html2canvas(tableRef.current);
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF();
+      const imgWidth = 210; // A4 width in mm
+      const pageHeight = 297; // A4 height in mm
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      pdf.save("items-table.pdf");
+      // Revert styles after PDF generation
+      if (tableElement) {
+        tableElement.querySelectorAll('th, td').forEach((el) => {
+          (el as HTMLElement).style.color = ''; // Remove inline style
+        });
+      }
+    }
+  };
+
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
-      <DateRange onDateRangeChange={handleDateRangeChange} />
+    <>
+      <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+        <DateRange onDateRangeChange={handleDateRangeChange} />
+        <DownloadPDF onDownload={handleDownloadPdf} />
+      </div>
       <ItemSelectMultiple
         itemNames={itemNames}
         selectedNames={selectedNames}
         onSelectionChange={setSelectedNames}
       />
 
-      <div className="items-table-container">
+      <div className="items-table-container" ref={tableRef}>
       <table className="items-table">
         <thead>
           <tr>
@@ -121,7 +166,7 @@ const ItemsTable = ({ items }: Props) => {
         </tbody>
       </table>
       </div>
-    </div>
+    </>
   );
 };
 
