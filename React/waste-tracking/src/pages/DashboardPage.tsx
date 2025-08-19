@@ -23,12 +23,12 @@ const DashboardPage = () => {
       setLoading(true);
       loadingText = "Loading items & boxes...";
 
-      // ✅ Fetch waste entries
+      // Fetch waste entries
       const { data: wasteData, error: wasteError } = await supabase
         .from("waste_entries")
         .select("*");
 
-      // ✅ Fetch boxes
+      // Fetch boxes
       const { data: boxData, error: boxError } = await supabase
         .from("boxes")
         .select("*");
