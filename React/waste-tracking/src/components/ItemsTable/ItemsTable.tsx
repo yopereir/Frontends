@@ -8,12 +8,28 @@ import ItemSelectMultiple from "../widgets/itemselectmultiple";
 import DateRange from "../widgets/daterange";
 import DownloadPDF from "../widgets/downloadpdf";
 
-type Item = {
+interface Item {
   id: number;
   name: string;
   created_at: string;
   restaurant_id: number;
-};
+  quantity?: number;
+  metadata?: any;
+}
+
+function formatQuantity(quantity: number, unit: string): string {
+  const lowerUnit = unit.toLowerCase();
+  if (lowerUnit === "pounds/ounces") {
+    const pounds = Math.floor(quantity);
+    const ounces = Math.round((quantity % 1) * 16);
+    return `${pounds} pounds ${ounces} ounces`;
+  } else if (lowerUnit === "gallons/quarts") {
+    const gallons = Math.floor(quantity);
+    const quarts = Math.round((quantity % 1) * 4);
+    return `${gallons} gallons ${quarts} quarts`;
+  }
+  return String(quantity);
+}
 
 type Props = {
   items: Item[];
@@ -151,6 +167,8 @@ const ItemsTable = ({ items }: Props) => {
                 {sortKey === "created_at" ? (sortAsc ? "▲" : "▼") : "↕"}
               </button>
             </th>
+            <th>Quantity</th>
+            <th>Metadata</th>
             <th>Restaurant ID</th>
           </tr>
         </thead>
@@ -160,6 +178,8 @@ const ItemsTable = ({ items }: Props) => {
               <td style={{ padding: "0.5rem" }}>{item.id}</td>
               <td>{item.name}</td>
               <td>{format(new Date(item.created_at), "yyyy-MM-dd HH:mm")}</td>
+              <td>{item.quantity ? formatQuantity(item.quantity, item.metadata?.unit ?? '') : 'N/A'}</td>
+              <td>{item.metadata ? JSON.stringify(item.metadata) : 'N/A'}</td>
               <td>{item.restaurant_id}</td>
             </tr>
           ))}
