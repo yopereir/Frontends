@@ -1,6 +1,11 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { subDays } from "date-fns";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import "./ItemsTable/ItemsTable.css";
+import DateRange from "./widgets/daterange";
+import DownloadPDF from "./widgets/downloadpdf";
+import ItemSelectMultiple from "./widgets/itemselectmultiple"; // Import the new component
 
 interface Item {
   id: number;
@@ -26,18 +31,37 @@ function formatQuantity(quantity: number, unit: string): string {
 }
 
 const TotalItemsCard = ({ items }: { items: Item[] }) => {
-  // Default: past 30 days
   const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 30));
   const [endDate, setEndDate] = useState<Date>(new Date());
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
+  const [selectedItemNames, setSelectedItemNames] = useState<string[]>([]); // New state for selected items
+  const tableRef = useRef<HTMLDivElement>(null);
+
+  const handleDateRangeChange = (start: Date, end: Date) => {
+    setStartDate(start);
+    setEndDate(end);
+  };
+
+  // Derive all unique item names for the ItemSelectMultiple component
+  const allItemNames = useMemo(() => {
+    const names = new Set<string>();
+    items.forEach((item) => names.add(item.name));
+    return Array.from(names).sort();
+  }, [items]);
 
   useEffect(() => {
-    const filtered = items.filter((item) => {
+    const filteredByDate = items.filter((item) => {
       const created = new Date(item.created_at);
       return created >= startDate && created <= endDate;
     });
-    setFilteredItems(filtered);
-  }, [items, startDate, endDate]);
+
+    // Further filter by selected item names
+    const filteredByDateAndName = selectedItemNames.length === 0
+      ? filteredByDate
+      : filteredByDate.filter((item) => selectedItemNames.includes(item.name));
+
+    setFilteredItems(filteredByDateAndName);
+  }, [items, startDate, endDate, selectedItemNames]); // Add selectedItemNames to dependencies
 
   // Group items by name and sum their quantities
   const groupedItems = useMemo(() => {
@@ -62,31 +86,67 @@ const TotalItemsCard = ({ items }: { items: Item[] }) => {
       }));
   }, [filteredItems]);
 
+  const handleDownloadPDF = async () => {
+    if (tableRef.current) {
+      // Temporarily apply styles for PDF generation
+      const tableElement = tableRef.current.querySelector('.items-table');
+      if (tableElement) {
+        tableElement.querySelectorAll('th, td').forEach((el) => {
+          (el as HTMLElement).style.color = '#000'; // Set text color to black
+        });
+      }
+
+      const canvas = await html2canvas(tableRef.current);
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const imgHeight = canvas.height * imgWidth / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      pdf.save('items-table.pdf');
+
+      // Revert styles after PDF generation
+      if (tableElement) {
+        tableElement.querySelectorAll('th, td').forEach((el) => {
+          (el as HTMLElement).style.color = ''; // Remove inline style
+        });
+      }
+    }
+  };
+
   return (
     <div
       style={{ display: "flex", flexDirection: "column", gap: "2rem", width: "100%" }}
     >
       {/* Section 1 - Totals */}
       <div style={{ width: "100%" }}>
-        <h2>Total Items</h2>
-        <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-          <label>Start Date:</label>
-          <input
-            type="date"
-            value={startDate.toISOString().split("T")[0]}
-            onChange={(e) => setStartDate(new Date(e.target.value))}
-          />
-          <label>End Date:</label>
-          <input
-            type="date"
-            value={endDate.toISOString().split("T")[0]}
-            onChange={(e) => setEndDate(new Date(e.target.value))}
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <DateRange onDateRangeChange={handleDateRangeChange} />
+          <DownloadPDF onDownload={handleDownloadPDF} />
+        </div>
+        {/* Item Filter */}
+        <div style={{ marginTop: "1rem", display: "flex", justifyContent: "center", width: "100%" }}>
+          <ItemSelectMultiple
+            itemNames={allItemNames}
+            selectedNames={selectedItemNames}
+            onSelectionChange={setSelectedItemNames}
           />
         </div>
       </div>
 
       {/* Section 2 - Grouped Items Table */}
-      <div style={{ width: "100%" }}>
+      <div style={{ width: "100%" }} ref={tableRef}>
         <h2>Items</h2>
         <div className="items-table-container">
           <table className="items-table">
