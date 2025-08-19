@@ -138,7 +138,6 @@ const ItemsTable = ({ items }: Props) => {
       <table className="items-table">
         <thead>
           <tr>
-            <th>ID</th>
             <th>
               Name{" "}
               <button
@@ -168,19 +167,14 @@ const ItemsTable = ({ items }: Props) => {
               </button>
             </th>
             <th>Quantity</th>
-            <th>Metadata</th>
-            <th>Restaurant ID</th>
           </tr>
         </thead>
         <tbody>
           {filteredItems.map((item) => (
             <tr key={item.id}>
-              <td style={{ padding: "0.5rem" }}>{item.id}</td>
               <td>{item.name}</td>
               <td>{format(new Date(item.created_at), "yyyy-MM-dd HH:mm")}</td>
               <td>{item.quantity ? formatQuantity(item.quantity, item.metadata?.unit ?? '') : 'N/A'}</td>
-              <td>{item.metadata ? JSON.stringify(item.metadata) : 'N/A'}</td>
-              <td>{item.restaurant_id}</td>
             </tr>
           ))}
         </tbody>
