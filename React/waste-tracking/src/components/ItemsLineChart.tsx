@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { format, subDays, startOfDay, eachDayOfInterval } from "date-fns";
 import {
   LineChart,
@@ -10,7 +10,10 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
 import DateRange from "./widgets/daterange";
+import DownloadPDF from "./widgets/downloadpdf";
 
 interface Item {
   id: number;
@@ -26,6 +29,7 @@ const ItemsLineChart = ({ items }: { items: Item[] }) => {
   const [selectedNames, setSelectedNames] = useState<string[]>([]);
   const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 30));
   const [endDate, setEndDate] = useState<Date>(new Date());
+  const chartRef = useRef<HTMLDivElement>(null);
 
   const handleDateRangeChange = (start: Date, end: Date) => {
     setStartDate(start);
@@ -69,9 +73,36 @@ const ItemsLineChart = ({ items }: { items: Item[] }) => {
     setGroupedData(dataPoints.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
   }, [items, startDate, endDate, selectedNames]);
 
+  const handleDownloadPDF = async () => {
+    if (chartRef.current) {
+      const canvas = await html2canvas(chartRef.current);
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgWidth = 210;
+      const pageHeight = 297;
+      const imgHeight = canvas.height * imgWidth / canvas.width;
+      let heightLeft = imgHeight;
+      let position = 0;
+
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - imgHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        heightLeft -= pageHeight;
+      }
+      pdf.save('items-line-chart.pdf');
+    }
+  };
+
   return (
     <>
-      <DateRange onDateRangeChange={handleDateRangeChange} />
+      <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+        <DateRange onDateRangeChange={handleDateRangeChange} />
+        <DownloadPDF onDownload={handleDownloadPDF} />
+      </div>
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
         <button
@@ -108,22 +139,24 @@ const ItemsLineChart = ({ items }: { items: Item[] }) => {
         ))}
       </div>
 
-      <ResponsiveContainer width="100%" height={300}>
-        <LineChart data={groupedData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="date" />
-          <YAxis allowDecimals={false} />
-          <Tooltip />
-          <Legend />
-          <Line
-            type="monotone"
-            dataKey="count"
-            stroke="#3ecf8e"
-            strokeWidth={2}
-            dot={{ r: 4 }}
-          />
-        </LineChart>
-      </ResponsiveContainer>
+      <div ref={chartRef} style={{ width: "100%", height: "300px" }}>
+        <ResponsiveContainer width="100%" height="100%">
+          <LineChart data={groupedData}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis dataKey="date" />
+            <YAxis allowDecimals={false} />
+            <Tooltip />
+            <Legend />
+            <Line
+              type="monotone"
+              dataKey="count"
+              stroke="#3ecf8e"
+              strokeWidth={2}
+              dot={{ r: 4 }}
+            />
+          </LineChart>
+        </ResponsiveContainer>
+      </div>
     </>
   );
 };
