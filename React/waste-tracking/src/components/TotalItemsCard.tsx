@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { subHours, subDays, subMonths, subYears } from "date-fns";
 import './ItemsTable/ItemsTable.css';
 
@@ -13,10 +13,14 @@ interface Item {
 
 function formatQuantity(quantity: number, unit: string): string {
   const lowerUnit = unit.toLowerCase();
-  if (lowerUnit === 'pounds/ounces') {
-    return Math.floor(quantity) + " pounds " + quantity % 1 * 16 + " ounces";
-  } else if (lowerUnit === 'gallons/quarts') {
-    return Math.floor(quantity) + " gallons " + quantity % 1 * 4 + " quarts";
+  if (lowerUnit === "pounds/ounces") {
+    const pounds = Math.floor(quantity);
+    const ounces = Math.round((quantity % 1) * 16);
+    return `${pounds} pounds ${ounces} ounces`;
+  } else if (lowerUnit === "gallons/quarts") {
+    const gallons = Math.floor(quantity);
+    const quarts = Math.round((quantity % 1) * 4);
+    return `${gallons} gallons ${quarts} quarts`;
   }
   return String(quantity);
 }
@@ -37,18 +41,42 @@ const TotalItemsCard = ({ items }: { items: Item[] }) => {
 
   useEffect(() => {
     const startDate = getStartDate();
-    const filtered = items.filter((item) => new Date(item.created_at) >= startDate);
-    console.log(filtered);
+    const filtered = items.filter(
+      (item) => new Date(item.created_at) >= startDate
+    );
     setFilteredItems(filtered);
 
     const total = filtered.reduce((sum, item) => sum + (item.quantity ?? 1), 0);
     setTotalCount(total);
   }, [items, range]);
 
+  // Group items by name and sum their quantities
+  const groupedItems = useMemo(() => {
+    const map = new Map<string, { quantity: number; unit: string }>();
+
+    filteredItems.forEach((item) => {
+      const unit = item.metadata?.unit ?? "";
+      const existing = map.get(item.name);
+      if (existing) {
+        existing.quantity += item.quantity ?? 1;
+      } else {
+        map.set(item.name, { quantity: item.quantity ?? 1, unit });
+      }
+    });
+
+    // Sort alphabetically by item name
+    return Array.from(map.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([name, { quantity, unit }]) => ({
+        name,
+        quantity,
+        unit,
+      }));
+  }, [filteredItems]);
+
   return (
     <div style={{ display: "flex", gap: "2rem" }}>
-      
-      {/* Left Column - Items Table */}
+      {/* Left Column - Grouped Items Table */}
       <div style={{ flex: 2 }}>
         <h2>Items</h2>
         <div className="items-table-container">
@@ -56,21 +84,14 @@ const TotalItemsCard = ({ items }: { items: Item[] }) => {
             <thead>
               <tr>
                 <th>Name</th>
-                <th>Quantity</th>
-                <th>Created At</th>
+                <th>Total Quantity</th>
               </tr>
             </thead>
             <tbody>
-              {filteredItems.map((item) => (
-                <tr key={item.id}>
+              {groupedItems.map((item) => (
+                <tr key={item.name}>
                   <td>{item.name}</td>
-                  <td>
-                    {formatQuantity(
-                      item.quantity ?? 0,
-                      item.metadata?.unit ?? ""
-                    )}
-                  </td>
-                  <td>{new Date(item.created_at).toLocaleString()}</td>
+                  <td>{formatQuantity(item.quantity, item.unit)}</td>
                 </tr>
               ))}
             </tbody>
