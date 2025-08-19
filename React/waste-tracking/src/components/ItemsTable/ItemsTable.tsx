@@ -1,7 +1,9 @@
 import { useState, useMemo } from "react";
-import { format } from "date-fns";
+import { format, isWithinInterval } from "date-fns";
+import { subDays } from "date-fns";
 import "./ItemsTable.css";
 import ItemSelectMultiple from "../widgets/itemselectmultiple";
+import DateRange from "../widgets/daterange";
 
 type Item = {
   id: number;
@@ -18,6 +20,8 @@ const ItemsTable = ({ items }: Props) => {
   const [sortAsc, setSortAsc] = useState(true);
   const [sortKey, setSortKey] = useState<"created_at" | "name">("created_at");
   const [selectedNames, setSelectedNames] = useState<string[]>([]);
+  const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 30));
+  const [endDate, setEndDate] = useState<Date>(new Date());
 
   const itemNames = useMemo(() => [...new Set(items.map((item) => item.name))], [items]);
 
@@ -26,11 +30,15 @@ const ItemsTable = ({ items }: Props) => {
       ? items
       : items.filter((item) => selectedNames.includes(item.name));
 
-    return [...visible].sort((a, b) => {
-      let valA = sortKey === "created_at"
+    const dateFiltered = visible.filter((item) =>
+      isWithinInterval(new Date(item.created_at), { start: startDate, end: endDate })
+    );
+
+    return [...dateFiltered].sort((a, b) => {
+      const valA = sortKey === "created_at"
         ? new Date(a.created_at).getTime()
         : a.name.toLowerCase();
-      let valB = sortKey === "created_at"
+      const valB = sortKey === "created_at"
         ? new Date(b.created_at).getTime()
         : b.name.toLowerCase();
 
@@ -40,7 +48,7 @@ const ItemsTable = ({ items }: Props) => {
 
       return sortAsc ? (valA as number) - (valB as number) : (valB as number) - (valA as number);
     });
-  }, [items, selectedNames, sortAsc, sortKey]);
+  }, [items, selectedNames, sortAsc, sortKey, startDate, endDate]);
 
   const toggleSort = (key: "created_at" | "name") => {
     if (sortKey === key) {
@@ -48,11 +56,17 @@ const ItemsTable = ({ items }: Props) => {
     } else {
       setSortKey(key);
       setSortAsc(true);
-    };
+    }
+  };
+
+  const handleDateRangeChange = (start: Date, end: Date) => {
+    setStartDate(start);
+    setEndDate(end);
   };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+      <DateRange onDateRangeChange={handleDateRangeChange} />
       <ItemSelectMultiple
         itemNames={itemNames}
         selectedNames={selectedNames}
