@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { subHours, subDays, subMonths, subYears } from "date-fns";
+import './ItemsTable/ItemsTable.css';
 
 interface Item {
   id: number;
@@ -46,27 +47,35 @@ const TotalItemsCard = ({ items }: { items: Item[] }) => {
 
   return (
     <div style={{ display: "flex", gap: "2rem" }}>
+      
       {/* Left Column - Items Table */}
       <div style={{ flex: 2 }}>
         <h2>Items</h2>
-        <table border={1} cellPadding={5} cellSpacing={0} style={{ width: "100%" }}>
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Quantity</th>
-              <th>Created At</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredItems.map((item) => (
-              <tr key={item.id}>
-                <td>{item.name}</td>
-                <td>{formatQuantity(item.quantity ?? 0, item.metadata.unit ?? "")}</td>
-                <td>{new Date(item.created_at).toLocaleString()}</td>
+        <div className="items-table-container">
+          <table className="items-table">
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Quantity</th>
+                <th>Created At</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredItems.map((item) => (
+                <tr key={item.id}>
+                  <td>{item.name}</td>
+                  <td>
+                    {formatQuantity(
+                      item.quantity ?? 0,
+                      item.metadata?.unit ?? ""
+                    )}
+                  </td>
+                  <td>{new Date(item.created_at).toLocaleString()}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       {/* Right Column - Totals */}
