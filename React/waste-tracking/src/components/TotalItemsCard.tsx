@@ -75,9 +75,29 @@ const TotalItemsCard = ({ items }: { items: Item[] }) => {
   }, [filteredItems]);
 
   return (
-    <div style={{ display: "flex", gap: "2rem" }}>
-      {/* Left Column - Grouped Items Table */}
-      <div style={{ flex: 2 }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
+      {/* Row 1 - Totals */}
+      <div>
+        <h2>Total Items</h2>
+        <div>
+          <label htmlFor="dateRange">Date Range:</label>
+          <select
+            id="dateRange"
+            value={range}
+            onChange={(e) => setRange(e.target.value as any)}
+          >
+            <option value="1d">Past 1 Day</option>
+            <option value="30d">Past 30 Days</option>
+            <option value="6m">Past 6 Months</option>
+            <option value="1y">Past 1 Year</option>
+            <option value="all">All Time</option>
+          </select>
+        </div>
+        <p style={{ fontSize: "2rem", fontWeight: "bold" }}>{totalCount}</p>
+      </div>
+
+      {/* Row 2 - Grouped Items Table */}
+      <div>
         <h2>Items</h2>
         <div className="items-table-container">
           <table className="items-table">
@@ -97,28 +117,6 @@ const TotalItemsCard = ({ items }: { items: Item[] }) => {
             </tbody>
           </table>
         </div>
-      </div>
-
-      {/* Right Column - Totals */}
-      <div style={{ flex: 1 }}>
-        <h2>Total Items</h2>
-
-        <div>
-          <label htmlFor="dateRange">Date Range:</label>
-          <select
-            id="dateRange"
-            value={range}
-            onChange={(e) => setRange(e.target.value as any)}
-          >
-            <option value="1d">Past 1 Day</option>
-            <option value="30d">Past 30 Days</option>
-            <option value="6m">Past 6 Months</option>
-            <option value="1y">Past 1 Year</option>
-            <option value="all">All Time</option>
-          </select>
-        </div>
-
-        <p style={{ fontSize: "2rem", fontWeight: "bold" }}>{totalCount}</p>
       </div>
     </div>
   );
