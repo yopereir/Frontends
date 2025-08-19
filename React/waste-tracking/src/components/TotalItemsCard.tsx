@@ -4,6 +4,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import "./ItemsTable/ItemsTable.css";
 import DateRange from "./widgets/daterange";
+import DownloadPDF from "./widgets/downloadpdf";
 
 interface Item {
   id: number;
@@ -118,7 +119,7 @@ const TotalItemsCard = ({ items }: { items: Item[] }) => {
         <h2>Total Items</h2>
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
           <DateRange onDateRangeChange={handleDateRangeChange} />
-          <button onClick={handleDownloadPDF}>Download PDF</button>
+          <DownloadPDF onDownload={handleDownloadPDF} />
         </div>
       </div>
 
