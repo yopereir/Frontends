@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { format, subHours, subDays, subMonths, subYears, startOfHour, startOfDay, eachHourOfInterval, eachDayOfInterval } from "date-fns";
+import { format, subDays, startOfDay, eachDayOfInterval } from "date-fns";
 import {
   LineChart,
   Line,
@@ -10,6 +10,7 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
+import DateRange from "./widgets/daterange";
 
 interface Item {
   id: number;
@@ -23,15 +24,12 @@ const ItemsLineChart = ({ items }: { items: Item[] }) => {
   const [groupedData, setGroupedData] = useState<any[]>([]);
   const [itemNames, setItemNames] = useState<string[]>([]);
   const [selectedNames, setSelectedNames] = useState<string[]>([]);
-  const [range, setRange] = useState<"1d" | "30d" | "6m" | "1y" | "all">("30d");
+  const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 30));
+  const [endDate, setEndDate] = useState<Date>(new Date());
 
-  const getStartDate = () => {
-    const now = new Date();
-    if (range === "1d") return subHours(now, 24);
-    if (range === "30d") return subDays(now, 30);
-    if (range === "6m") return subMonths(now, 6);
-    if (range === "1y") return subYears(now, 1);
-    return new Date("2000-01-01");
+  const handleDateRangeChange = (start: Date, end: Date) => {
+    setStartDate(start);
+    setEndDate(end);
   };
 
   useEffect(() => {
@@ -39,71 +37,41 @@ const ItemsLineChart = ({ items }: { items: Item[] }) => {
   }, [items]);
 
   useEffect(() => {
-    const startDate = getStartDate();
     const filtered = items.filter((item) => {
       const created = new Date(item.created_at);
-      return created >= startDate &&
+      return created >= startDate && created <= endDate &&
         (selectedNames.length === 0 || selectedNames.includes(item.name));
     });
     setFilteredItems(filtered);
 
     const counts: Record<string, number> = {};
 
-    // Determine the format based on the selected range
-    const dateFormat = range === "1d" ? "yyyy-MM-dd HH:00" : "yyyy-MM-dd";
+    const dateFormat = "yyyy-MM-dd";
 
     filtered.forEach((item) => {
       const dateKey = format(new Date(item.created_at), dateFormat);
       counts[dateKey] = (counts[dateKey] || 0) + 1;
     });
 
-    let dataPoints: any[] = [];
-    if (range === "1d") {
-      const now = new Date();
-      const startOf24HoursAgo = startOfHour(subHours(now, 24));
-      const endOfNow = startOfHour(now); // This will include the current hour if not exactly 24 hours
-      
-      const hoursInInterval = eachHourOfInterval({
-        start: startOf24HoursAgo,
-        end: endOfNow,
-      });
+    const startOfRange = startOfDay(startDate);
+    const endOfRange = startOfDay(endDate);
 
-      dataPoints = hoursInInterval.map((hour) => {
-        const dateKey = format(hour, "yyyy-MM-dd HH:00");
-        return { date: format(hour, "MMM d, h a"), count: counts[dateKey] || 0 };
-      });
+    const daysInInterval = eachDayOfInterval({
+      start: startOfRange,
+      end: endOfRange,
+    });
 
-    } else {
-      // For ranges other than "1d", fill in missing days with 0 counts
-      const startOfRange = startOfDay(getStartDate());
-      const endOfToday = startOfDay(new Date());
-
-      const daysInInterval = eachDayOfInterval({
-        start: startOfRange,
-        end: endOfToday,
-      });
-
-      dataPoints = daysInInterval.map((day) => {
-        const dateKey = format(day, "yyyy-MM-dd");
-        return { date: format(day, "MMM d"), count: counts[dateKey] || 0 };
-      });
-    }
+    const dataPoints = daysInInterval.map((day) => {
+      const dateKey = format(day, "yyyy-MM-dd");
+      return { date: format(day, "MMM d"), count: counts[dateKey] || 0 };
+    });
 
     setGroupedData(dataPoints.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
-  }, [items, range, selectedNames]);
+  }, [items, startDate, endDate, selectedNames]);
 
   return (
     <>
-      <div>
-        <label style={{ marginRight: "1em" }}>Date Range:</label>
-        <select value={range} onChange={(e) => setRange(e.target.value as any)}>
-          <option value="1d">Past 1 Day</option>
-          <option value="30d">Past 30 Days</option>
-          <option value="6m">Past 6 Months</option>
-          <option value="1y">Past 1 Year</option>
-          <option value="all">All Time</option>
-        </select>
-      </div>
+      <DateRange onDateRangeChange={handleDateRangeChange} />
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
         <button
