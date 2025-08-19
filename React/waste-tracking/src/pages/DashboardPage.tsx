@@ -92,8 +92,11 @@ const DashboardPage = () => {
           <p style={{ color: "var(--error-color)", marginTop: "0.25rem" }}>{loadingText}</p>
         ) : (
           <>
+            <h2>Total Items</h2>
             <TotalItemsCard items={items} />
+            <h2>Total Bags Line Chart</h2>
             <ItemsLineChart items={items} />
+            <h2>Waste Item Log</h2>
             <ItemsTable items={items} />
           </>
         )}

@@ -131,7 +131,6 @@ const TotalItemsCard = ({ items }: { items: Item[] }) => {
     >
       {/* Section 1 - Totals */}
       <div style={{ width: "100%" }}>
-        <h2>Total Items</h2>
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
           <DateRange onDateRangeChange={handleDateRangeChange} />
           <DownloadPDF onDownload={handleDownloadPDF} />
