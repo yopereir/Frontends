@@ -5,6 +5,7 @@ import html2canvas from "html2canvas";
 import "./ItemsTable/ItemsTable.css";
 import DateRange from "./widgets/daterange";
 import DownloadPDF from "./widgets/downloadpdf";
+import ItemSelectMultiple from "./widgets/itemselectmultiple"; // Import the new component
 
 interface Item {
   id: number;
@@ -33,6 +34,7 @@ const TotalItemsCard = ({ items }: { items: Item[] }) => {
   const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 30));
   const [endDate, setEndDate] = useState<Date>(new Date());
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
+  const [selectedItemNames, setSelectedItemNames] = useState<string[]>([]); // New state for selected items
   const tableRef = useRef<HTMLDivElement>(null);
 
   const handleDateRangeChange = (start: Date, end: Date) => {
@@ -40,13 +42,26 @@ const TotalItemsCard = ({ items }: { items: Item[] }) => {
     setEndDate(end);
   };
 
+  // Derive all unique item names for the ItemSelectMultiple component
+  const allItemNames = useMemo(() => {
+    const names = new Set<string>();
+    items.forEach((item) => names.add(item.name));
+    return Array.from(names).sort();
+  }, [items]);
+
   useEffect(() => {
-    const filtered = items.filter((item) => {
+    const filteredByDate = items.filter((item) => {
       const created = new Date(item.created_at);
       return created >= startDate && created <= endDate;
     });
-    setFilteredItems(filtered);
-  }, [items, startDate, endDate]);
+
+    // Further filter by selected item names
+    const filteredByDateAndName = selectedItemNames.length === 0
+      ? filteredByDate
+      : filteredByDate.filter((item) => selectedItemNames.includes(item.name));
+
+    setFilteredItems(filteredByDateAndName);
+  }, [items, startDate, endDate, selectedItemNames]); // Add selectedItemNames to dependencies
 
   // Group items by name and sum their quantities
   const groupedItems = useMemo(() => {
@@ -120,6 +135,14 @@ const TotalItemsCard = ({ items }: { items: Item[] }) => {
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
           <DateRange onDateRangeChange={handleDateRangeChange} />
           <DownloadPDF onDownload={handleDownloadPDF} />
+        </div>
+        {/* Item Filter */}
+        <div style={{ marginTop: "1rem" }}>
+          <ItemSelectMultiple
+            itemNames={allItemNames}
+            selectedNames={selectedItemNames}
+            onSelectionChange={setSelectedItemNames}
+          />
         </div>
       </div>
 
