@@ -14,6 +14,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import DateRange from "./widgets/daterange";
 import DownloadPDF from "./widgets/downloadpdf";
+import ItemSelectMultiple from "./widgets/itemselectmultiple";
 
 interface Item {
   id: number;
@@ -104,40 +105,11 @@ const ItemsLineChart = ({ items }: { items: Item[] }) => {
         <DownloadPDF onDownload={handleDownloadPDF} />
       </div>
 
-      <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
-        <button
-          className="batch-button"
-          style={{
-            backgroundColor:
-              selectedNames.length === 0
-                ? "var(--button-color)"
-                : "var(--error-color)",
-          }}
-          onClick={() => setSelectedNames([])}
-        >
-          All
-        </button>
-        {itemNames.map((name) => (
-          <button
-            key={name}
-            className="batch-button"
-            style={{
-              backgroundColor: selectedNames.includes(name)
-                ? "var(--button-color)"
-                : "var(--error-color)",
-            }}
-            onClick={() =>
-              setSelectedNames((prev) =>
-                prev.includes(name)
-                  ? prev.filter((n) => n !== name)
-                  : [...prev, name]
-              )
-            }
-          >
-            {name}
-          </button>
-        ))}
-      </div>
+      <ItemSelectMultiple
+        itemNames={itemNames}
+        selectedNames={selectedNames}
+        onSelectionChange={setSelectedNames}
+      />
 
       <div ref={chartRef} style={{ width: "100%", height: "300px" }}>
         <ResponsiveContainer width="100%" height="100%">
