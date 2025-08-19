@@ -24,7 +24,7 @@ const ItemSelectMultiple: React.FC<ItemSelectMultipleProps> = ({
   };
 
   return (
-    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem" }}>
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", justifyContent: "center" }}>
       <button
         className="batch-button"
         style={{

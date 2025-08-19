@@ -137,7 +137,7 @@ const TotalItemsCard = ({ items }: { items: Item[] }) => {
           <DownloadPDF onDownload={handleDownloadPDF} />
         </div>
         {/* Item Filter */}
-        <div style={{ marginTop: "1rem" }}>
+        <div style={{ marginTop: "1rem", display: "flex", justifyContent: "center", width: "100%" }}>
           <ItemSelectMultiple
             itemNames={allItemNames}
             selectedNames={selectedItemNames}
