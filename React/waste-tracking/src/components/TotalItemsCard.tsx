@@ -75,9 +75,9 @@ const TotalItemsCard = ({ items }: { items: Item[] }) => {
   }, [filteredItems]);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
-      {/* Row 1 - Totals */}
-      <div>
+    <div style={{ display: "flex", flexDirection: "column", gap: "2rem", width: "100%" }}>
+      {/* Section 1 - Totals */}
+      <div style={{ width: "100%" }}>
         <h2>Total Items</h2>
         <div>
           <label htmlFor="dateRange">Date Range:</label>
@@ -95,9 +95,8 @@ const TotalItemsCard = ({ items }: { items: Item[] }) => {
         </div>
         <p style={{ fontSize: "2rem", fontWeight: "bold" }}>{totalCount}</p>
       </div>
-
-      {/* Row 2 - Grouped Items Table */}
-      <div>
+      {/* Section 2 - Grouped Items Table */}
+      <div style={{ width: "100%" }}>
         <h2>Items</h2>
         <div className="items-table-container">
           <table className="items-table">
