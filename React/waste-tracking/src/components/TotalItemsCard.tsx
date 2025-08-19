@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { subDays } from "date-fns";
 import "./ItemsTable/ItemsTable.css";
+import DateRange from "./widgets/daterange";
 
 interface Item {
   id: number;
@@ -26,10 +27,14 @@ function formatQuantity(quantity: number, unit: string): string {
 }
 
 const TotalItemsCard = ({ items }: { items: Item[] }) => {
-  // Default: past 30 days
   const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 30));
   const [endDate, setEndDate] = useState<Date>(new Date());
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
+
+  const handleDateRangeChange = (start: Date, end: Date) => {
+    setStartDate(start);
+    setEndDate(end);
+  };
 
   useEffect(() => {
     const filtered = items.filter((item) => {
@@ -69,20 +74,7 @@ const TotalItemsCard = ({ items }: { items: Item[] }) => {
       {/* Section 1 - Totals */}
       <div style={{ width: "100%" }}>
         <h2>Total Items</h2>
-        <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
-          <label>Start Date:</label>
-          <input
-            type="date"
-            value={startDate.toISOString().split("T")[0]}
-            onChange={(e) => setStartDate(new Date(e.target.value))}
-          />
-          <label>End Date:</label>
-          <input
-            type="date"
-            value={endDate.toISOString().split("T")[0]}
-            onChange={(e) => setEndDate(new Date(e.target.value))}
-          />
-        </div>
+        <DateRange onDateRangeChange={handleDateRangeChange} />
       </div>
 
       {/* Section 2 - Grouped Items Table */}
