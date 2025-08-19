@@ -116,8 +116,10 @@ const TotalItemsCard = ({ items }: { items: Item[] }) => {
       {/* Section 1 - Totals */}
       <div style={{ width: "100%" }}>
         <h2>Total Items</h2>
-        <DateRange onDateRangeChange={handleDateRangeChange} />
-        <button onClick={handleDownloadPDF} style={{ marginTop: "1rem" }}>Download PDF</button>
+        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+          <DateRange onDateRangeChange={handleDateRangeChange} />
+          <button onClick={handleDownloadPDF}>Download PDF</button>
+        </div>
       </div>
 
       {/* Section 2 - Grouped Items Table */}
