@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
-import { subHours, subDays, subMonths, subYears } from "date-fns";
-import './ItemsTable/ItemsTable.css';
+import { subDays } from "date-fns";
+import "./ItemsTable/ItemsTable.css";
 
 interface Item {
   id: number;
@@ -26,25 +26,18 @@ function formatQuantity(quantity: number, unit: string): string {
 }
 
 const TotalItemsCard = ({ items }: { items: Item[] }) => {
-  const [range, setRange] = useState<"1d" | "30d" | "6m" | "1y" | "all">("30d");
+  // Default: past 30 days
+  const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 30));
+  const [endDate, setEndDate] = useState<Date>(new Date());
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
 
-  const getStartDate = () => {
-    const now = new Date();
-    if (range === "1d") return subHours(now, 24);
-    if (range === "30d") return subDays(now, 30);
-    if (range === "6m") return subMonths(now, 6);
-    if (range === "1y") return subYears(now, 1);
-    return new Date("2000-01-01");
-  };
-
   useEffect(() => {
-    const startDate = getStartDate();
-    const filtered = items.filter(
-      (item) => new Date(item.created_at) >= startDate
-    );
+    const filtered = items.filter((item) => {
+      const created = new Date(item.created_at);
+      return created >= startDate && created <= endDate;
+    });
     setFilteredItems(filtered);
-  }, [items, range]);
+  }, [items, startDate, endDate]);
 
   // Group items by name and sum their quantities
   const groupedItems = useMemo(() => {
@@ -60,7 +53,6 @@ const TotalItemsCard = ({ items }: { items: Item[] }) => {
       }
     });
 
-    // Sort alphabetically by item name
     return Array.from(map.entries())
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([name, { quantity, unit }]) => ({
@@ -71,25 +63,28 @@ const TotalItemsCard = ({ items }: { items: Item[] }) => {
   }, [filteredItems]);
 
   return (
-    <div style={{ display: "flex", flexDirection: "column", gap: "2rem", width: "100%" }}>
+    <div
+      style={{ display: "flex", flexDirection: "column", gap: "2rem", width: "100%" }}
+    >
       {/* Section 1 - Totals */}
       <div style={{ width: "100%" }}>
         <h2>Total Items</h2>
-        <div>
-          <label htmlFor="dateRange">Date Range:</label>
-          <select
-            id="dateRange"
-            value={range}
-            onChange={(e) => setRange(e.target.value as any)}
-          >
-            <option value="1d">Past 1 Day</option>
-            <option value="30d">Past 30 Days</option>
-            <option value="6m">Past 6 Months</option>
-            <option value="1y">Past 1 Year</option>
-            <option value="all">All Time</option>
-          </select>
+        <div style={{ display: "flex", gap: "1rem", alignItems: "center" }}>
+          <label>Start Date:</label>
+          <input
+            type="date"
+            value={startDate.toISOString().split("T")[0]}
+            onChange={(e) => setStartDate(new Date(e.target.value))}
+          />
+          <label>End Date:</label>
+          <input
+            type="date"
+            value={endDate.toISOString().split("T")[0]}
+            onChange={(e) => setEndDate(new Date(e.target.value))}
+          />
         </div>
       </div>
+
       {/* Section 2 - Grouped Items Table */}
       <div style={{ width: "100%" }}>
         <h2>Items</h2>
@@ -108,6 +103,13 @@ const TotalItemsCard = ({ items }: { items: Item[] }) => {
                   <td>{formatQuantity(item.quantity, item.unit)}</td>
                 </tr>
               ))}
+              {groupedItems.length === 0 && (
+                <tr>
+                  <td colSpan={2} style={{ textAlign: "center", color: "#888" }}>
+                    No items found for selected date range
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
