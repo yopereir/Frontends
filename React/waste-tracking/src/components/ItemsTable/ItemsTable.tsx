@@ -1,6 +1,5 @@
-import { useState, useMemo, useRef } from "react";
-import { format, isWithinInterval } from "date-fns";
-import { subDays } from "date-fns";
+import { useState, useMemo, useRef, useEffect } from "react";
+import { format, subDays } from "date-fns";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import "./ItemsTable.css";
@@ -15,6 +14,7 @@ interface Item {
   restaurant_id: number;
   quantity?: number;
   metadata?: any;
+  waste_entry_id: string; // ✅ The new unique identifier
 }
 
 function formatQuantity(quantity: number, unit: string): string {
@@ -41,34 +41,46 @@ const ItemsTable = ({ items }: Props) => {
   const [selectedNames, setSelectedNames] = useState<string[]>([]);
   const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 30));
   const [endDate, setEndDate] = useState<Date>(new Date());
+  const [filteredItems, setFilteredItems] = useState<Item[]>([]);
   const tableRef = useRef<HTMLDivElement>(null);
 
-  const itemNames = useMemo(() => [...new Set(items.map((item) => item.name))], [items]);
+  const itemNames = useMemo(
+    () => [...new Set(items.map((item) => item.name))],
+    [items]
+  );
 
-  const filteredItems = useMemo(() => {
-    const visible = selectedNames.length === 0
-      ? items
-      : items.filter((item) => selectedNames.includes(item.name));
+  useEffect(() => {
+    const filteredByDate = items.filter((item) => {
+      const created = new Date(item.created_at);
+      return created >= startDate && created <= endDate;
+    });
 
-    const dateFiltered = visible.filter((item) =>
-      isWithinInterval(new Date(item.created_at), { start: startDate, end: endDate })
-    );
+    const filteredByDateAndName =
+      selectedNames.length === 0
+        ? filteredByDate
+        : filteredByDate.filter((item) => selectedNames.includes(item.name));
 
-    return [...dateFiltered].sort((a, b) => {
-      const valA = sortKey === "created_at"
-        ? new Date(a.created_at).getTime()
-        : a.name.toLowerCase();
-      const valB = sortKey === "created_at"
-        ? new Date(b.created_at).getTime()
-        : b.name.toLowerCase();
+    const sortedItems = [...filteredByDateAndName].sort((a, b) => {
+      const valA =
+        sortKey === "created_at"
+          ? new Date(a.created_at).getTime()
+          : a.name.toLowerCase();
+      const valB =
+        sortKey === "created_at"
+          ? new Date(b.created_at).getTime()
+          : b.name.toLowerCase();
 
       if (typeof valA === "string" && typeof valB === "string") {
         return sortAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
       }
 
-      return sortAsc ? (valA as number) - (valB as number) : (valB as number) - (valA as number);
+      return sortAsc
+        ? (valA as number) - (valB as number)
+        : (valB as number) - (valA as number);
     });
-  }, [items, selectedNames, sortAsc, sortKey, startDate, endDate]);
+
+    setFilteredItems(sortedItems);
+  }, [items, startDate, endDate, selectedNames, sortKey, sortAsc]);
 
   const toggleSort = (key: "created_at" | "name") => {
     if (sortKey === key) {
@@ -86,19 +98,18 @@ const ItemsTable = ({ items }: Props) => {
 
   const handleDownloadPdf = async () => {
     if (tableRef.current) {
-      // Temporarily apply styles for PDF generation
-      const tableElement = tableRef.current.querySelector('.items-table');
+      const tableElement = tableRef.current.querySelector(".items-table");
       if (tableElement) {
-        tableElement.querySelectorAll('th, td').forEach((el) => {
-          (el as HTMLElement).style.color = '#000'; // Set text color to black
+        tableElement.querySelectorAll("th, td").forEach((el) => {
+          (el as HTMLElement).style.color = "#000";
         });
       }
 
       const canvas = await html2canvas(tableRef.current);
       const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF();
-      const imgWidth = 210; // A4 width in mm
-      const pageHeight = 297; // A4 height in mm
+      const pdf = new jsPDF("p", "mm", "a4");
+      const imgWidth = 210;
+      const pageHeight = 297;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       let heightLeft = imgHeight;
       let position = 0;
@@ -113,10 +124,10 @@ const ItemsTable = ({ items }: Props) => {
         heightLeft -= pageHeight;
       }
       pdf.save("items-table.pdf");
-      // Revert styles after PDF generation
+
       if (tableElement) {
-        tableElement.querySelectorAll('th, td').forEach((el) => {
-          (el as HTMLElement).style.color = ''; // Remove inline style
+        tableElement.querySelectorAll("th, td").forEach((el) => {
+          (el as HTMLElement).style.color = "";
         });
       }
     }
@@ -135,50 +146,54 @@ const ItemsTable = ({ items }: Props) => {
       />
 
       <div className="items-table-container" ref={tableRef}>
-      <table className="items-table">
-        <thead>
-          <tr>
-            <th>
-              Name{" "}
-              <button
-                onClick={() => toggleSort("name")}
-                style={{
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  fontSize: "0.8rem",
-                }}
-              >
-                {sortKey === "name" ? (sortAsc ? "▲" : "▼") : "↕"}
-              </button>
-            </th>
-            <th>
-              Created At{" "}
-              <button
-                onClick={() => toggleSort("created_at")}
-                style={{
-                  background: "none",
-                  border: "none",
-                  cursor: "pointer",
-                  fontSize: "0.8rem",
-                }}
-              >
-                {sortKey === "created_at" ? (sortAsc ? "▲" : "▼") : "↕"}
-              </button>
-            </th>
-            <th>Quantity</th>
-          </tr>
-        </thead>
-        <tbody>
-          {filteredItems.map((item) => (
-            <tr key={item.id}>
-              <td>{item.name}</td>
-              <td>{format(new Date(item.created_at), "yyyy-MM-dd HH:mm")}</td>
-              <td>{item.quantity ? formatQuantity(item.quantity, item.metadata?.unit ?? '') : 'N/A'}</td>
+        <table className="items-table">
+          <thead>
+            <tr>
+              <th>
+                Name{" "}
+                <button
+                  onClick={() => toggleSort("name")}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    fontSize: "0.8rem",
+                  }}
+                >
+                  {sortKey === "name" ? (sortAsc ? "▲" : "▼") : "↕"}
+                </button>
+              </th>
+              <th>
+                Created At{" "}
+                <button
+                  onClick={() => toggleSort("created_at")}
+                  style={{
+                    background: "none",
+                    border: "none",
+                    cursor: "pointer",
+                    fontSize: "0.8rem",
+                  }}
+                >
+                  {sortKey === "created_at" ? (sortAsc ? "▲" : "▼") : "↕"}
+                </button>
+              </th>
+              <th>Quantity</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {filteredItems.map((item) => (
+              <tr key={item.waste_entry_id}>
+                <td>{item.name}</td>
+                <td>{format(new Date(item.created_at), "yyyy-MM-dd HH:mm")}</td>
+                <td>
+                  {item.quantity
+                    ? formatQuantity(item.quantity, item.metadata?.unit ?? "")
+                    : "N/A"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
       </div>
     </>
   );
