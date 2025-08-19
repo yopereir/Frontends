@@ -5,7 +5,6 @@ import html2canvas from "html2canvas";
 import "./ItemsTable/ItemsTable.css";
 import DateRange from "./widgets/daterange";
 import DownloadPDF from "./widgets/downloadpdf";
-import ItemSelectMultiple from "./widgets/itemselectmultiple"; // Reuse this for selecting box names
 
 interface Box {
   id: string;
@@ -14,11 +13,35 @@ interface Box {
   user_id: string;
 }
 
-const TotalBoxesCard = ({ boxes }: { boxes: Box[] }) => {
+interface WasteEntry {
+  id: string;
+  created_at: string;
+  item_id: string | null;
+  metadata: { boxId?: string; itemName?: string; name?: string } | null;
+  quantity?: number;
+}
+
+// NOTE: Allow optional item_id to support "enriched" item objects where
+// id might be the waste_entry.id and item_id is the true items.id.
+interface Item {
+  id: string;
+  name: string;
+  restaurant_id?: number;
+  item_id?: string | null;
+}
+
+const TotalBoxesCard = ({
+  boxes,
+  wasteEntries,
+  items,
+}: {
+  boxes: Box[];
+  wasteEntries: WasteEntry[];
+  items: Item[];
+}) => {
   const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 30));
   const [endDate, setEndDate] = useState<Date>(new Date());
   const [filteredBoxes, setFilteredBoxes] = useState<Box[]>([]);
-  const [selectedBoxNames, setSelectedBoxNames] = useState<string[]>([]);
   const tableRef = useRef<HTMLDivElement>(null);
 
   const handleDateRangeChange = (start: Date, end: Date) => {
@@ -26,53 +49,69 @@ const TotalBoxesCard = ({ boxes }: { boxes: Box[] }) => {
     setEndDate(end);
   };
 
-  // Derive all unique box names
-  const allBoxNames = useMemo(() => {
-    const names = new Set<string>();
-    boxes.forEach((box) => {
-      if (box.name) names.add(box.name);
-    });
-    return Array.from(names).sort();
-  }, [boxes]);
-
+  // Filter boxes by created_at
   useEffect(() => {
     const filteredByDate = boxes.filter((box) => {
       const created = new Date(box.created_at);
       return created >= startDate && created <= endDate;
     });
+    setFilteredBoxes(filteredByDate);
+  }, [boxes, startDate, endDate]);
 
-    // Further filter by selected box names
-    const filteredByDateAndName =
-      selectedBoxNames.length === 0
-        ? filteredByDate
-        : filteredByDate.filter((box) =>
-            box.name ? selectedBoxNames.includes(box.name) : false
-          );
-
-    setFilteredBoxes(filteredByDateAndName);
-  }, [boxes, startDate, endDate, selectedBoxNames]);
-
-  // Group boxes by name and count them
-  const groupedBoxes = useMemo(() => {
-    const map = new Map<string, number>();
-
-    filteredBoxes.forEach((box) => {
-      const key = box.name || "Unnamed Box";
-      map.set(key, (map.get(key) ?? 0) + 1);
+  // Build a robust map of item_id -> item name.
+  // Supports both shapes:
+  //  1) items where id === items.id (true item id)
+  //  2) items where item_id === items.id (true item id) and id === waste_entry.id
+  const itemMap = useMemo(() => {
+    const map = new Map<string, string>();
+    items.forEach((it: Item & { item_id?: string | null }) => {
+      if (it.id) map.set(String(it.id), it.name);
+      if (it.item_id) map.set(String(it.item_id), it.name);
     });
+    return map;
+  }, [items]);
 
-    return Array.from(map.entries())
-      .sort(([a], [b]) => a.localeCompare(b))
-      .map(([name, count]) => ({
-        name,
-        count,
-      }));
-  }, [filteredBoxes]);
+  // Attach item names to each box
+  const boxesWithItems = useMemo(() => {
+    return filteredBoxes.map((box) => {
+      const relatedWaste = wasteEntries.filter((we) => {
+        const created = new Date(we.created_at);
+        const boxIdFromWE = we?.metadata?.boxId;
+        return (
+          created >= startDate &&
+          created <= endDate &&
+          boxIdFromWE != null &&
+          String(boxIdFromWE) === String(box.id)
+        );
+      });
+
+      const relatedItemNames = relatedWaste.map((we) => {
+        // Try resolving by item_id -> itemMap
+        const fromMap =
+          we.item_id != null ? itemMap.get(String(we.item_id)) : undefined;
+
+        // Fallbacks from waste entry metadata if available
+        const metaName =
+          we.metadata?.itemName ||
+          we.metadata?.name ||
+          (we as any).item_name;
+
+        return fromMap || metaName || "Unknown Item";
+      });
+
+      // Deduplicate names while preserving order
+      const uniqueNames = Array.from(new Set(relatedItemNames));
+
+      return {
+        ...box,
+        items: uniqueNames,
+      };
+    });
+  }, [filteredBoxes, wasteEntries, startDate, endDate, itemMap]);
 
   const handleDownloadPDF = async () => {
     if (tableRef.current) {
-      const tableElement =
-        tableRef.current.querySelector(".items-table");
+      const tableElement = tableRef.current.querySelector(".items-table");
       if (tableElement) {
         tableElement.querySelectorAll("th, td").forEach((el) => {
           (el as HTMLElement).style.color = "#000";
@@ -117,24 +156,9 @@ const TotalBoxesCard = ({ boxes }: { boxes: Box[] }) => {
           <DateRange onDateRangeChange={handleDateRangeChange} />
           <DownloadPDF onDownload={handleDownloadPDF} />
         </div>
-        {/* Box Filter */}
-        <div
-          style={{
-            marginTop: "1rem",
-            display: "flex",
-            justifyContent: "center",
-            width: "100%",
-          }}
-        >
-          <ItemSelectMultiple
-            itemNames={allBoxNames}
-            selectedNames={selectedBoxNames}
-            onSelectionChange={setSelectedBoxNames}
-          />
-        </div>
       </div>
 
-      {/* Section 2 - Grouped Boxes Table */}
+      {/* Section 2 - Boxes Table */}
       <div style={{ width: "100%" }} ref={tableRef}>
         <h2>Boxes</h2>
         <div className="items-table-container">
@@ -142,19 +166,25 @@ const TotalBoxesCard = ({ boxes }: { boxes: Box[] }) => {
             <thead>
               <tr>
                 <th>Name</th>
-                <th>Total Count</th>
+                <th>Created At</th>
+                <th>Items</th>
               </tr>
             </thead>
             <tbody>
-              {groupedBoxes.map((box) => (
-                <tr key={box.name}>
-                  <td>{box.name}</td>
-                  <td>{box.count}</td>
+              {boxesWithItems.map((box) => (
+                <tr key={box.id}>
+                  <td>{box.name || "Unnamed Box"}</td>
+                  <td>{new Date(box.created_at).toLocaleString()}</td>
+                  <td>
+                    {box.items.length > 0
+                      ? box.items.join(", ")
+                      : "No items in this box"}
+                  </td>
                 </tr>
               ))}
-              {groupedBoxes.length === 0 && (
+              {boxesWithItems.length === 0 && (
                 <tr>
-                  <td colSpan={2} style={{ textAlign: "center", color: "#888" }}>
+                  <td colSpan={3} style={{ textAlign: "center", color: "#888" }}>
                     No boxes found for selected date range
                   </td>
                 </tr>
