@@ -154,7 +154,21 @@ const TotalItemsCard = () => {
       pdf.setFontSize(22);
       pdf.setTextColor(0, 0, 0); // Black color 
       pdf.text('Total Items', imgX, position); // x, y coordinates, centered
-      position += 10; // Adjust position for the table image, leaving space for Title 
+      position += 10; // Adjust position for the next line
+
+      // Add subheading for date range and filtered items
+      pdf.setFontSize(12);
+      const formattedStartDate = startDate.toLocaleDateString();
+      const formattedEndDate = endDate.toLocaleDateString();
+      const dateRangeText = `Date Range: ${formattedStartDate} - ${formattedEndDate}`;
+      pdf.text(dateRangeText, imgX, position);
+      position += 7; // Adjust position for the next line
+
+      const itemsFilteredText = selectedItemNames.length > 0 
+        ? `Filtered Items: ${selectedItemNames.join(', ')}`
+        : 'All Items';
+      pdf.text(itemsFilteredText, imgX, position);
+      position += 10; // Adjust position for the table image
 
       pdf.addImage(imgData, 'PNG', imgX, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
