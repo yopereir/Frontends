@@ -75,16 +75,13 @@ const DashboardPage = () => {
           <>
             <h2>Total Boxes</h2>
             <TotalBoxesCard
-              boxes={boxes}
               // ✅ wasteEntries and items props will need to be managed by a higher-level context or fetched inside this component
               // For now, these might not work as expected without data.
-              wasteEntries={[]}
-              items={[]}
             />
 
             <h2>Total Bags Line Chart</h2>
             {/* ✅ ItemsLineChart will also need to be refactored to fetch its own data */}
-            <ItemsLineChart items={[]} />
+            <ItemsLineChart />
 
             <h2>Waste Item Log</h2>
             {/* ✅ ItemsTable no longer receives the items prop */}
