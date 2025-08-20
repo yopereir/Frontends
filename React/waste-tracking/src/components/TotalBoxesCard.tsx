@@ -163,23 +163,44 @@ const TotalBoxesCard = () => {
 
   const handleDownloadPDF = async () => {
     if (tableRef.current) {
-      const tableElement = tableRef.current.querySelector(".items-table");
-      if (tableElement) {
-        tableElement.querySelectorAll("th, td").forEach((el) => {
-          (el as HTMLElement).style.color = "#000";
+      if (tableRef.current) {
+        tableRef.current.querySelectorAll('h2, th, td').forEach((el) => {
+          (el as HTMLElement).style.color = '#000'; // Set text color to black
         });
       }
 
-      const canvas = await html2canvas(tableRef.current);
+      const canvas = await html2canvas(tableRef.current, { scale: 2 });
       const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
-      const imgWidth = 210;
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const imgWidth = pdfWidth * 0.9; // 90% of the PDF width
+      const imgX = (pdfWidth - imgWidth) / 2; // Center the image
       const pageHeight = 297;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      const imgHeight = canvas.height * imgWidth / canvas.width;
       let heightLeft = imgHeight;
-      let position = 0;
+      let position = 10; // Initial position for content
 
-      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      // Add title
+      pdf.setFontSize(22);
+      pdf.setTextColor(0, 0, 0); // Black color 
+      pdf.text('Total Boxes', imgX, position); // x, y coordinates, centered
+      position += 10; // Adjust position for the next line
+
+      // Add subheading for date range and filtered items
+      pdf.setFontSize(12);
+      const formattedStartDate = startDate.toLocaleDateString();
+      const formattedEndDate = endDate.toLocaleDateString();
+      const dateRangeText = `Date Range: ${formattedStartDate} - ${formattedEndDate}`;
+      pdf.text(dateRangeText, imgX, position);
+      position += 7; // Adjust position for the next line
+
+      const itemsFilteredText = selectedItems.length > 0 
+        ? `Filtered by Items: ${selectedItems.join(', ')}`
+        : 'All Items Included';
+      pdf.text(itemsFilteredText, imgX, position);
+      position += 10; // Adjust position for the table image
+
+      pdf.addImage(imgData, 'PNG', imgX, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
 
       while (heightLeft >= 0) {
@@ -190,9 +211,10 @@ const TotalBoxesCard = () => {
       }
       pdf.save("boxes-table.pdf");
 
-      if (tableElement) {
-        tableElement.querySelectorAll("th, td").forEach((el) => {
-          (el as HTMLElement).style.color = "";
+      // Revert styles after PDF generation
+      if (tableRef.current) {
+        tableRef.current.querySelectorAll('h2, th, td').forEach((el) => {
+          (el as HTMLElement).style.color = ''; // Remove inline style
         });
       }
     }
