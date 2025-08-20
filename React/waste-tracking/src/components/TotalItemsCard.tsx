@@ -139,16 +139,38 @@ const TotalItemsCard = () => {
         });
       }
 
-      const canvas = await html2canvas(tableRef.current);
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
-      const imgWidth = 210;
+      const canvas = await html2canvas(tableRef.current, { scale: 2 });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const imgWidth = pdfWidth * 0.9; // 90% of the PDF width
+      const imgX = (pdfWidth - imgWidth) / 2; // Center the image
       const pageHeight = 297;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       let heightLeft = imgHeight;
-      let position = 0;
+      let position = 10; // Initial position for content
 
-      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      // Add title
+      pdf.setFontSize(22);
+      pdf.setTextColor(0, 0, 0); // Black color 
+      pdf.text('Total Items', imgX, position); // x, y coordinates, centered
+      position += 10; // Adjust position for the next line
+
+      // Add subheading for date range and filtered items
+      pdf.setFontSize(12);
+      const formattedStartDate = startDate.toLocaleDateString();
+      const formattedEndDate = endDate.toLocaleDateString();
+      const dateRangeText = `Date Range: ${formattedStartDate} - ${formattedEndDate}`;
+      pdf.text(dateRangeText, imgX, position);
+      position += 7; // Adjust position for the next line
+
+      const itemsFilteredText = selectedItemNames.length > 0 
+        ? `Filtered Items: ${selectedItemNames.join(', ')}`
+        : 'All Items';
+      pdf.text(itemsFilteredText, imgX, position);
+      position += 10; // Adjust position for the table image
+
+      pdf.addImage(imgData, 'PNG', imgX, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
 
       while (heightLeft >= 0) {
@@ -201,7 +223,6 @@ const TotalItemsCard = () => {
 
       {/* Section 2 - Grouped Items Table */}
       <div style={{ width: "100%" }} ref={tableRef}>
-        <h2>Items</h2>
         <div className="items-table-container">
           {loading ? (
             <p style={{ textAlign: "center", color: "#888" }}>Loading...</p>
