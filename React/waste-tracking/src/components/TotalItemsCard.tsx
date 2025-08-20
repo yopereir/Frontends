@@ -139,14 +139,20 @@ const TotalItemsCard = () => {
         });
       }
 
-      const canvas = await html2canvas(tableRef.current);
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
+      const canvas = await html2canvas(tableRef.current, { scale: 2 });
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
       const imgWidth = 210;
       const pageHeight = 297;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       let heightLeft = imgHeight;
-      let position = 0;
+      let position = 10; // Initial position for content
+
+      // Add title
+      pdf.setFontSize(22);
+      pdf.setTextColor(0, 0, 0); // Black color 
+      pdf.text('Total Items', 10, position); // x, y coordinates
+      position += 10; // Adjust position for the table image, leaving space for Title 
 
       pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
@@ -201,7 +207,6 @@ const TotalItemsCard = () => {
 
       {/* Section 2 - Grouped Items Table */}
       <div style={{ width: "100%" }} ref={tableRef}>
-        <h2>Items</h2>
         <div className="items-table-container">
           {loading ? (
             <p style={{ textAlign: "center", color: "#888" }}>Loading...</p>
