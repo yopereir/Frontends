@@ -5,7 +5,8 @@ import html2canvas from "html2canvas";
 import "./ItemsTable/ItemsTable.css";
 import DateRange from "./widgets/daterange";
 import DownloadPDF from "./widgets/downloadpdf";
-import ItemSelectMultiple from "./widgets/itemselectmultiple"; // Import the new component
+import ItemSelectMultiple from "./widgets/itemselectmultiple";
+import supabase from "../supabase"; // ✅ Import the supabase client
 
 interface Item {
   id: number;
@@ -30,11 +31,14 @@ function formatQuantity(quantity: number, unit: string): string {
   return String(quantity);
 }
 
-const TotalItemsCard = ({ items }: { items: Item[] }) => {
+// ✅ Removed the items prop, as the component will now fetch its own data
+const TotalItemsCard = () => {
   const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 30));
   const [endDate, setEndDate] = useState<Date>(new Date());
+  const [items, setItems] = useState<Item[]>([]); // ✅ New state for fetched data
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
-  const [selectedItemNames, setSelectedItemNames] = useState<string[]>([]); // New state for selected items
+  const [selectedItemNames, setSelectedItemNames] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false); // ✅ New loading state
   const tableRef = useRef<HTMLDivElement>(null);
 
   const handleDateRangeChange = (start: Date, end: Date) => {
@@ -42,26 +46,66 @@ const TotalItemsCard = ({ items }: { items: Item[] }) => {
     setEndDate(end);
   };
 
-  // Derive all unique item names for the ItemSelectMultiple component
+  // ✅ New useEffect hook to fetch data
+  useEffect(() => {
+    const fetchItems = async () => {
+      setLoading(true);
+
+      const { data: wasteData, error: wasteError } = await supabase
+        .from("waste_entries")
+        .select("id, created_at, quantity, item_id, metadata")
+        .gte("created_at", startDate.toISOString())
+        .lte("created_at", endDate.toISOString());
+
+      if (!wasteError && wasteData) {
+        const fetchedItems = await Promise.all(
+          wasteData.map(async (wasteEntry) => {
+            const { data: itemData } = await supabase
+              .from("items")
+              .select("id, name, restaurant_id")
+              .eq("id", wasteEntry.item_id)
+              .single();
+
+            return {
+              id: itemData?.id || wasteEntry.item_id,
+              name: itemData?.name || "Unknown Item",
+              created_at: wasteEntry.created_at,
+              quantity: wasteEntry.quantity,
+              restaurant_id: itemData?.restaurant_id,
+              metadata: {
+                ...wasteEntry.metadata,
+                boxId: wasteEntry.metadata?.boxId,
+              },
+            };
+          })
+        );
+        setItems(fetchedItems);
+      } else {
+        console.warn("Supabase fetch failed:", wasteError);
+        setItems([]);
+      }
+      setLoading(false);
+    };
+
+    fetchItems();
+  }, [startDate, endDate]); // Re-fetch data whenever the date range changes
+
+  // ✅ The existing useEffect now filters the data that was fetched by the new hook
+  useEffect(() => {
+    const filteredByDateAndName =
+      selectedItemNames.length === 0
+        ? items
+        : items.filter((item) => selectedItemNames.includes(item.name));
+
+    setFilteredItems(filteredByDateAndName);
+  }, [items, selectedItemNames]);
+
+  // Derive all unique item names from the fetched items
   const allItemNames = useMemo(() => {
     const names = new Set<string>();
     items.forEach((item) => names.add(item.name));
     return Array.from(names).sort();
   }, [items]);
-
-  useEffect(() => {
-    const filteredByDate = items.filter((item) => {
-      const created = new Date(item.created_at);
-      return created >= startDate && created <= endDate;
-    });
-
-    // Further filter by selected item names
-    const filteredByDateAndName = selectedItemNames.length === 0
-      ? filteredByDate
-      : filteredByDate.filter((item) => selectedItemNames.includes(item.name));
-
-    setFilteredItems(filteredByDateAndName);
-  }, [items, startDate, endDate, selectedItemNames]); // Add selectedItemNames to dependencies
 
   // Group items by name and sum their quantities
   const groupedItems = useMemo(() => {
@@ -88,38 +132,36 @@ const TotalItemsCard = ({ items }: { items: Item[] }) => {
 
   const handleDownloadPDF = async () => {
     if (tableRef.current) {
-      // Temporarily apply styles for PDF generation
-      const tableElement = tableRef.current.querySelector('.items-table');
+      const tableElement = tableRef.current.querySelector(".items-table");
       if (tableElement) {
-        tableElement.querySelectorAll('th, td').forEach((el) => {
-          (el as HTMLElement).style.color = '#000'; // Set text color to black
+        tableElement.querySelectorAll("th, td").forEach((el) => {
+          (el as HTMLElement).style.color = "#000";
         });
       }
 
       const canvas = await html2canvas(tableRef.current);
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF("p", "mm", "a4");
       const imgWidth = 210;
       const pageHeight = 297;
-      const imgHeight = canvas.height * imgWidth / canvas.width;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
       let heightLeft = imgHeight;
       let position = 0;
 
-      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
 
       while (heightLeft >= 0) {
         position = heightLeft - imgHeight;
         pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
         heightLeft -= pageHeight;
       }
-      pdf.save('items-table.pdf');
+      pdf.save("items-table.pdf");
 
-      // Revert styles after PDF generation
       if (tableElement) {
-        tableElement.querySelectorAll('th, td').forEach((el) => {
-          (el as HTMLElement).style.color = ''; // Remove inline style
+        tableElement.querySelectorAll("th, td").forEach((el) => {
+          (el as HTMLElement).style.color = "";
         });
       }
     }
@@ -127,7 +169,12 @@ const TotalItemsCard = ({ items }: { items: Item[] }) => {
 
   return (
     <div
-      style={{ display: "flex", flexDirection: "column", gap: "2rem", width: "100%" }}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "2rem",
+        width: "100%",
+      }}
     >
       {/* Section 1 - Totals */}
       <div style={{ width: "100%" }}>
@@ -136,7 +183,14 @@ const TotalItemsCard = ({ items }: { items: Item[] }) => {
           <DownloadPDF onDownload={handleDownloadPDF} />
         </div>
         {/* Item Filter */}
-        <div style={{ marginTop: "1rem", display: "flex", justifyContent: "center", width: "100%" }}>
+        <div
+          style={{
+            marginTop: "1rem",
+            display: "flex",
+            justifyContent: "center",
+            width: "100%",
+          }}
+        >
           <ItemSelectMultiple
             itemNames={allItemNames}
             selectedNames={selectedItemNames}
@@ -149,29 +203,33 @@ const TotalItemsCard = ({ items }: { items: Item[] }) => {
       <div style={{ width: "100%" }} ref={tableRef}>
         <h2>Items</h2>
         <div className="items-table-container">
-          <table className="items-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Total Quantity</th>
-              </tr>
-            </thead>
-            <tbody>
-              {groupedItems.map((item) => (
-                <tr key={item.name}>
-                  <td>{item.name}</td>
-                  <td>{formatQuantity(item.quantity, item.unit)}</td>
-                </tr>
-              ))}
-              {groupedItems.length === 0 && (
+          {loading ? (
+            <p style={{ textAlign: "center", color: "#888" }}>Loading...</p>
+          ) : (
+            <table className="items-table">
+              <thead>
                 <tr>
-                  <td colSpan={2} style={{ textAlign: "center", color: "#888" }}>
-                    No items found for selected date range
-                  </td>
+                  <th>Name</th>
+                  <th>Total Quantity</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {groupedItems.map((item) => (
+                  <tr key={item.name}>
+                    <td>{item.name}</td>
+                    <td>{formatQuantity(item.quantity, item.unit)}</td>
+                  </tr>
+                ))}
+                {groupedItems.length === 0 && (
+                  <tr>
+                    <td colSpan={2} style={{ textAlign: "center", color: "#888" }}>
+                      No items found for selected date range
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>

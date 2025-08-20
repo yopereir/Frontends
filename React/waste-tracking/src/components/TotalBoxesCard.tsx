@@ -6,6 +6,7 @@ import "./ItemsTable/ItemsTable.css";
 import DateRange from "./widgets/daterange";
 import DownloadPDF from "./widgets/downloadpdf";
 import ItemSelectMultiple from "./widgets/itemselectmultiple";
+import supabase from "../supabase";
 
 interface Box {
   id: string;
@@ -28,19 +29,16 @@ interface Item {
   restaurant_id: number;
 }
 
-const TotalBoxesCard = ({
-  boxes,
-  wasteEntries,
-  items,
-}: {
-  boxes: Box[];
-  wasteEntries: WasteEntry[];
-  items: Item[];
-}) => {
+// ✅ No longer accepts props, as it will now fetch its own data
+const TotalBoxesCard = () => {
   const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 30));
   const [endDate, setEndDate] = useState<Date>(new Date());
+  const [boxes, setBoxes] = useState<Box[]>([]); // ✅ New state for boxes
+  const [wasteEntries, setWasteEntries] = useState<WasteEntry[]>([]); // ✅ New state for waste entries
+  const [items, setItems] = useState<Item[]>([]); // ✅ New state for items
   const [filteredBoxes, setFilteredBoxes] = useState<Box[]>([]);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [loading, setLoading] = useState(false); // ✅ New loading state
   const tableRef = useRef<HTMLDivElement>(null);
 
   const handleDateRangeChange = (start: Date, end: Date) => {
@@ -48,7 +46,62 @@ const TotalBoxesCard = ({
     setEndDate(end);
   };
 
-  // Filter boxes by created_at
+  // ✅ New useEffect hook to fetch all necessary data for the component
+  useEffect(() => {
+    const fetchAllData = async () => {
+      setLoading(true);
+
+      // Fetch all boxes
+      const { data: boxData, error: boxError } = await supabase
+        .from("boxes")
+        .select("*");
+      if (boxData) {
+        setBoxes(boxData);
+      } else {
+        console.error("Failed to fetch boxes:", boxError);
+        setBoxes([]);
+      }
+
+      // Fetch waste entries for the current date range
+      const { data: wasteData, error: wasteError } = await supabase
+        .from("waste_entries")
+        .select("id, created_at, item_id, metadata, quantity")
+        .gte("created_at", startDate.toISOString())
+        .lte("created_at", endDate.toISOString());
+
+      if (wasteData) {
+        setWasteEntries(wasteData);
+
+        // Fetch only the items associated with the fetched waste entries
+        const uniqueItemIds = [
+          ...new Set(wasteData.map((we) => we.item_id).filter(Boolean)),
+        ];
+        if (uniqueItemIds.length > 0) {
+          const { data: itemData, error: itemError } = await supabase
+            .from("items")
+            .select("id, name, restaurant_id")
+            .in("id", uniqueItemIds);
+          if (itemData) {
+            setItems(itemData);
+          } else {
+            console.error("Failed to fetch items:", itemError);
+            setItems([]);
+          }
+        } else {
+          setItems([]);
+        }
+      } else {
+        console.error("Failed to fetch waste entries:", wasteError);
+        setWasteEntries([]);
+      }
+
+      setLoading(false);
+    };
+
+    fetchAllData();
+  }, [startDate, endDate]); // Re-run when the date range changes
+
+  // Filter boxes by created_at (now using the local state)
   useEffect(() => {
     const filteredByDate = boxes.filter((box) => {
       const created = new Date(box.created_at);
@@ -147,9 +200,13 @@ const TotalBoxesCard = ({
 
   return (
     <div
-      style={{ display: "flex", flexDirection: "column", gap: "2rem", width: "100%" }}
+      style={{
+        display: "flex",
+        flexDirection: "column",
+        gap: "2rem",
+        width: "100%",
+      }}
     >
-      {/* Section 1 - Controls */}
       <div style={{ width: "100%" }}>
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
@@ -164,39 +221,42 @@ const TotalBoxesCard = ({
         </div>
       </div>
 
-      {/* Section 2 - Boxes Table */}
       <div style={{ width: "100%" }} ref={tableRef}>
         <h2>Boxes</h2>
         <div className="items-table-container">
-          <table className="items-table">
-            <thead>
-              <tr>
-                <th>Name</th>
-                <th>Created At</th>
-                <th>Items</th>
-              </tr>
-            </thead>
-            <tbody>
-              {finalBoxes.map((box) => (
-                <tr key={box.id}>
-                  <td>{box.name || "Unnamed Box"}</td>
-                  <td>{new Date(box.created_at).toLocaleString()}</td>
-                  <td>
-                    {box.items.length > 0
-                      ? box.items.join(", ")
-                      : "No items in this box"}
-                  </td>
-                </tr>
-              ))}
-              {finalBoxes.length === 0 && (
+          {loading ? (
+            <p style={{ textAlign: "center", color: "#888" }}>Loading...</p>
+          ) : (
+            <table className="items-table">
+              <thead>
                 <tr>
-                  <td colSpan={3} style={{ textAlign: "center", color: "#888" }}>
-                    No boxes found for selected filters
-                  </td>
+                  <th>Name</th>
+                  <th>Created At</th>
+                  <th>Items</th>
                 </tr>
-              )}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {finalBoxes.map((box) => (
+                  <tr key={box.id}>
+                    <td>{box.name || "Unnamed Box"}</td>
+                    <td>{new Date(box.created_at).toLocaleString()}</td>
+                    <td>
+                      {box.items.length > 0
+                        ? box.items.join(", ")
+                        : "No items in this box"}
+                    </td>
+                  </tr>
+                ))}
+                {finalBoxes.length === 0 && (
+                  <tr>
+                    <td colSpan={3} style={{ textAlign: "center", color: "#888" }}>
+                      No boxes found for selected filters
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          )}
         </div>
       </div>
     </div>
