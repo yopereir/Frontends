@@ -6,6 +6,7 @@ import "./ItemsTable.css";
 import ItemSelectMultiple from "../widgets/itemselectmultiple";
 import DateRange from "../widgets/daterange";
 import DownloadPDF from "../widgets/downloadpdf";
+import supabase from "../../supabase"; // ✅ Import supabase
 
 interface Item {
   id: number;
@@ -14,7 +15,7 @@ interface Item {
   restaurant_id: number;
   quantity?: number;
   metadata?: any;
-  waste_entry_id: string; // ✅ The new unique identifier
+  waste_entry_id: string;
 }
 
 function formatQuantity(quantity: number, unit: string): string {
@@ -31,36 +32,72 @@ function formatQuantity(quantity: number, unit: string): string {
   return String(quantity);
 }
 
-type Props = {
-  items: Item[];
-};
-
-const ItemsTable = ({ items }: Props) => {
+// ✅ No longer receives items as a prop
+const ItemsTable = () => {
   const [sortAsc, setSortAsc] = useState(true);
   const [sortKey, setSortKey] = useState<"created_at" | "name">("created_at");
   const [selectedNames, setSelectedNames] = useState<string[]>([]);
   const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 30));
   const [endDate, setEndDate] = useState<Date>(new Date());
-  const [filteredItems, setFilteredItems] = useState<Item[]>([]);
+  const [items, setItems] = useState<Item[]>([]); // ✅ New state for fetched data
+  const [loading, setLoading] = useState(false); // ✅ New loading state
   const tableRef = useRef<HTMLDivElement>(null);
 
-  const itemNames = useMemo(
-    () => [...new Set(items.map((item) => item.name))],
-    [items]
-  );
-
+  // ✅ New useEffect hook to fetch data when dates change
   useEffect(() => {
-    const filteredByDate = items.filter((item) => {
-      const created = new Date(item.created_at);
-      return created >= startDate && created <= endDate;
-    });
+    const fetchItems = async () => {
+      setLoading(true);
 
-    const filteredByDateAndName =
+      // Fetch waste entries for the given date range
+      const { data: wasteData, error: wasteError } = await supabase
+        .from("waste_entries")
+        .select("id, created_at, quantity, item_id, metadata")
+        .gte("created_at", startDate.toISOString()) // Filter by start date
+        .lte("created_at", endDate.toISOString()); // Filter by end date
+
+      if (!wasteError && wasteData) {
+        // Build enriched items from waste entries + items lookup
+        const fetchedItems = await Promise.all(
+          wasteData.map(async (wasteEntry) => {
+            const { data: itemData } = await supabase
+              .from("items")
+              .select("id, name, restaurant_id")
+              .eq("id", wasteEntry.item_id)
+              .single();
+
+            return {
+              id: itemData?.id || wasteEntry.item_id,
+              name: itemData?.name || "Unknown Item",
+              created_at: wasteEntry.created_at,
+              quantity: wasteEntry.quantity,
+              restaurant_id: itemData?.restaurant_id,
+              metadata: {
+                ...wasteEntry.metadata,
+                boxId: wasteEntry.metadata?.boxId,
+              },
+              waste_entry_id: wasteEntry.id,
+            };
+          })
+        );
+        setItems(fetchedItems);
+      } else {
+        console.warn("Supabase fetch failed for waste_entries:", wasteError);
+        setItems([]);
+      }
+      setLoading(false);
+    };
+
+    fetchItems();
+  }, [startDate, endDate]); // ✅ Re-fetch when startDate or endDate changes
+
+  // Use useMemo to filter and sort the fetched data based on selected names and sorting keys
+  const filteredAndSortedItems = useMemo(() => {
+    const filteredByName =
       selectedNames.length === 0
-        ? filteredByDate
-        : filteredByDate.filter((item) => selectedNames.includes(item.name));
+        ? items
+        : items.filter((item) => selectedNames.includes(item.name));
 
-    const sortedItems = [...filteredByDateAndName].sort((a, b) => {
+    return [...filteredByName].sort((a, b) => {
       const valA =
         sortKey === "created_at"
           ? new Date(a.created_at).getTime()
@@ -78,9 +115,12 @@ const ItemsTable = ({ items }: Props) => {
         ? (valA as number) - (valB as number)
         : (valB as number) - (valA as number);
     });
+  }, [items, selectedNames, sortKey, sortAsc]);
 
-    setFilteredItems(sortedItems);
-  }, [items, startDate, endDate, selectedNames, sortKey, sortAsc]);
+  const itemNames = useMemo(
+    () => [...new Set(items.map((item) => item.name))],
+    [items]
+  );
 
   const toggleSort = (key: "created_at" | "name") => {
     if (sortKey === key) {
@@ -146,54 +186,58 @@ const ItemsTable = ({ items }: Props) => {
       />
 
       <div className="items-table-container" ref={tableRef}>
-        <table className="items-table">
-          <thead>
-            <tr>
-              <th>
-                Name{" "}
-                <button
-                  onClick={() => toggleSort("name")}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    fontSize: "0.8rem",
-                  }}
-                >
-                  {sortKey === "name" ? (sortAsc ? "▲" : "▼") : "↕"}
-                </button>
-              </th>
-              <th>
-                Created At{" "}
-                <button
-                  onClick={() => toggleSort("created_at")}
-                  style={{
-                    background: "none",
-                    border: "none",
-                    cursor: "pointer",
-                    fontSize: "0.8rem",
-                  }}
-                >
-                  {sortKey === "created_at" ? (sortAsc ? "▲" : "▼") : "↕"}
-                </button>
-              </th>
-              <th>Quantity</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredItems.map((item) => (
-              <tr key={item.waste_entry_id}>
-                <td>{item.name}</td>
-                <td>{format(new Date(item.created_at), "yyyy-MM-dd HH:mm")}</td>
-                <td>
-                  {item.quantity
-                    ? formatQuantity(item.quantity, item.metadata?.unit ?? "")
-                    : "N/A"}
-                </td>
+        {loading ? (
+          <p style={{ textAlign: "center", color: "#888" }}>Loading...</p>
+        ) : (
+          <table className="items-table">
+            <thead>
+              <tr>
+                <th>
+                  Name{" "}
+                  <button
+                    onClick={() => toggleSort("name")}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      fontSize: "0.8rem",
+                    }}
+                  >
+                    {sortKey === "name" ? (sortAsc ? "▲" : "▼") : "↕"}
+                  </button>
+                </th>
+                <th>
+                  Created At{" "}
+                  <button
+                    onClick={() => toggleSort("created_at")}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      fontSize: "0.8rem",
+                    }}
+                  >
+                    {sortKey === "created_at" ? (sortAsc ? "▲" : "▼") : "↕"}
+                  </button>
+                </th>
+                <th>Quantity</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {filteredAndSortedItems.map((item) => (
+                <tr key={item.waste_entry_id}>
+                  <td>{item.name}</td>
+                  <td>{format(new Date(item.created_at), "yyyy-MM-dd HH:mm")}</td>
+                  <td>
+                    {item.quantity
+                      ? formatQuantity(item.quantity, item.metadata?.unit ?? "")
+                      : "N/A"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
       </div>
     </>
   );
