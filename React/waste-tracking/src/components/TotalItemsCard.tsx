@@ -142,7 +142,9 @@ const TotalItemsCard = () => {
       const canvas = await html2canvas(tableRef.current, { scale: 2 });
       const imgData = canvas.toDataURL('image/png');
       const pdf = new jsPDF('p', 'mm', 'a4');
-      const imgWidth = 210;
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const imgWidth = pdfWidth * 0.9; // 90% of the PDF width
+      const imgX = (pdfWidth - imgWidth) / 2; // Center the image
       const pageHeight = 297;
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       let heightLeft = imgHeight;
@@ -151,10 +153,10 @@ const TotalItemsCard = () => {
       // Add title
       pdf.setFontSize(22);
       pdf.setTextColor(0, 0, 0); // Black color 
-      pdf.text('Total Items', 10, position); // x, y coordinates
+      pdf.text('Total Items', imgX, position); // x, y coordinates, centered
       position += 10; // Adjust position for the table image, leaving space for Title 
 
-      pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
+      pdf.addImage(imgData, 'PNG', imgX, position, imgWidth, imgHeight);
       heightLeft -= pageHeight;
 
       while (heightLeft >= 0) {
