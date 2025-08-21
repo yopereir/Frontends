@@ -1,4 +1,4 @@
-import { useState, useMemo, useRef, useEffect } from "react";
+import { useState, useMemo, useRef, useEffect, forwardRef, useImperativeHandle } from "react";
 import { format, subDays } from "date-fns";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -32,8 +32,12 @@ function formatQuantity(quantity: number, unit: string): string {
   return String(quantity);
 }
 
+export interface ItemsTableHandle {
+  generatePdf: () => Promise<HTMLCanvasElement | null>;
+}
+
 // ✅ No longer receives items as a prop
-const ItemsTable = () => {
+const ItemsTable = forwardRef<ItemsTableHandle>((_props, ref) => {
   const [sortAsc, setSortAsc] = useState(true);
   const [sortKey, setSortKey] = useState<"created_at" | "name">("created_at");
   const [selectedNames, setSelectedNames] = useState<string[]>([]);
@@ -136,6 +140,10 @@ const ItemsTable = () => {
     setEndDate(end);
   };
 
+  useImperativeHandle(ref, () => ({
+    generatePdf: handleDownloadPdf,
+  }));
+
   const handleDownloadPdf = async () => {
     if (tableRef.current) {
       if (tableRef.current) {
@@ -145,46 +153,6 @@ const ItemsTable = () => {
       }
 
       const canvas = await html2canvas(tableRef.current, { scale: 2 });
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const imgWidth = pdfWidth * 0.9; // 90% of the PDF width
-      const imgX = (pdfWidth - imgWidth) / 2; // Center the image
-      const pageHeight = 297;
-      const imgHeight = canvas.height * imgWidth / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 10; // Initial position for content
-
-      // Add title
-      pdf.setFontSize(22);
-      pdf.setTextColor(0, 0, 0); // Black color 
-      pdf.text('Items Table', imgX, position); // x, y coordinates, centered
-      position += 10; // Adjust position for the next line
-
-      // Add subheading for date range and filtered items
-      pdf.setFontSize(12);
-      const formattedStartDate = startDate.toLocaleDateString();
-      const formattedEndDate = endDate.toLocaleDateString();
-      const dateRangeText = `Date Range: ${formattedStartDate} - ${formattedEndDate}`;
-      pdf.text(dateRangeText, imgX, position);
-      position += 7; // Adjust position for the next line
-
-      const itemsFilteredText = selectedNames.length > 0 
-        ? `Filtered Items: ${selectedNames.join(', ')}`
-        : 'All Items';
-      pdf.text(itemsFilteredText, imgX, position);
-      position += 10; // Adjust position for the table image
-
-      pdf.addImage(imgData, 'PNG', imgX, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-      pdf.save("items-table.pdf");
 
       // Revert styles after PDF generation
       if (tableRef.current) {
@@ -192,7 +160,9 @@ const ItemsTable = () => {
           (el as HTMLElement).style.color = ''; // Remove inline style
         });
       }
+      return canvas; // Return the canvas object
     }
+    return null;
   };
 
   return (
@@ -263,6 +233,6 @@ const ItemsTable = () => {
       </div>
     </>
   );
-};
+});
 
 export default ItemsTable;

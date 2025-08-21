@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
 import { format, subDays, startOfDay, eachDayOfInterval } from "date-fns";
 import {
   LineChart,
@@ -23,6 +23,7 @@ interface Item {
   created_at: string;
   restaurant_id: number;
   metadata?: { unit?: string }; // Add metadata to Item interface
+  quantity?: number; // Add quantity to Item interface
 }
 
 interface WasteEntry {
@@ -33,8 +34,12 @@ interface WasteEntry {
   metadata?: { boxId?: string } | null; // Add metadata to WasteEntry interface
 }
 
+export interface ItemsLineChartHandle {
+  generatePdf: () => Promise<HTMLCanvasElement | null>;
+}
+
 // ✅ No longer accepts items as a prop
-const ItemsLineChart = () => {
+const ItemsLineChart = forwardRef<ItemsLineChartHandle>((_props, ref) => {
   const [items, setItems] = useState<Item[]>([]); // ✅ New state for fetched data
   const [itemNames, setItemNames] = useState<string[]>([]);
   const [selectedNames, setSelectedNames] = useState<string[]>([]);
@@ -43,7 +48,7 @@ const ItemsLineChart = () => {
   const [groupedData, setGroupedData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false); // ✅ New loading state
   const [lineConfigs, setLineConfigs] = useState<{ dataKey: string; stroke: string; yAxisId: string }[]>([]);
-  const [yAxisConfigs, setYAxisConfigs] = useState<{ yAxisId: string; orientation: string; label: string }[]>([]);
+  const [yAxisConfigs, setYAxisConfigs] = useState<{ yAxisId: string; orientation: "left" | "right"; label: string }[]>([]);
   const chartRef = useRef<HTMLDivElement>(null);
 
   const handleDateRangeChange = (start: Date, end: Date) => {
@@ -166,7 +171,7 @@ const ItemsLineChart = () => {
     ]; // Example colors
     let colorIndex = 0;
     const generatedLineConfigs: { dataKey: string; stroke: string; yAxisId: string }[] = [];
-    const generatedYAxisConfigs: { yAxisId: string; orientation: string; label: string }[] = [];
+    const generatedYAxisConfigs: { yAxisId: string; orientation: "left" | "right"; label: string }[] = [];
     const usedUnits = new Set<string>();
 
     // Collect all unique dataKeys (item_name_unit) from the processed data
@@ -187,7 +192,7 @@ const ItemsLineChart = () => {
       if (!usedUnits.has(unit)) {
         generatedYAxisConfigs.push({
           yAxisId: yAxisId,
-          orientation: usedUnits.size % 2 === 0 ? "left" : "right",
+          orientation: (usedUnits.size % 2 === 0 ? "left" : "right"),
           label: unit,
         });
         usedUnits.add(unit);
@@ -206,50 +211,16 @@ const ItemsLineChart = () => {
 
   }, [items, selectedNames, startDate, endDate]);
 
+  useImperativeHandle(ref, () => ({
+    generatePdf: handleDownloadPDF,
+  }));
+
   const handleDownloadPDF = async () => {
     if (chartRef.current) {
       const canvas = await html2canvas(chartRef.current, { scale: 2 });
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const imgWidth = pdfWidth * 0.9; // 90% of the PDF width
-      const imgX = (pdfWidth - imgWidth) / 2; // Center the image
-      const pageHeight = 297;
-      const imgHeight = (canvas.height * imgWidth) / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 10; // Initial position for content
-
-      // Add title
-      pdf.setFontSize(22);
-      pdf.setTextColor(0, 0, 0); // Black color 
-      pdf.text('Items Line Chart', imgX, position); // x, y coordinates, centered
-      position += 10; // Adjust position for the next line
-
-      // Add subheading for date range and filtered items
-      pdf.setFontSize(12);
-      const formattedStartDate = startDate.toLocaleDateString();
-      const formattedEndDate = endDate.toLocaleDateString();
-      const dateRangeText = `Date Range: ${formattedStartDate} - ${formattedEndDate}`;
-      pdf.text(dateRangeText, imgX, position);
-      position += 7; // Adjust position for the next line
-
-      const itemsFilteredText = selectedNames.length > 0 
-        ? `Filtered Items: ${selectedNames.join(', ')}`
-        : 'All Items';
-      pdf.text(itemsFilteredText, imgX, position);
-      position += 10; // Adjust position for the chart image
-
-      pdf.addImage(imgData, 'PNG', imgX, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-      pdf.save("items-line-chart.pdf");
+      return canvas; // Return the canvas object
     }
+    return null;
   };
 
   return (
@@ -301,6 +272,6 @@ const ItemsLineChart = () => {
       </div>
     </>
   );
-};
+});
 
 export default ItemsLineChart;

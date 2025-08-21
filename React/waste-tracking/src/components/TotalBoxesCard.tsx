@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useRef, forwardRef, useImperativeHandle } from "react";
 import { subDays } from "date-fns";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -44,8 +44,12 @@ function formatQuantity(quantity: number, unit: string): string {
   return String(quantity);
 }
 
+export interface TotalBoxesCardHandle {
+  generatePdf: () => Promise<HTMLCanvasElement | null>;
+}
+
 // ✅ No longer accepts props, as it will now fetch its own data
-const TotalBoxesCard = () => {
+const TotalBoxesCard = forwardRef<TotalBoxesCardHandle>((_props, ref) => {
   const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 30));
   const [endDate, setEndDate] = useState<Date>(new Date());
   const [boxes, setBoxes] = useState<Box[]>([]); // ✅ New state for boxes
@@ -198,6 +202,10 @@ const TotalBoxesCard = () => {
     return Array.from(names).sort();
   }, [boxesWithItems]);
 
+  useImperativeHandle(ref, () => ({
+    generatePdf: handleDownloadPDF,
+  }));
+
   const handleDownloadPDF = async () => {
     if (tableRef.current) {
       if (tableRef.current) {
@@ -207,46 +215,6 @@ const TotalBoxesCard = () => {
       }
 
       const canvas = await html2canvas(tableRef.current, { scale: 2 });
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF('p', 'mm', 'a4');
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const imgWidth = pdfWidth * 0.9; // 90% of the PDF width
-      const imgX = (pdfWidth - imgWidth) / 2; // Center the image
-      const pageHeight = 297;
-      const imgHeight = canvas.height * imgWidth / canvas.width;
-      let heightLeft = imgHeight;
-      let position = 10; // Initial position for content
-
-      // Add title
-      pdf.setFontSize(22);
-      pdf.setTextColor(0, 0, 0); // Black color 
-      pdf.text('Total Boxes', imgX, position); // x, y coordinates, centered
-      position += 10; // Adjust position for the next line
-
-      // Add subheading for date range and filtered items
-      pdf.setFontSize(12);
-      const formattedStartDate = startDate.toLocaleDateString();
-      const formattedEndDate = endDate.toLocaleDateString();
-      const dateRangeText = `Date Range: ${formattedStartDate} - ${formattedEndDate}`;
-      pdf.text(dateRangeText, imgX, position);
-      position += 7; // Adjust position for the next line
-
-      const itemsFilteredText = selectedItems.length > 0 
-        ? `Filtered by Items: ${selectedItems.join(', ')}`
-        : 'All Items Included';
-      pdf.text(itemsFilteredText, imgX, position);
-      position += 10; // Adjust position for the table image
-
-      pdf.addImage(imgData, 'PNG', imgX, position, imgWidth, imgHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft >= 0) {
-        position = heightLeft - imgHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, "PNG", 0, position, imgWidth, imgHeight);
-        heightLeft -= pageHeight;
-      }
-      pdf.save("boxes-table.pdf");
 
       // Revert styles after PDF generation
       if (tableRef.current) {
@@ -254,7 +222,9 @@ const TotalBoxesCard = () => {
           (el as HTMLElement).style.color = ''; // Remove inline style
         });
       }
+      return canvas; // Return the canvas object
     }
+    return null;
   };
 
   return (
@@ -323,6 +293,6 @@ const TotalBoxesCard = () => {
       </div>
     </div>
   );
-};
+});
 
 export default TotalBoxesCard;
