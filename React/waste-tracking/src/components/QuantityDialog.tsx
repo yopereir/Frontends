@@ -4,7 +4,10 @@ interface QuantityDialogProps {
   initialQuantity: number;
   unit: string;
   onClose: () => void;
-  onSubmit: (quantity: number | { pounds: number; ounces: number } | { gallons: number; quarts: number }) => void;
+  onSubmit: (
+    quantity: number | { pounds: number; ounces: number } | { gallons: number; quarts: number },
+    isDonation: boolean
+  ) => void;
 }
 
 const QuantityDialog = ({ initialQuantity, unit, onClose, onSubmit }: QuantityDialogProps) => {
@@ -16,6 +19,7 @@ const QuantityDialog = ({ initialQuantity, unit, onClose, onSubmit }: QuantityDi
   const [ounces, setOunces] = useState(0);
   const [gallons, setGallons] = useState(0);
   const [quarts, setQuarts] = useState(0);
+  const [isDonation, setIsDonation] = useState(false);
 
   useEffect(() => {
     if (isWeight) {
@@ -36,17 +40,17 @@ const QuantityDialog = ({ initialQuantity, unit, onClose, onSubmit }: QuantityDi
         onClose();
         return;
       }
-      onSubmit({ pounds, ounces });
+      onSubmit({ pounds, ounces }, isDonation);
     } else if (isVolume) {
       const totalQuarts = gallons * 4 + quarts;
       if (totalQuarts === 0) return onClose();
-      onSubmit({ gallons, quarts });
+      onSubmit({ gallons, quarts }, isDonation);
     } else {
       if (quantity === 0) {
         onClose();
         return;
       }
-      onSubmit(quantity);
+      onSubmit(quantity, isDonation);
     }
   };
 
@@ -86,6 +90,16 @@ const QuantityDialog = ({ initialQuantity, unit, onClose, onSubmit }: QuantityDi
             onChange={(e) => setQuantity(Number(e.target.value))}
           />
         )}
+
+        <div style={{ display: 'flex', alignItems: 'center', marginTop: '1rem' }}>
+          <input
+            type="checkbox"
+            id="isDonation"
+            checked={isDonation}
+            onChange={(e) => setIsDonation(e.target.checked)}
+          />
+          <label htmlFor="isDonation" style={{ marginLeft: '0.5rem', color: "var(--menu-text)" }}>Donation</label>
+        </div>
 
         <div className="dialog-actions">
           <button onClick={handleSubmit}>Done</button>

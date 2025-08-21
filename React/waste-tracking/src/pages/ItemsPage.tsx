@@ -108,7 +108,8 @@ const ItemsPage = () => {
   };
 
   const handleQuantitySubmit = (
-    quantity: number | { pounds: number; ounces: number } | { gallons: number; quarts: number }
+    quantity: number | { pounds: number; ounces: number } | { gallons: number; quarts: number },
+    isDonation: boolean
   ) => {
     if (!selectedItem) return;
 
@@ -146,6 +147,7 @@ const ItemsPage = () => {
           holdMinutes: selectedItem.holdMinutes,
           unit: selectedItem.unit,
           quantity_amount: totalQuantity,
+          isDonation: isDonation,
         };
         return [...prevBatches, newBatch];
       }
@@ -301,6 +303,7 @@ const ItemsPage = () => {
           unit: batch.unit,
           originalQuantity: batch.quantity_amount,
           boxId: newSupabaseBoxId, // Store the Supabase-generated box ID
+          ...(batch.isDonation && { isDonation: true }),
         }
       };
     });
