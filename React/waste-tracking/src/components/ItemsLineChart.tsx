@@ -270,6 +270,7 @@ const ItemsLineChart = forwardRef<ItemsLineChartHandle>((_props, ref) => {
                   yAxisId={config.yAxisId}
                   strokeWidth={2}
                   dot={{ r: 4 }}
+                  connectNulls={true}
                 />
               ))}
             </LineChart>
