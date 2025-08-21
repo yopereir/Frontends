@@ -72,7 +72,10 @@ const DashboardPage = () => {
             {loadingText}
           </p>
         ) : (
-          <>
+          <>            
+            <h2>Total Items</h2>
+            <TotalItemsCard />
+
             <h2>Total Boxes</h2>
             <TotalBoxesCard
               // ✅ wasteEntries and items props will need to be managed by a higher-level context or fetched inside this component

@@ -27,6 +27,21 @@ interface Item {
   id: string;
   name: string;
   restaurant_id: number;
+  metadata?: { unit?: string };
+}
+
+function formatQuantity(quantity: number, unit: string): string {
+  const lowerUnit = unit.toLowerCase();
+  if (lowerUnit === "pounds/ounces") {
+    const pounds = Math.floor(quantity);
+    const ounces = Math.round((quantity % 1) * 16);
+    return `${pounds} pounds ${ounces} ounces`;
+  } else if (lowerUnit === "gallons/quarts") {
+    const gallons = Math.floor(quantity);
+    const quarts = Math.round((quantity % 1) * 4);
+    return `${gallons} gallons ${quarts} quarts`;
+  }
+  return String(quantity);
 }
 
 // ✅ No longer accepts props, as it will now fetch its own data
@@ -79,7 +94,7 @@ const TotalBoxesCard = () => {
         if (uniqueItemIds.length > 0) {
           const { data: itemData, error: itemError } = await supabase
             .from("items")
-            .select("id, name, restaurant_id")
+            .select("id, name, restaurant_id, metadata")
             .in("id", uniqueItemIds);
           if (itemData) {
             setItems(itemData);
@@ -110,11 +125,11 @@ const TotalBoxesCard = () => {
     setFilteredBoxes(filteredByDate);
   }, [boxes, startDate, endDate]);
 
-  // Map of item_id -> item name for quick lookup
+  // Map of item_id -> item name and unit for quick lookup
   const itemMap = useMemo(() => {
-    const map = new Map<string, string>();
+    const map = new Map<string, { name: string; unit?: string }>();
     items.forEach((it) => {
-      map.set(it.id, it.name);
+      map.set(it.id, { name: it.name, unit: it.metadata?.unit });
     });
     return map;
   }, [items]);
@@ -131,15 +146,31 @@ const TotalBoxesCard = () => {
         );
       });
 
-      const relatedItemNames = relatedWaste
-        .map((we) =>
-          we.item_id ? itemMap.get(we.item_id) || "Unknown Item" : "Unknown Item"
-        )
-        .filter((name, idx, arr) => arr.indexOf(name) === idx); // deduplicate
+      const relatedItemEntries: { name: string; quantity: number; unit?: string }[] = [];
+      relatedWaste.forEach((we) => {
+        if (we.item_id) {
+          const itemInfo = itemMap.get(we.item_id);
+          const itemName = itemInfo?.name || "Unknown Item";
+          const itemUnit = itemInfo?.unit;
+          const existingEntry = relatedItemEntries.find(
+            (entry) => entry.name === itemName
+          );
+          if (existingEntry) {
+            existingEntry.quantity += we.quantity || 0;
+          } else {
+            relatedItemEntries.push({ name: itemName, quantity: we.quantity || 0, unit: itemUnit });
+          }
+        }
+      });
+
+      const formattedItems = relatedItemEntries.map(
+        (entry) =>
+          `${entry.name}, ${formatQuantity(entry.quantity, entry.unit || "")}`
+      );
 
       return {
         ...box,
-        items: relatedItemNames,
+        items: formattedItems,
       };
     });
   }, [filteredBoxes, wasteEntries, startDate, endDate, itemMap]);
@@ -147,8 +178,12 @@ const TotalBoxesCard = () => {
   // Apply item filter together with date filter
   const finalBoxes = useMemo(() => {
     if (selectedItems.length === 0) return boxesWithItems;
-    return boxesWithItems.filter((box) =>
-      box.items.some((itemName) => selectedItems.includes(itemName))
+        return boxesWithItems.filter((box) =>
+      box.items.some((formattedItemName) => {
+        const match = formattedItemName.match(/^(.*) \(/);
+        const itemName = match && match[1] ? match[1].trim() : formattedItemName;
+        return selectedItems.includes(itemName);
+      })
     );
   }, [boxesWithItems, selectedItems]);
 
@@ -156,7 +191,15 @@ const TotalBoxesCard = () => {
   const allItemNames = useMemo(() => {
     const names = new Set<string>();
     boxesWithItems.forEach((box) => {
-      box.items.forEach((name: string) => names.add(name));
+      box.items.forEach((formattedName: string) => {
+        // Extract original item name from the formatted string
+        const match = formattedName.match(/^(.*) \(/);
+        if (match && match[1]) {
+          names.add(match[1].trim());
+        } else {
+          names.add(formattedName); // Fallback if format doesn't match
+        }
+      });
     });
     return Array.from(names);
   }, [boxesWithItems]);
