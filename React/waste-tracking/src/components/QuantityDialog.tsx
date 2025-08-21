@@ -67,6 +67,12 @@ const QuantityDialog = ({ initialQuantity, unit, onClose, onSubmit }: QuantityDi
               min={0}
               placeholder="Pounds"
               onChange={(e) => setPounds(Number(e.target.value))}
+              style={{
+                width: '100%',
+                padding: '0.75rem 1rem',
+                fontSize: '1rem',
+                height: '45px',
+              }}
             />
             <input
               type="number"
@@ -75,12 +81,28 @@ const QuantityDialog = ({ initialQuantity, unit, onClose, onSubmit }: QuantityDi
               max={15}
               placeholder="Ounces"
               onChange={(e) => setOunces(Number(e.target.value))}
+              style={{
+                width: '100%',
+                padding: '0.75rem 1rem',
+                fontSize: '1rem',
+                height: '45px',
+              }}
             />
           </div>
         ) : isVolume ? (
           <div style={{ display: "flex", gap: "1rem" }}>
-            <input type="number" value={gallons} min={0} placeholder="Gallons" onChange={(e) => setGallons(Number(e.target.value))} />
-            <input type="number" value={quarts} min={0} max={3} placeholder="Quarts" onChange={(e) => setQuarts(Number(e.target.value))} />
+            <input type="number" value={gallons} min={0} placeholder="Gallons" onChange={(e) => setGallons(Number(e.target.value))} style={{
+              width: '100%',
+              padding: '0.75rem 1rem',
+              fontSize: '1rem',
+              height: '45px',
+            }} />
+            <input type="number" value={quarts} min={0} max={3} placeholder="Quarts" onChange={(e) => setQuarts(Number(e.target.value))} style={{
+              width: '100%',
+              padding: '0.75rem 1rem',
+              fontSize: '1rem',
+              height: '45px',
+            }} />
           </div>
           ) : (
           <input
@@ -88,17 +110,40 @@ const QuantityDialog = ({ initialQuantity, unit, onClose, onSubmit }: QuantityDi
             value={quantity}
             min={1}
             onChange={(e) => setQuantity(Number(e.target.value))}
+            style={{
+              width: '100%',
+              padding: '0.75rem 1rem',
+              fontSize: '1rem',
+              height: '45px',
+            }}
           />
         )}
 
-        <div style={{ display: 'flex', alignItems: 'center', marginTop: '1rem' }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          marginTop: '1rem',
+          justifyContent: 'flex-start',
+          width: '100%',
+        }}>
           <input
             type="checkbox"
             id="isDonation"
             checked={isDonation}
             onChange={(e) => setIsDonation(e.target.checked)}
+            style={{
+              width: '20px',
+              height: '20px',
+              margin: 0,
+              accentColor: 'var(--button-color)',
+            }}
           />
-          <label htmlFor="isDonation" style={{ marginLeft: '0.5rem', color: "var(--menu-text)" }}>Donation</label>
+          <label htmlFor="isDonation" style={{
+            fontSize: '1rem',
+            color: 'var(--menu-text)',
+            marginLeft: 0,
+          }}>Donation</label>
         </div>
 
         <div className="dialog-actions">

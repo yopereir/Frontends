@@ -363,6 +363,7 @@ const ItemsPage = () => {
           className="tab-button"
           style={{
             backgroundColor: selectedTab === 'breakfast' ? 'var(--button-color)' : 'var(--menu-bg)',
+            color: "var(--menu-text)",
           }}
           onClick={() => handleTabClick('breakfast')}
         >
@@ -372,6 +373,7 @@ const ItemsPage = () => {
           className="tab-button"
           style={{
             backgroundColor: selectedTab === 'lunch' ? 'var(--button-color)' : 'var(--menu-bg)',
+            color: "var(--menu-text)",
           }}
           onClick={() => handleTabClick('lunch')}
         >
