@@ -163,14 +163,16 @@ const TotalBoxesCard = () => {
         }
       });
 
-      const formattedItems = relatedItemEntries.map(
-        (entry) =>
-          `${entry.name}, ${formatQuantity(entry.quantity, entry.unit || "")}`
+      const itemsForBox = relatedItemEntries.map(
+        (entry) => ({
+          name: entry.name,
+          formatted: `${entry.name}, ${formatQuantity(entry.quantity, entry.unit || "")}`
+        })
       );
 
       return {
         ...box,
-        items: formattedItems,
+        items: itemsForBox, // Now an array of objects
       };
     });
   }, [filteredBoxes, wasteEntries, startDate, endDate, itemMap]);
@@ -179,10 +181,8 @@ const TotalBoxesCard = () => {
   const finalBoxes = useMemo(() => {
     if (selectedItems.length === 0) return boxesWithItems;
         return boxesWithItems.filter((box) =>
-      box.items.some((formattedItemName) => {
-        const match = formattedItemName.match(/^(.*) \(/);
-        const itemName = match && match[1] ? match[1].trim() : formattedItemName;
-        return selectedItems.includes(itemName);
+      box.items.some((itemEntry: { name: string; formatted: string }) => {
+        return selectedItems.includes(itemEntry.name);
       })
     );
   }, [boxesWithItems, selectedItems]);
@@ -191,17 +191,11 @@ const TotalBoxesCard = () => {
   const allItemNames = useMemo(() => {
     const names = new Set<string>();
     boxesWithItems.forEach((box) => {
-      box.items.forEach((formattedName: string) => {
-        // Extract original item name from the formatted string
-        const match = formattedName.match(/^(.*) \(/);
-        if (match && match[1]) {
-          names.add(match[1].trim());
-        } else {
-          names.add(formattedName); // Fallback if format doesn't match
-        }
+      box.items.forEach((itemEntry: { name: string; formatted: string }) => {
+        names.add(itemEntry.name);
       });
     });
-    return Array.from(names);
+    return Array.from(names).sort();
   }, [boxesWithItems]);
 
   const handleDownloadPDF = async () => {
@@ -309,7 +303,7 @@ const TotalBoxesCard = () => {
                       dangerouslySetInnerHTML={{
                         __html:
                           box.items.length > 0
-                            ? box.items.join("<br />")
+                            ? box.items.map(item => item.formatted).join("<br />")
                             : "No items in this box",
                       }}
                     ></td>
