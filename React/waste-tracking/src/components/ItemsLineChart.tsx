@@ -22,6 +22,15 @@ interface Item {
   name: string;
   created_at: string;
   restaurant_id: number;
+  metadata?: { unit?: string }; // Add metadata to Item interface
+}
+
+interface WasteEntry {
+  id: string;
+  created_at: string;
+  item_id: string | null;
+  quantity?: number; // Add quantity to WasteEntry interface
+  metadata?: { boxId?: string } | null; // Add metadata to WasteEntry interface
 }
 
 // ✅ No longer accepts items as a prop
@@ -33,6 +42,8 @@ const ItemsLineChart = () => {
   const [endDate, setEndDate] = useState<Date>(new Date());
   const [groupedData, setGroupedData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false); // ✅ New loading state
+  const [lineConfigs, setLineConfigs] = useState<{ dataKey: string; stroke: string; yAxisId: string }[]>([]);
+  const [yAxisConfigs, setYAxisConfigs] = useState<{ yAxisId: string; orientation: string; label: string }[]>([]);
   const chartRef = useRef<HTMLDivElement>(null);
 
   const handleDateRangeChange = (start: Date, end: Date) => {
@@ -48,7 +59,7 @@ const ItemsLineChart = () => {
       // Fetch waste entries for the given date range
       const { data: wasteData, error: wasteError } = await supabase
         .from("waste_entries")
-        .select("id, created_at, item_id")
+        .select("id, created_at, item_id, quantity, metadata") // Select quantity and metadata
         .gte("created_at", startDate.toISOString())
         .lte("created_at", endDate.toISOString());
 
@@ -60,7 +71,7 @@ const ItemsLineChart = () => {
 
         const { data: itemData, error: itemError } = await supabase
           .from("items")
-          .select("id, name, restaurant_id")
+          .select("id, name, restaurant_id, metadata") // Select metadata from items
           .in("id", uniqueItemIds);
 
         if (!itemError && itemData) {
@@ -73,6 +84,8 @@ const ItemsLineChart = () => {
               name: relatedItem?.name || "Unknown Item",
               created_at: wasteEntry.created_at,
               restaurant_id: relatedItem?.restaurant_id,
+              metadata: relatedItem?.metadata, // Include item metadata
+              quantity: wasteEntry.quantity, // Include waste entry quantity
             };
           });
           setItems(fetchedItems);
@@ -99,12 +112,20 @@ const ItemsLineChart = () => {
       selectedNames.length === 0 || selectedNames.includes(item.name)
     );
 
-    const counts: Record<string, number> = {};
+    const dailyQuantities: Record<string, Record<string, number>> = {};
+    const uniqueUnits = new Set<string>();
     const dateFormat = "yyyy-MM-dd";
 
     filtered.forEach((item) => {
       const dateKey = format(new Date(item.created_at), dateFormat);
-      counts[dateKey] = (counts[dateKey] || 0) + 1;
+      const unit = item.metadata?.unit || "units";
+      uniqueUnits.add(unit);
+
+      if (!dailyQuantities[dateKey]) {
+        dailyQuantities[dateKey] = {};
+      }
+      const dataKey = `${item.name}_${unit}`;
+      dailyQuantities[dateKey][dataKey] = (dailyQuantities[dateKey][dataKey] || 0) + (item.quantity || 0);
     });
 
     const startOfRange = startOfDay(startDate);
@@ -116,8 +137,12 @@ const ItemsLineChart = () => {
     });
 
     const dataPoints = daysInInterval.map((day) => {
-      const dateKey = format(day, "yyyy-MM-dd");
-      return { date: format(day, "MMM d"), count: counts[dateKey] || 0 };
+      const dateKey = format(day, dateFormat);
+      const dayData: { date: string; [key: string]: any } = { date: format(day, "MMM d") };
+      Object.entries(dailyQuantities[dateKey] || {}).forEach(([key, value]) => {
+        dayData[key] = value;
+      });
+      return dayData;
     });
 
     setGroupedData(
@@ -125,6 +150,60 @@ const ItemsLineChart = () => {
         (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
       )
     );
+
+    // Generate line configurations and Y-axis configurations
+    const colors = [
+      "#8884d8",
+      "#82ca9d",
+      "#ffc658",
+      "#ff7300",
+      "#0088fe",
+      "#00c49f",
+      "#ffbb28",
+      "#a4de6c",
+      "#d0ed57",
+      "#83a6ed",
+    ]; // Example colors
+    let colorIndex = 0;
+    const generatedLineConfigs: { dataKey: string; stroke: string; yAxisId: string }[] = [];
+    const generatedYAxisConfigs: { yAxisId: string; orientation: string; label: string }[] = [];
+    const usedUnits = new Set<string>();
+
+    // Collect all unique dataKeys (item_name_unit) from the processed data
+    const allDataKeys = new Set<string>();
+    dataPoints.forEach(dp => {
+      Object.keys(dp).forEach(key => {
+        if (key !== 'date') {
+          allDataKeys.add(key);
+        }
+      });
+    });
+
+    Array.from(allDataKeys).sort().forEach(dataKey => {
+      const parts = dataKey.split('_');
+      const unit = parts[parts.length - 1]; // Last part is the unit
+      const yAxisId = `yAxis_${unit}`;
+
+      if (!usedUnits.has(unit)) {
+        generatedYAxisConfigs.push({
+          yAxisId: yAxisId,
+          orientation: usedUnits.size % 2 === 0 ? "left" : "right",
+          label: unit,
+        });
+        usedUnits.add(unit);
+      }
+
+      generatedLineConfigs.push({
+        dataKey: dataKey,
+        stroke: colors[colorIndex % colors.length],
+        yAxisId: yAxisId,
+      });
+      colorIndex++;
+    });
+
+    setLineConfigs(generatedLineConfigs);
+    setYAxisConfigs(generatedYAxisConfigs);
+
   }, [items, selectedNames, startDate, endDate]);
 
   const handleDownloadPDF = async () => {
@@ -194,16 +273,28 @@ const ItemsLineChart = () => {
             <LineChart data={groupedData}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
-              <YAxis allowDecimals={false} />
+              {yAxisConfigs.map((config) => (
+                <YAxis
+                  key={config.yAxisId}
+                  yAxisId={config.yAxisId}
+                  orientation={config.orientation}
+                  label={{ value: config.label, angle: -90, position: 'insideLeft' }}
+                  allowDecimals={false}
+                />
+              ))}
               <Tooltip />
               <Legend />
-              <Line
-                type="monotone"
-                dataKey="count"
-                stroke="#3ecf8e"
-                strokeWidth={2}
-                dot={{ r: 4 }}
-              />
+              {lineConfigs.map((config) => (
+                <Line
+                  key={config.dataKey}
+                  type="monotone"
+                  dataKey={config.dataKey}
+                  stroke={config.stroke}
+                  yAxisId={config.yAxisId}
+                  strokeWidth={2}
+                  dot={{ r: 4 }}
+                />
+              ))}
             </LineChart>
           </ResponsiveContainer>
         )}
