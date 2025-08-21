@@ -249,7 +249,13 @@ const ItemsLineChart = forwardRef<ItemsLineChartHandle>((_props, ref) => {
                   key={config.yAxisId}
                   yAxisId={config.yAxisId}
                   orientation={config.orientation}
-                  label={{ value: config.label, angle: -90, position: 'insideLeft' }}
+                  label={{
+                    value: config.label,
+                    angle: -90,
+                    position: config.orientation === "left" ? 'outerLeft' : 'outerRight',
+                    dx: config.orientation === "right" ? 5 : -5, // Increased horizontal adjustment
+                    dy: 0, // Keep vertical position at 0, let position handle it
+                  }}
                   allowDecimals={false}
                 />
               ))}
