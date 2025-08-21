@@ -262,11 +262,14 @@ const TotalBoxesCard = () => {
                   <tr key={box.id}>
                     <td>{box.name || "Unnamed Box"}</td>
                     <td>{new Date(box.created_at).toLocaleString()}</td>
-                    <td>
-                      {box.items.length > 0
-                        ? box.items.join(", ")
-                        : "No items in this box"}
-                    </td>
+                    <td
+                      dangerouslySetInnerHTML={{
+                        __html:
+                          box.items.length > 0
+                            ? box.items.join("<br />")
+                            : "No items in this box",
+                      }}
+                    ></td>
                   </tr>
                 ))}
                 {finalBoxes.length === 0 && (
