@@ -170,7 +170,7 @@ const TotalItemsCard = forwardRef<TotalItemsCardHandle>((_props, ref) => {
     >
       {/* Section 1 - Totals */}
       <div style={{ width: "100%" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem" }}>
           <DateRange onDateRangeChange={handleDateRangeChange} />
           <DownloadPDF onDownload={handleDownloadPDF} />
         </div>
