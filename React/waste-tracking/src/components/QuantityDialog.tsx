@@ -156,31 +156,7 @@ const QuantityDialog = ({ initialQuantity, unit, initialTags = [], onClose, onSu
           }}>Donation</label>
         </div>
 
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.5rem',
-          marginTop: '1rem',
-          justifyContent: 'flex-start',
-          width: '100%',
-        }}>
-          <input
-            type="text"
-            id="tags"
-            placeholder="Tags (comma-separated)"
-            value={tags.filter(tag => tag !== "donation").join(', ')}
-            onChange={(e) => {
-              const newTags = e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
-              setTags(isDonation ? [...newTags, "donation"] : newTags);
-            }}
-            style={{
-              width: '100%',
-              padding: '0.75rem 1rem',
-              fontSize: '1rem',
-              height: '45px',
-            }}
-          />
-        </div>
+        
 
         <div className="dialog-actions">
           <button onClick={handleSubmit}>Done</button>
