@@ -43,6 +43,7 @@ const TotalItemsCard = forwardRef<TotalItemsCardHandle>((_props, ref) => {
   const [items, setItems] = useState<Item[]>([]); // ✅ New state for fetched data
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);
   const [selectedItemNames, setSelectedItemNames] = useState<string[]>([]);
+  const [isDonationFilterActive, setIsDonationFilterActive] = useState(false); // New state for donation filter
   const [loading, setLoading] = useState(false); // ✅ New loading state
   const tableRef = useRef<HTMLDivElement>(null);
 
@@ -51,16 +52,26 @@ const TotalItemsCard = forwardRef<TotalItemsCardHandle>((_props, ref) => {
     setEndDate(end);
   };
 
+  const handleDonationFilterChange = (isChecked: boolean) => {
+    setIsDonationFilterActive(isChecked);
+  };
+
   // ✅ New useEffect hook to fetch data
   useEffect(() => {
     const fetchItems = async () => {
       setLoading(true);
 
-      const { data: wasteData, error: wasteError } = await supabase
+      let query = supabase
         .from("waste_entries")
         .select("id, created_at, quantity, item_id, metadata")
         .gte("created_at", startDate.toISOString())
         .lte("created_at", endDate.toISOString());
+
+      if (isDonationFilterActive) {
+        query = query.filter("metadata->>tags", 'like', '%"donation"%');
+      }
+
+      const { data: wasteData, error: wasteError } = await query;
 
       if (!wasteError && wasteData) {
         const fetchedItems = await Promise.all(
@@ -93,7 +104,7 @@ const TotalItemsCard = forwardRef<TotalItemsCardHandle>((_props, ref) => {
     };
 
     fetchItems();
-  }, [startDate, endDate]); // Re-fetch data whenever the date range changes
+  }, [startDate, endDate, isDonationFilterActive]); // Re-fetch data whenever the date range or donation filter changes
 
   // ✅ The existing useEffect now filters the data that was fetched by the new hook
   useEffect(() => {
@@ -182,7 +193,7 @@ const TotalItemsCard = forwardRef<TotalItemsCardHandle>((_props, ref) => {
         >
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem" }}>
             <DateRange onDateRangeChange={handleDateRangeChange} />
-            <TagFilters />
+            <TagFilters onDonationFilterChange={handleDonationFilterChange} />
           </div>
           <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
             <DownloadPDF onDownload={handleDownloadPDF} />

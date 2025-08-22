@@ -1,7 +1,19 @@
 import React, { useState } from 'react';
 
-const TagFilters = () => {
+interface TagFiltersProps {
+  onDonationFilterChange?: (isChecked: boolean) => void;
+}
+
+const TagFilters = ({ onDonationFilterChange }: TagFiltersProps) => {
   const [isDonationChecked, setIsDonationChecked] = useState(false);
+
+  const handleCheckboxChange = () => {
+    const newState = !isDonationChecked;
+    setIsDonationChecked(newState);
+    if (onDonationFilterChange) {
+      onDonationFilterChange(newState);
+    }
+  };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', padding: '1rem', border: '1px solid var(--menu-border)', borderRadius: '8px', backgroundColor: 'var(--menu-bg)' }}>
@@ -11,7 +23,7 @@ const TagFilters = () => {
           type="checkbox"
           id="donationFilter"
           checked={isDonationChecked}
-          onChange={() => setIsDonationChecked(!isDonationChecked)}
+          onChange={handleCheckboxChange}
           style={{
             width: '18px',
             height: '18px',
