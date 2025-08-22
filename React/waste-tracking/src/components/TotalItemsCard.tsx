@@ -146,11 +146,7 @@ const TotalItemsCard = forwardRef<TotalItemsCardHandle>((_props, ref) => {
       }));
   }, [filteredItems]);
 
-  useImperativeHandle(ref, () => ({
-    generatePdf: handleDownloadPDF,
-  }));
-
-  const handleDownloadPDF = async () => {
+  const generatePdf = async () => {
     if (tableRef.current) {
       const tableElement = tableRef.current.querySelector(".items-table");
       if (tableElement) {
@@ -169,6 +165,34 @@ const TotalItemsCard = forwardRef<TotalItemsCardHandle>((_props, ref) => {
       return canvas; // Return the canvas object
     }
     return null;
+  };
+
+  useImperativeHandle(ref, () => ({
+    generatePdf: generatePdf,
+  }));
+
+  const handleIndividualDownload = async () => {
+    const canvas = await generatePdf();
+    if (canvas) {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgProps = pdf.getImageProperties(imgData);
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      let yOffset = 10; // Initial Y offset for content
+
+      // Add title for the component
+      pdf.setFontSize(18);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text("Total Items", pageWidth / 2, yOffset, { align: 'center' });
+      yOffset += 10; // Space after title
+
+      const imgWidth = pageWidth * 0.9; // 90% of PDF width
+      const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+      const imgX = (pageWidth - imgWidth) / 2; // Center the image
+
+      pdf.addImage(imgData, 'PNG', imgX, yOffset, imgWidth, imgHeight);
+      pdf.save("Total_Items_Card.pdf");
+    }
   };
 
   return (
@@ -196,7 +220,7 @@ const TotalItemsCard = forwardRef<TotalItemsCardHandle>((_props, ref) => {
             <TagFilters onDonationFilterChange={handleDonationFilterChange} />
           </div>
           <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
-            <DownloadPDF onDownload={handleDownloadPDF} />
+            <DownloadPDF onDownload={handleIndividualDownload} className="batch-button" />
           </div>
           <ItemSelectMultiple
             itemNames={allItemNames}

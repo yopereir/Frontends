@@ -147,11 +147,7 @@ const ItemsTable = forwardRef<ItemsTableHandle>((_props, ref) => {
     setIsDonationFilterActive(isChecked);
   };
 
-  useImperativeHandle(ref, () => ({
-    generatePdf: handleDownloadPdf,
-  }));
-
-  const handleDownloadPdf = async () => {
+  const generatePdf = async () => {
     if (tableRef.current) {
       if (tableRef.current) {
         tableRef.current.querySelectorAll('h2, th, td').forEach((el) => {
@@ -171,6 +167,34 @@ const ItemsTable = forwardRef<ItemsTableHandle>((_props, ref) => {
     return null;
   };
 
+  useImperativeHandle(ref, () => ({
+    generatePdf: generatePdf,
+  }));
+
+  const handleIndividualDownload = async () => {
+    const canvas = await generatePdf();
+    if (canvas) {
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF('p', 'mm', 'a4');
+      const imgProps = pdf.getImageProperties(imgData);
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      let yOffset = 10; // Initial Y offset for content
+
+      // Add title for the component
+      pdf.setFontSize(18);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text("Waste Item Log", pageWidth / 2, yOffset, { align: 'center' });
+      yOffset += 10; // Space after title
+
+      const imgWidth = pageWidth * 0.9; // 90% of PDF width
+      const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
+      const imgX = (pageWidth - imgWidth) / 2; // Center the image
+
+      pdf.addImage(imgData, 'PNG', imgX, yOffset, imgWidth, imgHeight);
+      pdf.save("Waste_Item_Log.pdf");
+    }
+  };
+
   return (
     <>
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem", alignItems: "center", width: "100%" }}>
@@ -179,7 +203,7 @@ const ItemsTable = forwardRef<ItemsTableHandle>((_props, ref) => {
           <TagFilters onDonationFilterChange={handleDonationFilterChange} />
         </div>
         <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
-          <DownloadPDF onDownload={handleDownloadPdf} />
+          <DownloadPDF onDownload={handleIndividualDownload} className="batch-button" />
         </div>
         <ItemSelectMultiple
           itemNames={itemNames}
