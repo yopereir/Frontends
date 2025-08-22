@@ -109,7 +109,7 @@ const ItemsPage = () => {
 
   const handleQuantitySubmit = (
     quantity: number | { pounds: number; ounces: number } | { gallons: number; quarts: number },
-    isDonation: boolean
+    tags: string[]
   ) => {
     if (!selectedItem) return;
 
@@ -126,7 +126,7 @@ const ItemsPage = () => {
 
     setBatches((prevBatches) => {
       const existingBatchIndex = prevBatches.findIndex(
-        (batch) => batch.itemId === selectedItem.id
+        (batch) => batch.itemId === selectedItem.id && (batch.tags.includes("donation") === tags.includes("donation"))
       );
 
       if (existingBatchIndex !== -1) {
@@ -147,7 +147,7 @@ const ItemsPage = () => {
           holdMinutes: selectedItem.holdMinutes,
           unit: selectedItem.unit,
           quantity_amount: totalQuantity,
-          isDonation: isDonation,
+          tags: tags,
         };
         return [...prevBatches, newBatch];
       }
@@ -303,7 +303,7 @@ const ItemsPage = () => {
           unit: batch.unit,
           originalQuantity: batch.quantity_amount,
           boxId: newSupabaseBoxId, // Store the Supabase-generated box ID
-          ...(batch.isDonation && { isDonation: true }),
+          tags: batch.tags,
         }
       };
     });
@@ -424,6 +424,7 @@ const ItemsPage = () => {
                 holdMinutes={batch.holdMinutes}
                 unit={batch.unit}
                 quantity_amount={batch.quantity_amount}
+                tags={batch.tags}
                 onMoveToBox={handleMoveBatchToFirstBox} // Pass the new handler
               />
             </div>

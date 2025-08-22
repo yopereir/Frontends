@@ -3,14 +3,15 @@ import { useEffect, useState } from 'react';
 interface QuantityDialogProps {
   initialQuantity: number;
   unit: string;
+  initialTags?: string[]; // New prop for initial tags
   onClose: () => void;
   onSubmit: (
     quantity: number | { pounds: number; ounces: number } | { gallons: number; quarts: number },
-    isDonation: boolean
+    tags: string[]
   ) => void;
 }
 
-const QuantityDialog = ({ initialQuantity, unit, onClose, onSubmit }: QuantityDialogProps) => {
+const QuantityDialog = ({ initialQuantity, unit, initialTags = [], onClose, onSubmit }: QuantityDialogProps) => {
   const isWeight = unit.toLowerCase() === 'pounds/ounces';
   const isVolume = unit.toLowerCase() === 'gallons/quarts';
 
@@ -19,7 +20,16 @@ const QuantityDialog = ({ initialQuantity, unit, onClose, onSubmit }: QuantityDi
   const [ounces, setOunces] = useState(0);
   const [gallons, setGallons] = useState(0);
   const [quarts, setQuarts] = useState(0);
-  const [isDonation, setIsDonation] = useState(false);
+  const [tags, setTags] = useState<string[]>(initialTags);
+  const [isDonation, setIsDonation] = useState(initialTags.includes("donation"));
+
+  useEffect(() => {
+    if (isDonation && !tags.includes("donation")) {
+      setTags(prevTags => [...prevTags, "donation"]);
+    } else if (!isDonation && tags.includes("donation")) {
+      setTags(prevTags => prevTags.filter(tag => tag !== "donation"));
+    }
+  }, [isDonation, tags]); // Depend on tags as well to ensure consistency
 
   useEffect(() => {
     if (isWeight) {
@@ -40,17 +50,17 @@ const QuantityDialog = ({ initialQuantity, unit, onClose, onSubmit }: QuantityDi
         onClose();
         return;
       }
-      onSubmit({ pounds, ounces }, isDonation);
+      onSubmit({ pounds, ounces }, tags);
     } else if (isVolume) {
       const totalQuarts = gallons * 4 + quarts;
       if (totalQuarts === 0) return onClose();
-      onSubmit({ gallons, quarts }, isDonation);
+      onSubmit({ gallons, quarts }, tags);
     } else {
       if (quantity === 0) {
         onClose();
         return;
       }
-      onSubmit(quantity, isDonation);
+      onSubmit(quantity, tags);
     }
   };
 
@@ -144,6 +154,32 @@ const QuantityDialog = ({ initialQuantity, unit, onClose, onSubmit }: QuantityDi
             color: 'var(--menu-text)',
             marginLeft: 0,
           }}>Donation</label>
+        </div>
+
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          marginTop: '1rem',
+          justifyContent: 'flex-start',
+          width: '100%',
+        }}>
+          <input
+            type="text"
+            id="tags"
+            placeholder="Tags (comma-separated)"
+            value={tags.filter(tag => tag !== "donation").join(', ')}
+            onChange={(e) => {
+              const newTags = e.target.value.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+              setTags(isDonation ? [...newTags, "donation"] : newTags);
+            }}
+            style={{
+              width: '100%',
+              padding: '0.75rem 1rem',
+              fontSize: '1rem',
+              height: '45px',
+            }}
+          />
         </div>
 
         <div className="dialog-actions">

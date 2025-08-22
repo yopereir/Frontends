@@ -21,7 +21,7 @@ export interface BatchData {
   holdMinutes: number;
   unit: string;
   quantity_amount: number;
-  isDonation?: boolean;
+  tags: string[];
 }
 
 // Extend BatchData for Box content if needed, or just use BatchData directly

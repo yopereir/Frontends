@@ -9,7 +9,7 @@ interface BatchProps extends BatchData {
   onMoveToBox: (batch: BatchData) => boolean; // Function to attempt moving batch to box, returns success status
 }
 
-const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_amount, onMoveToBox }: BatchProps) => {
+const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_amount, tags, onMoveToBox }: BatchProps) => {
   const [timeLeft, setTimeLeft] = useState("");
   const [timeColor, setTimeColor] = useState("#3ecf8e");
   const [showDialog, setShowDialog] = useState(false);
@@ -17,7 +17,8 @@ const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_
   const { batches, setBatches } = useSession();
 
   const handleUpdateQuantity = (
-    newQuantity: number | { pounds?: number; ounces?: number; gallons?: number; quarts?: number }
+    newQuantity: number | { pounds?: number; ounces?: number; gallons?: number; quarts?: number },
+    newTags: string[]
   ) => {
     const lowerUnit = unit.toLowerCase();
 
@@ -31,7 +32,7 @@ const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_
     }
 
     const updated = batches.map(batch =>
-      batch.id === id ? { ...batch, quantity_amount: totalQuantity } : batch
+      batch.id === id ? { ...batch, quantity_amount: totalQuantity, tags: newTags } : batch
     );
 
     setBatches(updated);
@@ -113,6 +114,7 @@ const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_
         <QuantityDialog
           initialQuantity={quantity_amount}
           unit={unit}
+          initialTags={tags} // Pass the tags to QuantityDialog
           onClose={() => setShowDialog(false)}
           onSubmit={handleUpdateQuantity}
         />
