@@ -37,6 +37,7 @@ interface WasteEntry {
 
 export interface ItemsLineChartHandle {
   generatePdf: () => Promise<HTMLCanvasElement | null>;
+  getDates: () => { startDate: Date; endDate: Date; };
 }
 
 // ✅ No longer accepts items as a prop
@@ -233,6 +234,7 @@ const ItemsLineChart = forwardRef<ItemsLineChartHandle>((_props, ref) => {
 
   useImperativeHandle(ref, () => ({
     generatePdf: generatePdf,
+    getDates: () => ({ startDate, endDate }),
   }));
 
   const handleIndividualDownload = async () => {
@@ -248,7 +250,13 @@ const ItemsLineChart = forwardRef<ItemsLineChartHandle>((_props, ref) => {
       pdf.setFontSize(18);
       pdf.setTextColor(0, 0, 0);
       pdf.text("Items Line Chart", pageWidth / 2, yOffset, { align: 'center' });
-      yOffset += 10; // Space after title
+      yOffset += 7; // Space after title
+
+      // Add date range subheading
+      pdf.setFontSize(12);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text(`Date Range: ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`, pageWidth / 2, yOffset, { align: 'center' });
+      yOffset += 13; // Space after subheading
 
       const imgWidth = pageWidth * 0.9; // 90% of PDF width
       const imgHeight = (imgProps.height * imgWidth) / imgProps.width;

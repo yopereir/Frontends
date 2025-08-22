@@ -35,6 +35,7 @@ function formatQuantity(quantity: number, unit: string): string {
 
 export interface ItemsTableHandle {
   generatePdf: () => Promise<HTMLCanvasElement | null>;
+  getDates: () => { startDate: Date; endDate: Date; };
 }
 
 const ItemsTable = forwardRef<ItemsTableHandle>((_props, ref) => {
@@ -169,6 +170,7 @@ const ItemsTable = forwardRef<ItemsTableHandle>((_props, ref) => {
 
   useImperativeHandle(ref, () => ({
     generatePdf: generatePdf,
+    getDates: () => ({ startDate, endDate }),
   }));
 
   const handleIndividualDownload = async () => {
@@ -184,7 +186,13 @@ const ItemsTable = forwardRef<ItemsTableHandle>((_props, ref) => {
       pdf.setFontSize(18);
       pdf.setTextColor(0, 0, 0);
       pdf.text("Waste Item Log", pageWidth / 2, yOffset, { align: 'center' });
-      yOffset += 10; // Space after title
+      yOffset += 7; // Space after title
+
+      // Add date range subheading
+      pdf.setFontSize(12);
+      pdf.setTextColor(0, 0, 0);
+      pdf.text(`Date Range: ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`, pageWidth / 2, yOffset, { align: 'center' });
+      yOffset += 13; // Space after subheading
 
       const imgWidth = pageWidth * 0.9; // 90% of PDF width
       const imgHeight = (imgProps.height * imgWidth) / imgProps.width;

@@ -28,12 +28,18 @@ const DashboardPage = () => {
     const pageWidth = doc.internal.pageSize.getWidth();
     const pageHeight = doc.internal.pageSize.getHeight();
 
-    const addContentToPdf = (imgData: string, imgWidth: number, imgHeight: number, title: string) => {
+    const addContentToPdf = (imgData: string, imgWidth: number, imgHeight: number, title: string, startDate: Date, endDate: Date) => {
       // Add title for the current component
       doc.setFontSize(18);
       doc.setTextColor(0, 0, 0);
       doc.text(title, pageWidth / 2, yOffset, { align: 'center' });
-      yOffset += 10; // Space after title
+      yOffset += 7; // Space after title
+
+      // Add date range subheading
+      doc.setFontSize(12);
+      doc.setTextColor(0, 0, 0);
+      doc.text(`Date Range: ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`, pageWidth / 2, yOffset, { align: 'center' });
+      yOffset += 13; // Space after subheading
 
       const availableHeight = pageHeight - yOffset - margin;
 
@@ -50,14 +56,15 @@ const DashboardPage = () => {
 
     // Helper to get canvas and add to PDF
     const processComponent = async (ref: any, title: string) => {
-      if (ref.current && ref.current.generatePdf) {
+      if (ref.current && ref.current.generatePdf && ref.current.getDates) {
         const canvas = await ref.current.generatePdf();
+        const { startDate, endDate } = ref.current.getDates();
         if (canvas) {
           const imgData = canvas.toDataURL('image/png');
           const imgProps = doc.getImageProperties(imgData);
           const imgWidth = pageWidth * 0.9; // 90% of PDF width
           const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
-          addContentToPdf(imgData, imgWidth, imgHeight, title);
+          addContentToPdf(imgData, imgWidth, imgHeight, title, startDate, endDate);
         }
       }
     };
