@@ -241,16 +241,16 @@ const TotalBoxesCard = forwardRef<TotalBoxesCardHandle>((_props, ref) => {
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem" }}>
             <DateRange onDateRangeChange={handleDateRangeChange} />
+            <TagFilters />
+          </div>
+          <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
             <DownloadPDF onDownload={handleDownloadPDF} />
           </div>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem", width: "100%" }}>
-            <TagFilters />
-            <ItemSelectMultiple
-              itemNames={allItemNames}
-              selectedNames={selectedItems}
-              onSelectionChange={setSelectedItems}
-            />
-          </div>
+          <ItemSelectMultiple
+            itemNames={allItemNames}
+            selectedNames={selectedItems}
+            onSelectionChange={setSelectedItems}
+          />
         </div>
       </div>
 

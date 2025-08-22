@@ -229,9 +229,11 @@ const ItemsLineChart = forwardRef<ItemsLineChartHandle>((_props, ref) => {
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem", alignItems: "center", width: "100%" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem" }}>
           <DateRange onDateRangeChange={handleDateRangeChange} />
+          <TagFilters />
+        </div>
+        <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
           <DownloadPDF onDownload={handleDownloadPDF} />
         </div>
-        <TagFilters />
         <ItemSelectMultiple
           itemNames={itemNames}
           selectedNames={selectedNames}
