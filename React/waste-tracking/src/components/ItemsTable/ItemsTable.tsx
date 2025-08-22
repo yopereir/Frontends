@@ -37,31 +37,34 @@ export interface ItemsTableHandle {
   generatePdf: () => Promise<HTMLCanvasElement | null>;
 }
 
-// ✅ No longer receives items as a prop
 const ItemsTable = forwardRef<ItemsTableHandle>((_props, ref) => {
   const [sortAsc, setSortAsc] = useState(true);
   const [sortKey, setSortKey] = useState<"created_at" | "name">("created_at");
   const [selectedNames, setSelectedNames] = useState<string[]>([]);
   const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 30));
   const [endDate, setEndDate] = useState<Date>(new Date());
-  const [items, setItems] = useState<Item[]>([]); // ✅ New state for fetched data
-  const [loading, setLoading] = useState(false); // ✅ New loading state
+  const [items, setItems] = useState<Item[]>([]);
+  const [isDonationFilterActive, setIsDonationFilterActive] = useState(false);
+  const [loading, setLoading] = useState(false);
   const tableRef = useRef<HTMLDivElement>(null);
 
-  // ✅ New useEffect hook to fetch data when dates change
   useEffect(() => {
     const fetchItems = async () => {
       setLoading(true);
 
-      // Fetch waste entries for the given date range
-      const { data: wasteData, error: wasteError } = await supabase
+      let wasteQuery = supabase
         .from("waste_entries")
         .select("id, created_at, quantity, item_id, metadata")
-        .gte("created_at", startDate.toISOString()) // Filter by start date
-        .lte("created_at", endDate.toISOString()); // Filter by end date
+        .gte("created_at", startDate.toISOString())
+        .lte("created_at", endDate.toISOString());
+
+      if (isDonationFilterActive) {
+        wasteQuery = wasteQuery.filter("metadata->>tags", 'like', '%"donation"%');
+      }
+
+      const { data: wasteData, error: wasteError } = await wasteQuery;
 
       if (!wasteError && wasteData) {
-        // Build enriched items from waste entries + items lookup
         const fetchedItems = await Promise.all(
           wasteData.map(async (wasteEntry) => {
             const { data: itemData } = await supabase
@@ -93,9 +96,8 @@ const ItemsTable = forwardRef<ItemsTableHandle>((_props, ref) => {
     };
 
     fetchItems();
-  }, [startDate, endDate]); // ✅ Re-fetch when startDate or endDate changes
+  }, [startDate, endDate, isDonationFilterActive]);
 
-  // Use useMemo to filter and sort the fetched data based on selected names and sorting keys
   const filteredAndSortedItems = useMemo(() => {
     const filteredByName =
       selectedNames.length === 0
@@ -141,6 +143,10 @@ const ItemsTable = forwardRef<ItemsTableHandle>((_props, ref) => {
     setEndDate(end);
   };
 
+  const handleDonationFilterChange = (isChecked: boolean) => {
+    setIsDonationFilterActive(isChecked);
+  };
+
   useImperativeHandle(ref, () => ({
     generatePdf: handleDownloadPdf,
   }));
@@ -149,19 +155,18 @@ const ItemsTable = forwardRef<ItemsTableHandle>((_props, ref) => {
     if (tableRef.current) {
       if (tableRef.current) {
         tableRef.current.querySelectorAll('h2, th, td').forEach((el) => {
-          (el as HTMLElement).style.color = '#000'; // Set text color to black
+          (el as HTMLElement).style.color = '#000';
         });
       }
 
       const canvas = await html2canvas(tableRef.current, { scale: 2 });
 
-      // Revert styles after PDF generation
       if (tableRef.current) {
         tableRef.current.querySelectorAll('h2, th, td').forEach((el) => {
-          (el as HTMLElement).style.color = ''; // Remove inline style
+          (el as HTMLElement).style.color = '';
         });
       }
-      return canvas; // Return the canvas object
+      return canvas;
     }
     return null;
   };
@@ -171,7 +176,7 @@ const ItemsTable = forwardRef<ItemsTableHandle>((_props, ref) => {
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem", alignItems: "center", width: "100%" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem" }}>
           <DateRange onDateRangeChange={handleDateRangeChange} />
-          <TagFilters />
+          <TagFilters onDonationFilterChange={handleDonationFilterChange} />
         </div>
         <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
           <DownloadPDF onDownload={handleDownloadPdf} />
