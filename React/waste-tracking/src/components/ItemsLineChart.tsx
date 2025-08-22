@@ -46,6 +46,7 @@ const ItemsLineChart = forwardRef<ItemsLineChartHandle>((_props, ref) => {
   const [selectedNames, setSelectedNames] = useState<string[]>([]);
   const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 30));
   const [endDate, setEndDate] = useState<Date>(new Date());
+  const [isDonationFilterActive, setIsDonationFilterActive] = useState(false); // New state for donation filter
   const [groupedData, setGroupedData] = useState<any[]>([]);
   const [loading, setLoading] = useState(false); // ✅ New loading state
   const [lineConfigs, setLineConfigs] = useState<{ dataKey: string; stroke: string; yAxisId: string }[]>([]);
@@ -57,17 +58,27 @@ const ItemsLineChart = forwardRef<ItemsLineChartHandle>((_props, ref) => {
     setEndDate(end);
   };
 
+  const handleDonationFilterChange = (isChecked: boolean) => {
+    setIsDonationFilterActive(isChecked);
+  };
+
   // ✅ The main data fetching useEffect
   useEffect(() => {
     const fetchItems = async () => {
       setLoading(true);
 
       // Fetch waste entries for the given date range
-      const { data: wasteData, error: wasteError } = await supabase
+      let wasteQuery = supabase
         .from("waste_entries")
         .select("id, created_at, item_id, quantity, metadata") // Select quantity and metadata
         .gte("created_at", startDate.toISOString())
         .lte("created_at", endDate.toISOString());
+
+      if (isDonationFilterActive) {
+        wasteQuery = wasteQuery.filter("metadata->>tags", 'like', '%"donation"%');
+      }
+
+      const { data: wasteData, error: wasteError } = await wasteQuery;
 
       if (!wasteError && wasteData) {
         // Fetch only the items associated with the waste entries
@@ -107,7 +118,7 @@ const ItemsLineChart = forwardRef<ItemsLineChartHandle>((_props, ref) => {
     };
 
     fetchItems();
-  }, [startDate, endDate]); // Re-run fetch when dates change
+  }, [startDate, endDate, isDonationFilterActive]); // Re-run fetch when dates or donation filter changes
 
   // ✅ The existing useEffect, now a useMemo, which processes the local `items` state
   useEffect(() => {
@@ -229,7 +240,7 @@ const ItemsLineChart = forwardRef<ItemsLineChartHandle>((_props, ref) => {
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem", alignItems: "center", width: "100%" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem" }}>
           <DateRange onDateRangeChange={handleDateRangeChange} />
-          <TagFilters />
+          <TagFilters onDonationFilterChange={handleDonationFilterChange} />
         </div>
         <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
           <DownloadPDF onDownload={handleDownloadPDF} />
