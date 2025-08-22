@@ -15,6 +15,7 @@ import html2canvas from "html2canvas";
 import DateRange from "./widgets/daterange";
 import DownloadPDF from "./widgets/downloadpdf";
 import ItemSelectMultiple from "./widgets/itemselectmultiple";
+import TagFilters from "./widgets/tagfilters";
 import supabase from "../supabase";
 
 interface Item {
@@ -225,16 +226,18 @@ const ItemsLineChart = forwardRef<ItemsLineChartHandle>((_props, ref) => {
 
   return (
     <>
-      <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-        <DateRange onDateRangeChange={handleDateRangeChange} />
-        <DownloadPDF onDownload={handleDownloadPDF} />
+      <div style={{ display: "flex", flexDirection: "column", gap: "1rem", alignItems: "center", width: "100%" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem" }}>
+          <DateRange onDateRangeChange={handleDateRangeChange} />
+          <DownloadPDF onDownload={handleDownloadPDF} />
+        </div>
+        <TagFilters />
+        <ItemSelectMultiple
+          itemNames={itemNames}
+          selectedNames={selectedNames}
+          onSelectionChange={setSelectedNames}
+        />
       </div>
-
-      <ItemSelectMultiple
-        itemNames={itemNames}
-        selectedNames={selectedNames}
-        onSelectionChange={setSelectedNames}
-      />
 
       <div ref={chartRef} style={{ width: "100%", height: "300px" }}>
         {loading ? (

@@ -6,6 +6,7 @@ import "./ItemsTable/ItemsTable.css";
 import DateRange from "./widgets/daterange";
 import DownloadPDF from "./widgets/downloadpdf";
 import ItemSelectMultiple from "./widgets/itemselectmultiple";
+import TagFilters from "./widgets/tagfilters";
 import supabase from "../supabase"; // ✅ Import the supabase client
 
 interface Item {
@@ -179,10 +180,13 @@ const TotalItemsCard = forwardRef<TotalItemsCardHandle>((_props, ref) => {
           style={{
             marginTop: "1rem",
             display: "flex",
-            justifyContent: "center",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: "1rem",
             width: "100%",
           }}
         >
+          <TagFilters />
           <ItemSelectMultiple
             itemNames={allItemNames}
             selectedNames={selectedItemNames}

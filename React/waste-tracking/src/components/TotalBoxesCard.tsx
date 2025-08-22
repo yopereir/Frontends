@@ -6,6 +6,7 @@ import "./ItemsTable/ItemsTable.css";
 import DateRange from "./widgets/daterange";
 import DownloadPDF from "./widgets/downloadpdf";
 import ItemSelectMultiple from "./widgets/itemselectmultiple";
+import TagFilters from "./widgets/tagfilters";
 import supabase from "../supabase";
 
 interface Box {
@@ -242,11 +243,14 @@ const TotalBoxesCard = forwardRef<TotalBoxesCardHandle>((_props, ref) => {
             <DateRange onDateRangeChange={handleDateRangeChange} />
             <DownloadPDF onDownload={handleDownloadPDF} />
           </div>
-          <ItemSelectMultiple
-            itemNames={allItemNames}
-            selectedNames={selectedItems}
-            onSelectionChange={setSelectedItems}
-          />
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "1rem", width: "100%" }}>
+            <TagFilters />
+            <ItemSelectMultiple
+              itemNames={allItemNames}
+              selectedNames={selectedItems}
+              onSelectionChange={setSelectedItems}
+            />
+          </div>
         </div>
       </div>
 

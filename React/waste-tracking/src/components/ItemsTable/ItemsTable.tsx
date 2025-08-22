@@ -6,6 +6,7 @@ import "./ItemsTable.css";
 import ItemSelectMultiple from "../widgets/itemselectmultiple";
 import DateRange from "../widgets/daterange";
 import DownloadPDF from "../widgets/downloadpdf";
+import TagFilters from "../widgets/tagfilters";
 import supabase from "../../supabase"; // ✅ Import supabase
 
 interface Item {
@@ -167,15 +168,18 @@ const ItemsTable = forwardRef<ItemsTableHandle>((_props, ref) => {
 
   return (
     <>
-      <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
-        <DateRange onDateRangeChange={handleDateRangeChange} />
-        <DownloadPDF onDownload={handleDownloadPdf} />
+      <div style={{ display: "flex", flexDirection: "column", gap: "1rem", alignItems: "center", width: "100%" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem" }}>
+          <DateRange onDateRangeChange={handleDateRangeChange} />
+          <DownloadPDF onDownload={handleDownloadPdf} />
+        </div>
+        <TagFilters />
+        <ItemSelectMultiple
+          itemNames={itemNames}
+          selectedNames={selectedNames}
+          onSelectionChange={setSelectedNames}
+        />
       </div>
-      <ItemSelectMultiple
-        itemNames={itemNames}
-        selectedNames={selectedNames}
-        onSelectionChange={setSelectedNames}
-      />
 
       <div className="items-table-container" ref={tableRef}>
         {loading ? (
