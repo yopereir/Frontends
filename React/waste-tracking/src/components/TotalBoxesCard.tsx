@@ -58,12 +58,17 @@ const TotalBoxesCard = forwardRef<TotalBoxesCardHandle>((_props, ref) => {
   const [items, setItems] = useState<Item[]>([]); // ✅ New state for items
   const [filteredBoxes, setFilteredBoxes] = useState<Box[]>([]);
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [isDonationFilterActive, setIsDonationFilterActive] = useState(false); // New state for donation filter
   const [loading, setLoading] = useState(false); // ✅ New loading state
   const tableRef = useRef<HTMLDivElement>(null);
 
   const handleDateRangeChange = (start: Date, end: Date) => {
     setStartDate(start);
     setEndDate(end);
+  };
+
+  const handleDonationFilterChange = (isChecked: boolean) => {
+    setIsDonationFilterActive(isChecked);
   };
 
   // ✅ New useEffect hook to fetch all necessary data for the component
@@ -83,11 +88,17 @@ const TotalBoxesCard = forwardRef<TotalBoxesCardHandle>((_props, ref) => {
       }
 
       // Fetch waste entries for the current date range
-      const { data: wasteData, error: wasteError } = await supabase
+      let wasteQuery = supabase
         .from("waste_entries")
         .select("id, created_at, item_id, metadata, quantity")
         .gte("created_at", startDate.toISOString())
         .lte("created_at", endDate.toISOString());
+
+      if (isDonationFilterActive) {
+        wasteQuery = wasteQuery.filter("metadata->>tags", 'like', '%"donation"%');
+      }
+
+      const { data: wasteData, error: wasteError } = await wasteQuery;
 
       if (wasteData) {
         setWasteEntries(wasteData);
@@ -119,7 +130,7 @@ const TotalBoxesCard = forwardRef<TotalBoxesCardHandle>((_props, ref) => {
     };
 
     fetchAllData();
-  }, [startDate, endDate]); // Re-run when the date range changes
+  }, [startDate, endDate, isDonationFilterActive]); // Re-run when the date range or donation filter changes
 
   // Filter boxes by created_at (now using the local state)
   useEffect(() => {
@@ -141,7 +152,7 @@ const TotalBoxesCard = forwardRef<TotalBoxesCardHandle>((_props, ref) => {
 
   // Attach items to each box
   const boxesWithItems = useMemo(() => {
-    return filteredBoxes.map((box) => {
+    const boxesWithAllRelatedWaste = filteredBoxes.map((box) => {
       const relatedWaste = wasteEntries.filter((we) => {
         const created = new Date(we.created_at);
         return (
@@ -180,7 +191,14 @@ const TotalBoxesCard = forwardRef<TotalBoxesCardHandle>((_props, ref) => {
         items: itemsForBox, // Now an array of objects
       };
     });
-  }, [filteredBoxes, wasteEntries, startDate, endDate, itemMap]);
+
+    // If donation filter is active, only return boxes that actually have items after waste entry filtering
+    if (isDonationFilterActive) {
+      return boxesWithAllRelatedWaste.filter(box => box.items.length > 0);
+    }
+
+    return boxesWithAllRelatedWaste;
+  }, [filteredBoxes, wasteEntries, startDate, endDate, itemMap, isDonationFilterActive]);
 
   // Apply item filter together with date filter
   const finalBoxes = useMemo(() => {
@@ -241,7 +259,7 @@ const TotalBoxesCard = forwardRef<TotalBoxesCardHandle>((_props, ref) => {
         <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem" }}>
             <DateRange onDateRangeChange={handleDateRangeChange} />
-            <TagFilters />
+            <TagFilters onDonationFilterChange={handleDonationFilterChange} />
           </div>
           <div style={{ display: "flex", justifyContent: "center", width: "100%" }}>
             <DownloadPDF onDownload={handleDownloadPDF} />
