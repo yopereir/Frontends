@@ -1,5 +1,5 @@
 // AddItemDialog.tsx
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import supabase from '../supabase'; // Ensure supabase is correctly imported
 
 interface AddItemDialogProps {
@@ -23,9 +23,18 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({ onClose, onItemAdded, res
   const [unit, setUnit] = useState(unitOptions[0]);
   const [holdingTime, setHoldingTime] = useState('');
   const [imageUrl, setImageUrl] = useState('');
-  const [tags, setTags] = useState('');
+  const [tags, setTags] = useState<string[]>([]);
+  const [isDonation, setIsDonation] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (isDonation && !tags.includes("donation")) {
+      setTags(prevTags => [...prevTags, "donation"]);
+    } else if (!isDonation && tags.includes("donation")) {
+      setTags(prevTags => prevTags.filter(tag => tag !== "donation"));
+    }
+  }, [isDonation, tags]);
 
   const handleCreate = async () => {
     // Basic validation
@@ -44,7 +53,6 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({ onClose, onItemAdded, res
     setIsCreating(true);
     setError(null);
 
-    const tagsArray = tags.split(',').map(tag => tag.trim()).filter(Boolean);
     const { error: insertError } = await supabase
       .from('items')
       .insert([{
@@ -54,7 +62,7 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({ onClose, onItemAdded, res
           unit,
           holdMinutes: holdingTime === '' ? null : parsedHoldingTime, // Store as null if empty, otherwise as number
           imageUrl,
-          tags: tagsArray,
+          tags,
         },
       }]);
 
@@ -103,12 +111,32 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({ onClose, onItemAdded, res
             onChange={(e) => setImageUrl(e.target.value)}
             placeholder="Image URL (optional)"
           />
-          <input
-            type="text"
-            value={tags}
-            onChange={(e) => setTags(e.target.value)}
-            placeholder="Tags (comma-separated, e.g., vegetable, prep)"
-          />
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            marginTop: '1rem',
+            justifyContent: 'flex-start',
+            width: '100%',
+          }}>
+            <input
+              type="checkbox"
+              id="isDonation"
+              checked={isDonation}
+              onChange={(e) => setIsDonation(e.target.checked)}
+              style={{
+                width: '20px',
+                height: '20px',
+                margin: 0,
+                accentColor: 'var(--button-color)',
+              }}
+            />
+            <label htmlFor="isDonation" style={{
+              fontSize: '1rem',
+              color: 'var(--menu-text)',
+              marginLeft: 0,
+            }}>Donation</label>
+          </div>
         </div>
         {error && <p style={{ color: "var(--error-color)", marginTop: "0.25rem", textAlign: 'center', width: '100%' }}>{error}</p>}
         <div className="header-text">
