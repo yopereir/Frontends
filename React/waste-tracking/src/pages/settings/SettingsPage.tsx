@@ -120,6 +120,66 @@ const EditableField: React.FC<EditableFieldProps> = ({ label, initialValue, onSa
   );
 };
 
+type ItemTagsFieldProps = {
+  itemId: string;
+  initialTags: string[];
+  onSave: (newTags: string[]) => Promise<void> | void;
+};
+
+const ItemTagsField: React.FC<ItemTagsFieldProps> = ({ itemId, initialTags, onSave }) => {
+  const [tags, setTags] = useState<string[]>(initialTags);
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setTags(initialTags);
+  }, [initialTags]);
+
+  const handleDonationChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const isChecked = event.target.checked;
+    let newTags: string[];
+
+    if (isChecked) {
+      newTags = [...new Set([...tags, "donation"])]; // Add "donation" if not present
+    } else {
+      newTags = tags.filter(tag => tag !== "donation"); // Remove "donation"
+    }
+
+    setTags(newTags); // Optimistic update
+
+    setIsSaving(true);
+    setError(null);
+    try {
+      await onSave(newTags);
+    } catch (err: any) {
+      console.error("Failed to save tags:", err);
+      setError(err.message || "Failed to update tags.");
+      setTags(initialTags); // Revert on error
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <div className="setting-field">
+      <label>Tags:</label>
+      <div className="input-with-button">
+        <label htmlFor={`item-tag-donation-${itemId}`} className="checkbox-label">
+          <input
+            type="checkbox"
+            id={`item-tag-donation-${itemId}`}
+            checked={tags.includes("donation")}
+            onChange={handleDonationChange}
+            disabled={isSaving}
+          />
+          Donation
+        </label>
+      </div>
+      {error && <p style={{ color: "var(--error-color)", marginTop: "0.25rem", textAlign: 'left', width: '100%' }}>{error}</p>}
+    </div>
+  );
+};
+
 const SettingsPage = () => {
   const { session } = useSession();
   const [isAddItemDialogOpen, setAddItemDialogOpen] = useState(false);
@@ -192,7 +252,7 @@ const SettingsPage = () => {
         ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {"holdMinutes": newValueString === '' ? null : parsedHoldingTime}}));
         break;
       case 'imageUrl': ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {imageUrl: newValue}}));break;
-      case 'tags': ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {tags: newValue.toString().toLowerCase().split(',').map(tag => tag.trim()).filter(Boolean)}}));break;
+      case 'tags': ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {tags: newValue as string[]}}));break;
       default:
         throw new Error(`Unknown item setting: ${fieldName}`);
     }
@@ -282,7 +342,7 @@ const SettingsPage = () => {
     restaurant_id: "",
     unit: "kg",
     imageUrl: "",
-    tags: ""
+    tags: []
   }]);
 
   const fetchSettings = useCallback(async () => {
@@ -319,7 +379,7 @@ const SettingsPage = () => {
             restaurant_id: itemData.restaurant_id,
             unit: itemData.metadata.unit,
             imageUrl: itemData.metadata.imageUrl,
-            tags: itemData.metadata?.tags?.toString() || ""
+            tags: Array.isArray(itemData.metadata?.tags) ? itemData.metadata.tags : []
           }))
         );
       }
@@ -453,12 +513,12 @@ const SettingsPage = () => {
                       initialValue={itemData.imageUrl}
                       onSave={handleSaveItemSetting('imageUrl', itemData.id)}
                     />
-                    <EditableField
-                      fieldId={`item-tags-${itemData.id}`}
-                      label="Image Tags"
-                      initialValue={itemData.tags}
-                      onSave={handleSaveItemSetting('tags', itemData.id)}
+                    <ItemTagsField
+                      itemId={itemData.id}
+                      initialTags={itemData.tags}
+                      onSave={(newTags) => handleSaveItemSetting('tags', itemData.id)(newTags as any)} // Cast to any for now, will fix handleSaveItemSetting next
                     />
+                    
                     <button
                       onClick={() => handleDeleteItem(itemData.id)}
                       className="delete-button" // Add a class for styling
