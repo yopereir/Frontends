@@ -114,10 +114,11 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({ onClose, onItemAdded, res
           <div style={{
             display: 'flex',
             alignItems: 'center',
+            justifyContent: 'center',
             gap: '0.5rem',
-            marginTop: '1rem',
-            justifyContent: 'flex-start',
-            width: '100%',
+            width: '300px',
+            marginTop: '7px',
+            marginBottom: '0.5rem',
           }}>
             <input
               type="checkbox"
