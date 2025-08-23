@@ -500,6 +500,7 @@ const ItemsPage = () => {
         <QuantityDialog
           initialQuantity={1}
           unit={selectedItem.unit}
+          initialTags={selectedItem.tags} // Pass the tags from the selected item
           onClose={() => setShowQuantityDialog(false)}
           onSubmit={handleQuantitySubmit}
         />
