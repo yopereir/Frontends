@@ -232,7 +232,7 @@ const SettingsPage = () => {
     console.log(`${fieldName} updated successfully.`);
   };
 
-  const handleSaveItemSetting = (fieldName: string, itemId: string) => async (newValue: string | number) => {
+  const handleSaveItemSetting = (fieldName: string, itemId: string) => async (newValue: string | number | string[]) => {
     console.log(`Attempting to save Item Setting - ${fieldName}: ${newValue}`);
     if (!session?.user) {
       console.error("User not authenticated");
@@ -252,7 +252,17 @@ const SettingsPage = () => {
         ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {"holdMinutes": newValueString === '' ? null : parsedHoldingTime}}));
         break;
       case 'imageUrl': ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {imageUrl: newValue}}));break;
-      case 'tags': ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {tags: newValue as string[]}}));break;
+      case 'tags':
+        let tagsToSave: string[];
+        if (Array.isArray(newValue)) {
+          tagsToSave = newValue;
+        } else if (typeof newValue === 'string') {
+          tagsToSave = newValue.split(',').map(tag => tag.trim());
+        } else {
+          throw new Error("Invalid type for tags. Expected string or string[].");
+        }
+        ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {tags: tagsToSave}}));
+        break;
       default:
         throw new Error(`Unknown item setting: ${fieldName}`);
     }
