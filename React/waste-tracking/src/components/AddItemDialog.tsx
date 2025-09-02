@@ -23,18 +23,20 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({ onClose, onItemAdded, res
   const [unit, setUnit] = useState(unitOptions[0]);
   const [holdingTime, setHoldingTime] = useState('');
   const [imageUrl, setImageUrl] = useState('');
-  const [tags, setTags] = useState<string[]>([]);
+  const [tagInput, setTagInput] = useState(''); // New state for comma-separated tags input
   const [isDonation, setIsDonation] = useState(false);
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (isDonation && !tags.includes("donation")) {
-      setTags(prevTags => [...prevTags, "donation"]);
-    } else if (!isDonation && tags.includes("donation")) {
-      setTags(prevTags => prevTags.filter(tag => tag !== "donation"));
+    let currentTags = tagInput.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
+    if (isDonation && !currentTags.includes("donation")) {
+      currentTags = [...currentTags, "donation"];
+    } else if (!isDonation && currentTags.includes("donation")) {
+      currentTags = currentTags.filter(tag => tag !== "donation");
     }
-  }, [isDonation, tags]);
+    setTagInput(currentTags.join(', '));
+  }, [isDonation, tagInput]);
 
   const handleCreate = async () => {
     // Basic validation
@@ -53,6 +55,8 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({ onClose, onItemAdded, res
     setIsCreating(true);
     setError(null);
 
+    const tagsArray = tagInput.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
+
     const { error: insertError } = await supabase
       .from('items')
       .insert([{
@@ -62,7 +66,7 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({ onClose, onItemAdded, res
           unit,
           holdMinutes: holdingTime === '' ? null : parsedHoldingTime, // Store as null if empty, otherwise as number
           imageUrl,
-          tags,
+          tags: tagsArray,
         },
       }]);
 
@@ -110,6 +114,13 @@ const AddItemDialog: React.FC<AddItemDialogProps> = ({ onClose, onItemAdded, res
             value={imageUrl}
             onChange={(e) => setImageUrl(e.target.value)}
             placeholder="Image URL (optional)"
+          />
+          <input
+            type="text"
+            value={tagInput}
+            onChange={(e) => setTagInput(e.target.value)}
+            placeholder="Tags (comma separated, e.g., vegetable, fresh)"
+            style={{ marginTop: '10px' }} // Add some spacing
           />
           <div style={{
             display: 'flex',

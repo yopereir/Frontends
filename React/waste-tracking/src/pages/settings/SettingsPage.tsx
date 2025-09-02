@@ -128,33 +128,66 @@ type ItemTagsFieldProps = {
 
 const ItemTagsField: React.FC<ItemTagsFieldProps> = ({ itemId, initialTags, onSave }) => {
   const [tags, setTags] = useState<string[]>(initialTags);
+  const [newTagInput, setNewTagInput] = useState<string>('');
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [isDirty, setIsDirty] = useState(false);
 
   useEffect(() => {
     setTags(initialTags);
+    setNewTagInput(initialTags.join(', ')); // Initialize input with current tags
+    setIsDirty(false);
   }, [initialTags]);
 
-  const handleDonationChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const isChecked = event.target.checked;
-    let newTags: string[];
+  const handleTagInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = event.target.value;
+    setNewTagInput(inputValue);
+    setIsDirty(inputValue !== initialTags.join(', '));
+    if (error) { setError(null); }
+  };
 
-    if (isChecked) {
-      newTags = [...new Set([...tags, "donation"])]; // Add "donation" if not present
-    } else {
-      newTags = tags.filter(tag => tag !== "donation"); // Remove "donation"
-    }
-
-    setTags(newTags); // Optimistic update
+  const handleSaveTags = async () => {
+    if (!isDirty) return;
 
     setIsSaving(true);
     setError(null);
     try {
-      await onSave(newTags);
+      const parsedTags = newTagInput.split(',').map(tag => tag.trim()).filter(tag => tag !== '');
+      await onSave(parsedTags);
+      setTags(parsedTags); // Update local state after successful save
+      setIsDirty(false);
+    } catch (err: any) {
+      console.error("Failed to save tags:", err);
+      setError(err.message || "Failed to update tags.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleDonationChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const isChecked = event.target.checked;
+    let updatedTags: string[];
+
+    if (isChecked) {
+      updatedTags = [...new Set([...tags, "donation"])]; // Add "donation" if not present
+    } else {
+      updatedTags = tags.filter(tag => tag !== "donation"); // Remove "donation"
+    }
+
+    // Optimistically update local state
+    setTags(updatedTags);
+    setNewTagInput(updatedTags.join(', ')); // Update input field as well
+
+    setIsSaving(true);
+    setError(null);
+    try {
+      await onSave(updatedTags);
+      setIsDirty(false); // Reset dirty state after successful save
     } catch (err: any) {
       console.error("Failed to save tags:", err);
       setError(err.message || "Failed to update tags.");
       setTags(initialTags); // Revert on error
+      setNewTagInput(initialTags.join(', ')); // Revert input field
     } finally {
       setIsSaving(false);
     }
@@ -162,8 +195,24 @@ const ItemTagsField: React.FC<ItemTagsFieldProps> = ({ itemId, initialTags, onSa
 
   return (
     <div className="setting-field">
-      <label>Tags:</label>
+      <label htmlFor={`item-tags-input-${itemId}`}>Tags:</label>
       <div className="input-with-button">
+        <input
+          id={`item-tags-input-${itemId}`}
+          type="text"
+          value={newTagInput}
+          onChange={handleTagInputChange}
+          placeholder="Enter tags, comma separated"
+          className={isDirty ? 'input-dirty' : ''}
+          disabled={isSaving}
+        />
+        {isDirty && (
+          <button onClick={handleSaveTags} className="save-button" disabled={isSaving}>
+            {isSaving ? "Saving..." : "Save"}
+          </button>
+        )}
+      </div>
+      <div className="input-with-button" style={{ marginTop: '0.5rem' }}>
         <label htmlFor={`item-tag-donation-${itemId}`} className="checkbox-label">
           <input
             type="checkbox"
