@@ -10,6 +10,7 @@ interface AddItemDialogProps {
 
 // Define the unit options outside the component for reusability
 export const unitOptions: string[] = [
+  'count',
   'kg/grams',
   'pounds/ounces',
   'gallons/quarts',
