@@ -7,9 +7,10 @@ import QuantityDialog from './QuantityDialog';
 interface BatchProps extends BatchData {
   // New prop for handling the "Done" button action
   onMoveToBox: (batch: BatchData) => boolean; // Function to attempt moving batch to box, returns success status
+  onRemoveBatch: (batchId: string) => void; // Function to remove the batch
 }
 
-const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_amount, tags, onMoveToBox }: BatchProps) => {
+const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_amount, tags, onMoveToBox, onRemoveBatch }: BatchProps) => {
   const [timeLeft, setTimeLeft] = useState("");
   const [timeColor, setTimeColor] = useState("#3ecf8e");
   const [showDialog, setShowDialog] = useState(false);
@@ -80,8 +81,28 @@ const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_
 
 
   return (
-    <div className="batch-card">
-      <div className="batch-left" onClick={() => setShowDialog(true)}>
+    <div className="batch-card" style={{ position: 'relative' }}>
+      <div className="batch-left" style={{ display: 'flex', alignItems: 'center', gap: '10px' }} onClick={() => setShowDialog(true)}>
+        <button
+          onClick={(e) => {
+            e.stopPropagation(); // Prevent triggering the parent div's onClick
+            onRemoveBatch(id);
+          }}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: 'var(--error-color)',
+            fontSize: '1.2em',
+            cursor: 'pointer',
+            padding: '0',
+            lineHeight: '1',
+            width: 'fit-content',
+            height: 'fit-content',
+            flexShrink: 0,
+          }}
+        >
+          X
+        </button>
         <img src={imageUrl} alt={itemName} className="batch-image" />
         <div className="batch-title">{itemName}</div>
       </div>

@@ -167,6 +167,10 @@ const ItemsPage = () => {
     setSelectedItem(null);
   };
 
+  const handleRemoveBatch = (batchIdToRemove: string) => {
+    setBatches(prevBatches => prevBatches.filter(batch => batch.id !== batchIdToRemove));
+  };
+
   // DRAG AND DROP HANDLERS
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, batchId: string) => {
     e.dataTransfer.setData("batchId", batchId);
@@ -436,6 +440,7 @@ const ItemsPage = () => {
                 quantity_amount={batch.quantity_amount}
                 tags={batch.tags}
                 onMoveToBox={handleMoveBatchToFirstBox} // Pass the new handler
+                onRemoveBatch={handleRemoveBatch} // Pass the remove handler
               />
             </div>
           ))}
