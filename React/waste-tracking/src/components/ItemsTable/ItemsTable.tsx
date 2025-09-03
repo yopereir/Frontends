@@ -157,6 +157,9 @@ const ItemsTable = forwardRef<ItemsTableHandle>((_props, ref) => {
         tableRef.current.querySelectorAll('h2, th, td').forEach((el) => {
           (el as HTMLElement).style.color = '#000';
         });
+        tableRef.current.querySelectorAll('.edit-column').forEach((el) => {
+          (el as HTMLElement).style.display = 'none';
+        });
       }
 
       const canvas = await html2canvas(tableRef.current, { scale: 2 });
@@ -164,6 +167,9 @@ const ItemsTable = forwardRef<ItemsTableHandle>((_props, ref) => {
       if (tableRef.current) {
         tableRef.current.querySelectorAll('h2, th, td').forEach((el) => {
           (el as HTMLElement).style.color = '';
+        });
+        tableRef.current.querySelectorAll('.edit-column').forEach((el) => {
+          (el as HTMLElement).style.display = '';
         });
       }
       return canvas;
