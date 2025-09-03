@@ -15,11 +15,11 @@ const QuantityDialog = ({ initialQuantity, unit, initialTags = [], onClose, onSu
   const isWeight = unit.toLowerCase() === 'pounds/ounces';
   const isVolume = unit.toLowerCase() === 'gallons/quarts';
 
-  const [quantity, setQuantity] = useState(initialQuantity);
-  const [pounds, setPounds] = useState(0);
-  const [ounces, setOunces] = useState(0);
-  const [gallons, setGallons] = useState(0);
-  const [quarts, setQuarts] = useState(0);
+  const [quantity, setQuantity] = useState<number | string>('');
+  const [pounds, setPounds] = useState<number | string>('');
+  const [ounces, setOunces] = useState<number | string>('');
+  const [gallons, setGallons] = useState<number | string>('');
+  const [quarts, setQuarts] = useState<number | string>('');
   const [tags, setTags] = useState<string[]>(initialTags);
   const [isDonation, setIsDonation] = useState(initialTags.includes("donation"));
 
@@ -31,30 +31,25 @@ const QuantityDialog = ({ initialQuantity, unit, initialTags = [], onClose, onSu
     }
   }, [isDonation, tags]); // Depend on tags as well to ensure consistency
 
-  useEffect(() => {
-    if (isWeight) {
-      setPounds(Math.floor(initialQuantity / 16));
-      setOunces(initialQuantity % 16);
-    } else if (isVolume) {
-      setGallons(Math.floor(initialQuantity / 4));
-      setQuarts(initialQuantity % 4);
-    } else {
-      setQuantity(initialQuantity);
-    }
-  }, [initialQuantity, isWeight, isVolume]);
+  
 
   const handleSubmit = () => {
+    const numPounds = Number(pounds);
+    const numOunces = Number(ounces);
+    const numGallons = Number(gallons);
+    const numQuarts = Number(quarts);
+
     if (isWeight) {
-      const totalOunces = pounds * 16 + ounces;
+      const totalOunces = numPounds * 16 + numOunces;
       if (totalOunces === 0) {
         onClose();
         return;
       }
-      onSubmit({ pounds, ounces }, tags);
+      onSubmit({ pounds: numPounds, ounces: numOunces }, tags);
     } else if (isVolume) {
-      const totalQuarts = gallons * 4 + quarts;
+      const totalQuarts = numGallons * 4 + numQuarts;
       if (totalQuarts === 0) return onClose();
-      onSubmit({ gallons, quarts }, tags);
+      onSubmit({ gallons: numGallons, quarts: numQuarts }, tags);
     } else {
       if (quantity === 0) {
         onClose();
@@ -76,7 +71,7 @@ const QuantityDialog = ({ initialQuantity, unit, initialTags = [], onClose, onSu
               value={pounds}
               min={0}
               placeholder="Pounds"
-              onChange={(e) => setPounds(Number(e.target.value))}
+              onChange={(e) => setPounds(e.target.value === '' ? '' : Number(e.target.value))}
               style={{
                 width: '100%',
                 padding: '0.75rem 1rem',
@@ -90,7 +85,7 @@ const QuantityDialog = ({ initialQuantity, unit, initialTags = [], onClose, onSu
               min={0}
               max={15}
               placeholder="Ounces"
-              onChange={(e) => setOunces(Number(e.target.value))}
+              onChange={(e) => setOunces(e.target.value === '' ? '' : Number(e.target.value))}
               style={{
                 width: '100%',
                 padding: '0.75rem 1rem',
@@ -101,13 +96,13 @@ const QuantityDialog = ({ initialQuantity, unit, initialTags = [], onClose, onSu
           </div>
         ) : isVolume ? (
           <div style={{ display: "flex", gap: "1rem" }}>
-            <input type="number" value={gallons} min={0} placeholder="Gallons" onChange={(e) => setGallons(Number(e.target.value))} style={{
+            <input type="number" value={gallons} min={0} placeholder="Gallons" onChange={(e) => setGallons(e.target.value === '' ? '' : Number(e.target.value))} style={{
               width: '100%',
               padding: '0.75rem 1rem',
               fontSize: '1rem',
               height: '45px',
             }} />
-            <input type="number" value={quarts} min={0} max={3} placeholder="Quarts" onChange={(e) => setQuarts(Number(e.target.value))} style={{
+            <input type="number" value={quarts} min={0} max={3} placeholder="Quarts" onChange={(e) => setQuarts(e.target.value === '' ? '' : Number(e.target.value))} style={{
               width: '100%',
               padding: '0.75rem 1rem',
               fontSize: '1rem',
@@ -118,7 +113,7 @@ const QuantityDialog = ({ initialQuantity, unit, initialTags = [], onClose, onSu
           <input
             type="number"
             value={quantity}
-            min={1}
+            placeholder="0"
             onChange={(e) => setQuantity(Number(e.target.value))}
             style={{
               width: '100%',
