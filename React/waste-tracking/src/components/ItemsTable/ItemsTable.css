@@ -25,3 +25,24 @@ border-left: none; /* Remove left border from first column */
   width: 100%;
   overflow-x: auto; /* Adds horizontal scroll if table is too wide */
 }
+
+/* New styles for edit column */
+.items-table .edit-column {
+  width: 50px; /* Adjust as needed for a small column */
+  text-align: center;
+  padding: 0.25rem;
+}
+
+.items-table .edit-column button {
+  padding: 0.25rem 0.5rem;
+  font-size: 0.8rem;
+}
+
+.edit-button {
+  width: fit-content !important; /* Override batch-button width */
+  min-width: unset !important;
+  max-width: unset !important;
+  padding: 0.25rem 0.5rem !important; /* Smaller padding for a compact button */
+  font-size: 0.8rem !important; /* Smaller font size */
+  height: auto !important; /* Allow height to adjust to content */
+}

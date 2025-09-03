@@ -226,11 +226,7 @@ const ItemsTable = forwardRef<ItemsTableHandle>((_props, ref) => {
         ) : (
           <table className="items-table">
             <thead>
-              <tr>
-                <th>
-                  Name{" "}
-                  <button
-                    onClick={() => toggleSort("name")}
+              <tr><th className="edit-column"></th><th>Name{" "}<button onClick={() => toggleSort("name")}
                     style={{
                       background: "none",
                       border: "none",
@@ -239,12 +235,7 @@ const ItemsTable = forwardRef<ItemsTableHandle>((_props, ref) => {
                     }}
                   >
                     {sortKey === "name" ? (sortAsc ? "▲" : "▼") : "↕"}
-                  </button>
-                </th>
-                <th>
-                  Created At{" "}
-                  <button
-                    onClick={() => toggleSort("created_at")}
+                  </button></th><th>Created At{" "}<button onClick={() => toggleSort("created_at")}
                     style={{
                       background: "none",
                       border: "none",
@@ -253,22 +244,20 @@ const ItemsTable = forwardRef<ItemsTableHandle>((_props, ref) => {
                     }}
                   >
                     {sortKey === "created_at" ? (sortAsc ? "▲" : "▼") : "↕"}
-                  </button>
-                </th>
-                <th>Quantity</th>
-              </tr>
+                  </button></th><th>Quantity</th></tr>
             </thead>
             <tbody>
               {filteredAndSortedItems.map((item) => (
-                <tr key={item.waste_entry_id}>
-                  <td>{item.name}</td>
-                  <td>{format(new Date(item.created_at), "yyyy-MM-dd HH:mm")}</td>
-                  <td>
+                <tr key={item.waste_entry_id}><td className="edit-column"><button
+                      onClick={() => console.log("Edit item:", item.waste_entry_id)}
+                      className="batch-button edit-button"
+                    >
+                      Edit
+                    </button></td><td>{item.name}</td><td>{format(new Date(item.created_at), "yyyy-MM-dd HH:mm")}</td><td>
                     {item.quantity
                       ? formatQuantity(item.quantity, item.metadata?.unit ?? "")
                       : "N/A"}
-                  </td>
-                </tr>
+                  </td></tr>
               ))}
             </tbody>
           </table>
