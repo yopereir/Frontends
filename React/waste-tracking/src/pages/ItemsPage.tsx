@@ -386,7 +386,7 @@ const ItemsPage = () => {
             <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
               <div className="batch-left" style={{ marginBottom: '.5rem' }}>
                 <img
-                  src={item.imageUrl}
+                  src={item.imageUrl || undefined}
                   alt={item.name}
                   className="batch-image"
                 />
