@@ -114,7 +114,7 @@ const QuantityDialog = ({ initialQuantity, unit, initialTags = [], onClose, onSu
             type="number"
             value={quantity}
             placeholder="0"
-            onChange={(e) => setQuantity(Number(e.target.value))}
+            onChange={(e) => setQuantity(e.target.value === '' ? '' : Number(e.target.value))}
             style={{
               width: '100%',
               padding: '0.75rem 1rem',
