@@ -1,13 +1,18 @@
 import { useEffect, useState } from 'react';
 import { format, parseISO } from 'date-fns';
 
+interface WasteEntryMetadata {
+  unit?: string;
+  [key: string]: unknown;
+}
+
 interface WasteEntry {
   id: number;
   name: string;
   created_at: string;
   restaurant_id: number;
   quantity?: number;
-  metadata?: any;
+  metadata?: WasteEntryMetadata;
   waste_entry_id: string;
 }
 
@@ -27,17 +32,18 @@ const EditWasteEntryDialog = ({ isOpen, onClose, onSave, wasteEntry }: EditWaste
   const [quarts, setQuarts] = useState(0);
   const [litres, setLitres] = useState(0);
   const [millilitres, setMillilitres] = useState(0);
+  const [errorMessage, setErrorMessage] = useState('');
 
   const unit = wasteEntry?.metadata?.unit?.toLowerCase() || '';
   const isWeight = unit === 'pounds/ounces';
   const isGallonsQuarts = unit === 'gallons/quarts';
   const isLitresMl = unit === 'litres/ml';
-  const isLiquidVolume = isGallonsQuarts || isLitresMl;
 
   useEffect(() => {
     if (wasteEntry) {
       // Format created_at for datetime-local input (YYYY-MM-DDTHH:MM)
       setEditedCreatedAt(format(parseISO(wasteEntry.created_at), "yyyy-MM-dd'T'HH:mm"));
+      setErrorMessage(''); // Clear error on new waste entry
 
       if (wasteEntry.quantity !== undefined) {
         if (isWeight) {
@@ -61,6 +67,8 @@ const EditWasteEntryDialog = ({ isOpen, onClose, onSave, wasteEntry }: EditWaste
   }
 
   const handleSubmit = () => {
+    setErrorMessage(''); // Clear previous errors
+
     let finalQuantity = editedQuantity;
     if (isWeight) {
       finalQuantity = pounds + ounces / 16;
@@ -72,8 +80,10 @@ const EditWasteEntryDialog = ({ isOpen, onClose, onSave, wasteEntry }: EditWaste
 
     if (wasteEntry.waste_entry_id) {
       onSave(wasteEntry.waste_entry_id, editedCreatedAt, finalQuantity);
+      onClose();
+    } else {
+      setErrorMessage('Error: Waste entry ID is missing. Cannot save.');
     }
-    onClose();
   };
 
   return (
@@ -178,6 +188,7 @@ const EditWasteEntryDialog = ({ isOpen, onClose, onSave, wasteEntry }: EditWaste
           <button onClick={handleSubmit}>Save</button>
           <button onClick={onClose} style={{ background: 'gray' }}>Cancel</button>
         </div>
+        {errorMessage && <p style={{ color: 'red', marginTop: '1rem' }}>{errorMessage}</p>}
       </div>
     </div>
   );
