@@ -221,6 +221,7 @@ const ItemsTable = forwardRef<ItemsTableHandle>((_props, ref) => {
 
     if (error) {
       console.error('Error updating waste entry:', error);
+      console.error('Supabase error details:', error);
     } else {
       // Refresh items after update
       const fetchItems = async () => {
