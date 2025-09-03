@@ -8,6 +8,7 @@ import DateRange from "../widgets/daterange";
 import DownloadPDF from "../widgets/downloadpdf";
 import TagFilters from "../widgets/tagfilters";
 import supabase from "../../supabase"; // ✅ Import supabase
+import EditWasteEntryDialog from "../EditWasteEntryDialog";
 
 interface Item {
   id: number;
@@ -47,6 +48,8 @@ const ItemsTable = forwardRef<ItemsTableHandle>((_props, ref) => {
   const [items, setItems] = useState<Item[]>([]);
   const [isDonationFilterActive, setIsDonationFilterActive] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [currentEditingWasteEntry, setCurrentEditingWasteEntry] = useState<Item | null>(null);
   const tableRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -203,8 +206,74 @@ const ItemsTable = forwardRef<ItemsTableHandle>((_props, ref) => {
     }
   };
 
+  const handleUpdateWasteEntry = async (wasteEntryId: string, newCreatedAt: string, newQuantity: number) => {
+    setLoading(true);
+    const { error } = await supabase
+      .from('waste_entries')
+      .update({ created_at: newCreatedAt, quantity: newQuantity })
+      .eq('id', wasteEntryId);
+
+    if (error) {
+      console.error('Error updating waste entry:', error);
+    } else {
+      // Refresh items after update
+      const fetchItems = async () => {
+        let wasteQuery = supabase
+          .from("waste_entries")
+          .select("id, created_at, quantity, item_id, metadata")
+          .gte("created_at", startDate.toISOString())
+          .lte("created_at", endDate.toISOString());
+  
+        if (isDonationFilterActive) {
+          wasteQuery = wasteQuery.filter("metadata->>tags", 'like', '%"donation"%');
+        }
+  
+        const { data: wasteData, error: wasteError } = await wasteQuery;
+  
+        if (!wasteError && wasteData) {
+          const fetchedItems = await Promise.all(
+            wasteData.map(async (wasteEntry) => {
+              const { data: itemData } = await supabase
+                .from("items")
+                .select("id, name, restaurant_id")
+                .eq("id", wasteEntry.item_id)
+                .single();
+  
+              return {
+                id: itemData?.id || wasteEntry.item_id,
+                name: itemData?.name || "Unknown Item",
+                created_at: wasteEntry.created_at,
+                quantity: wasteEntry.quantity,
+                restaurant_id: itemData?.restaurant_id,
+                metadata: {
+                  ...wasteEntry.metadata,
+                  boxId: wasteEntry.metadata?.boxId,
+                },
+                waste_entry_id: wasteEntry.id,
+              };
+            })
+          );
+          setItems(fetchedItems);
+        } else {
+          console.warn("Supabase fetch failed for waste_entries:", wasteError);
+          setItems([]);
+        }
+        setLoading(false);
+      };
+      fetchItems();
+    }
+    setLoading(false);
+    setIsEditDialogOpen(false);
+  };
+
   return (
     <>
+      <EditWasteEntryDialog
+        isOpen={isEditDialogOpen}
+        onClose={() => setIsEditDialogOpen(false)}
+        onSave={handleUpdateWasteEntry}
+        wasteEntry={currentEditingWasteEntry}
+      />
       <div style={{ display: "flex", flexDirection: "column", gap: "1rem", alignItems: "center", width: "100%" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "1rem" }}>
           <DateRange onDateRangeChange={handleDateRangeChange} />
@@ -249,7 +318,10 @@ const ItemsTable = forwardRef<ItemsTableHandle>((_props, ref) => {
             <tbody>
               {filteredAndSortedItems.map((item) => (
                 <tr key={item.waste_entry_id}><td className="edit-column"><button
-                      onClick={() => console.log("Edit item:", item.waste_entry_id)}
+                      onClick={() => {
+                        setCurrentEditingWasteEntry(item);
+                        setIsEditDialogOpen(true);
+                      }}
                       className="batch-button edit-button"
                     >
                       Edit
