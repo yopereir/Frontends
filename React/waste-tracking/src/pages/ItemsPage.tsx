@@ -124,6 +124,16 @@ const ItemsPage = () => {
       totalQuantity = Number(quantity);
     }
 
+    if (totalQuantity === 0) {
+      // If quantity is 0, remove the batch if it exists, otherwise just close the dialog
+      setBatches((prevBatches) =>
+        prevBatches.filter((batch) => batch.itemId !== selectedItem.id)
+      );
+      setShowQuantityDialog(false);
+      setSelectedItem(null);
+      return;
+    }
+
     setBatches((prevBatches) => {
       const existingBatchIndex = prevBatches.findIndex(
         (batch) => batch.itemId === selectedItem.id && (batch.tags.includes("donation") === tags.includes("donation"))
