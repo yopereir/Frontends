@@ -387,6 +387,34 @@ const ItemsPage = () => {
   }, []);
 
   useEffect(() => {
+    const fetchOpenBoxes = async () => {
+      if (!session?.user?.id) {
+        console.log("User not authenticated, skipping fetching open boxes.");
+        return;
+      }
+
+      const { data: openBoxesData, error: openBoxesError } = await supabase
+        .from('boxes')
+        .select('id, name') // Only need id and name for open boxes
+        .eq('user_id', session.user.id)
+        .eq('metadata->>status', 'open');
+
+      if (openBoxesError) {
+        console.error("Error fetching open boxes:", openBoxesError);
+      } else if (openBoxesData) {
+        const loadedBoxes: BoxData[] = openBoxesData.map(box => ({
+          id: box.id,
+          name: box.name,
+          batches: [], // Open boxes initially have no batches in the UI until dragged
+        }));
+        setBoxes(loadedBoxes);
+      }
+    };
+
+    fetchOpenBoxes();
+  }, [session?.user?.id, setBoxes]); // Re-run when session user ID or setBoxes changes
+
+  useEffect(() => {
     const interval = setInterval(() => {
       setNow(new Date());
     }, 1000);
