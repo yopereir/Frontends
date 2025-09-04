@@ -11,7 +11,7 @@ interface QuantityDialogProps {
   ) => void;
 }
 
-const QuantityDialog = ({ initialQuantity, unit, initialTags = [], onClose, onSubmit }: QuantityDialogProps) => {
+const QuantityDialog = ({ unit, initialTags = [], onClose, onSubmit }: QuantityDialogProps) => {
   const isWeight = unit.toLowerCase() === 'pounds/ounces';
   const isVolume = unit.toLowerCase() === 'gallons/quarts';
 
@@ -55,7 +55,7 @@ const QuantityDialog = ({ initialQuantity, unit, initialTags = [], onClose, onSu
         onClose();
         return;
       }
-      onSubmit(quantity, tags);
+      onSubmit(Number(quantity), tags);
     }
   };
 
