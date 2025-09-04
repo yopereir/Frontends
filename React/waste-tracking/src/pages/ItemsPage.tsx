@@ -298,29 +298,28 @@ const ItemsPage = () => {
   };
 
   // Handler to close a box and log its batches as waste
-  const handleCloseBoxAndLogWaste = async (boxId: string, boxName: string, batchesInBox: BatchData[]) => {
+  const handleCloseBoxAndLogWaste = async (boxId: string, batchesInBox: BatchData[]) => {
     if (!session?.user?.id) {
       console.error("User not authenticated for logging waste.");
       alert("You must be logged in to log waste entries.");
       return;
     }
 
-    // --- Step 1: Insert the box into the public.boxes table and get its generated ID ---
-    const { data: newBoxData, error: boxInsertError } = await supabase
+    // --- Step 1: Update the existing box in the public.boxes table to set its status to "closed" ---
+    const { error: boxUpdateError } = await supabase
       .from('boxes')
-      .insert({
-        name: boxName,
-        user_id: session.user.id,
+      .update({
+        metadata: { status: "closed" }, // Set metadata as requested
       })
-      .select('id'); // Request the 'id' of the newly inserted row
+      .eq('id', boxId); // Identify the box to update by its Supabase ID
 
-    if (boxInsertError || !newBoxData || newBoxData.length === 0) {
-      console.error("Error inserting box into Supabase:", boxInsertError);
-      setCloseBoxSupabaseError(`Failed to save box: ${boxInsertError?.message || "Unknown error"}`);
+    if (boxUpdateError) {
+      console.error("Error updating box in Supabase:", boxUpdateError);
+      setCloseBoxSupabaseError(`Failed to close box: ${boxUpdateError?.message || "Unknown error"}`);
       return; // Stop here, do not proceed with waste logging or UI updates
     }
 
-    const newSupabaseBoxId = newBoxData[0].id; // Get the generated ID from Supabase
+    const newSupabaseBoxId = boxId; // The boxId is already the Supabase ID
 
     // --- Step 2: Log waste entries for batches in the box using the newSupabaseBoxId ---
     const wasteEntries = batchesInBox.map(batch => {

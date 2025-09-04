@@ -8,7 +8,7 @@ interface BoxContentDialogProps {
   onCloseDialog: () => void; // For closing the dialog without removing the box
   onRemoveBatchFromBox: (boxId: string, batchId: string) => void; // To remove individual batches
   // New prop to handle closing the box and logging its contents as waste
-  onCloseBoxAndLogWaste: (boxId: string, boxName: string, batchesInBox: BatchData[]) => void;
+  onCloseBoxAndLogWaste: (boxId: string, batchesInBox: BatchData[]) => void;
   closeBoxError: string | null; // New prop to display Supabase error
 }
 
@@ -23,7 +23,7 @@ const BoxContentDialog = ({
 }: BoxContentDialogProps) => {
   const handleCloseBox = () => {
     // Call the new prop to handle logging waste and then removing the box
-    onCloseBoxAndLogWaste(boxId, boxName, batches);
+    onCloseBoxAndLogWaste(boxId, batches);
   };
 
   return (
