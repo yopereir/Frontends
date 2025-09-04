@@ -22,6 +22,7 @@ export interface BatchData {
   unit: string;
   quantity_amount: number;
   tags: string[];
+  metadata: { status: string; boxId?: string | null; }; // Added metadata
 }
 
 // Extend BatchData for Box content if needed, or just use BatchData directly

@@ -6,7 +6,7 @@ import QuantityDialog from './QuantityDialog';
 
 interface BatchProps extends BatchData {
   // New prop for handling the "Done" button action
-  onMoveToBox: (batch: BatchData) => boolean; // Function to attempt moving batch to box, returns success status
+  onMoveToBox: (batch: BatchData) => Promise<boolean>; // Function to attempt moving batch to box, returns success status
   onRemoveBatch: (batchId: string) => void; // Function to remove the batch
 }
 
@@ -47,7 +47,7 @@ const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_
     const batchToMove = batches.find(b => b.id === id);
 
     if (batchToMove) {
-      const success = onMoveToBox(batchToMove); // Attempt to move the batch to a box
+      const success = await onMoveToBox(batchToMove); // Attempt to move the batch to a box
       if (!success) {
         setErrorMessage("Cannot add Batch since no Box exists");
       }
