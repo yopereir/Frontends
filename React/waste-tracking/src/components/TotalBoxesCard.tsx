@@ -61,6 +61,8 @@ const TotalBoxesCard = forwardRef<TotalBoxesCardHandle>((_props, ref) => {
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
   const [isDonationFilterActive, setIsDonationFilterActive] = useState(false); // New state for donation filter
   const [loading, setLoading] = useState(false); // ✅ New loading state
+  const [sortAsc, setSortAsc] = useState(true);
+  const [sortKey, setSortKey] = useState<"created_at" | "name">("created_at");
   const tableRef = useRef<HTMLDivElement>(null);
 
   const handleDateRangeChange = (start: Date, end: Date) => {
@@ -70,6 +72,15 @@ const TotalBoxesCard = forwardRef<TotalBoxesCardHandle>((_props, ref) => {
 
   const handleDonationFilterChange = (isChecked: boolean) => {
     setIsDonationFilterActive(isChecked);
+  };
+
+  const toggleSort = (key: "created_at" | "name") => {
+    if (sortKey === key) {
+      setSortAsc(!sortAsc);
+    } else {
+      setSortKey(key);
+      setSortAsc(true);
+    }
   };
 
   // ✅ New useEffect hook to fetch all necessary data for the component
@@ -201,15 +212,37 @@ const TotalBoxesCard = forwardRef<TotalBoxesCardHandle>((_props, ref) => {
     return boxesWithAllRelatedWaste;
   }, [filteredBoxes, wasteEntries, startDate, endDate, itemMap, isDonationFilterActive]);
 
-  // Apply item filter together with date filter
+  // Apply item filter together with date filter and then sort
   const finalBoxes = useMemo(() => {
-    if (selectedItems.length === 0) return boxesWithItems;
-        return boxesWithItems.filter((box) =>
-      box.items.some((itemEntry: { name: string; formatted: string }) => {
-        return selectedItems.includes(itemEntry.name);
-      })
-    );
-  }, [boxesWithItems, selectedItems]);
+    let currentBoxes = boxesWithItems;
+
+    if (selectedItems.length > 0) {
+      currentBoxes = boxesWithItems.filter((box) =>
+        box.items.some((itemEntry: { name: string; formatted: string }) => {
+          return selectedItems.includes(itemEntry.name);
+        })
+      );
+    }
+
+    return [...currentBoxes].sort((a, b) => {
+      const valA =
+        sortKey === "created_at"
+          ? new Date(a.created_at).getTime()
+          : a.name?.toLowerCase() || "";
+      const valB =
+        sortKey === "created_at"
+          ? new Date(b.created_at).getTime()
+          : b.name?.toLowerCase() || "";
+
+      if (typeof valA === "string" && typeof valB === "string") {
+        return sortAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+      }
+
+      return sortAsc
+        ? (valA as number) - (valB as number)
+        : (valB as number) - (valA as number);
+    });
+  }, [boxesWithItems, selectedItems, sortKey, sortAsc]);
 
   // Deduplicated list of all possible item names for filter options
   const allItemNames = useMemo(() => {
@@ -313,8 +346,26 @@ const TotalBoxesCard = forwardRef<TotalBoxesCardHandle>((_props, ref) => {
             <table className="items-table">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Created At</th>
+                  <th>Name{" "}<button onClick={() => toggleSort("name")}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      fontSize: "0.8rem",
+                    }}
+                  >
+                    {sortKey === "name" ? (sortAsc ? "▲" : "▼") : "↕"}
+                  </button></th>
+                  <th>Created At{" "}<button onClick={() => toggleSort("created_at")}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      fontSize: "0.8rem",
+                    }}
+                  >
+                    {sortKey === "created_at" ? (sortAsc ? "▲" : "▼") : "↕"}
+                  </button></th>
                   <th>Items</th>
                 </tr>
               </thead>
