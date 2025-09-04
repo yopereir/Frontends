@@ -91,8 +91,33 @@ const ItemsPage = () => {
     setShowBoxNameDialog(true);
   };
 
-  const handleBoxNameSubmit = (boxName: string) => {
-    setBoxes(prevBoxes => [...prevBoxes, { id: crypto.randomUUID(), name: boxName, batches: [] }]); // Initialize with empty batches
+  const handleBoxNameSubmit = async (boxName: string) => {
+    if (!session?.user?.id) {
+      console.error("User not authenticated for creating a box.");
+      alert("You must be logged in to create a box.");
+      setShowBoxNameDialog(false);
+      return;
+    }
+
+    const { data: newBoxData, error: boxInsertError } = await supabase
+      .from('boxes')
+      .insert({
+        name: boxName,
+        user_id: session.user.id,
+        metadata: { status: "open" }, // Set metadata as requested
+      })
+      .select('id');
+
+    if (boxInsertError || !newBoxData || newBoxData.length === 0) {
+      console.error("Error inserting new box into Supabase:", boxInsertError);
+      alert(`Failed to create box: ${boxInsertError?.message || "Unknown error"}`);
+      setShowBoxNameDialog(false);
+      return;
+    }
+
+    const newSupabaseBoxId = newBoxData[0].id;
+
+    setBoxes(prevBoxes => [...prevBoxes, { id: newSupabaseBoxId, name: boxName, batches: [] }]); // Use Supabase-generated ID
     setShowBoxNameDialog(false);
   };
 
