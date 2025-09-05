@@ -4,7 +4,7 @@ import { useSession } from "../context/SessionContext";
 import supabase from "../supabase";
 
 const HeaderBar = () => {
-  const { session, theme, setTheme } = useSession();
+  const { session, theme, setTheme, concurrentUsers } = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
 
@@ -43,6 +43,11 @@ const HeaderBar = () => {
       </Link>
 
       <div className="header-section right-section">
+        {/* Concurrent Users Button */}
+        <button className="icon-button" title="Currently running sessions">
+          {concurrentUsers}
+        </button>
+
         {/* Theme menu */}
         <div className="user-menu" ref={themeRef}>
           <button className="icon-button" onClick={() => setThemeMenuOpen((prev) => !prev)}>

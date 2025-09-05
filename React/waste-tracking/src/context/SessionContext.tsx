@@ -44,6 +44,7 @@ const SessionContext = createContext<{
   boxes: BoxData[]; // Add boxes to context
   setBoxes: React.Dispatch<React.SetStateAction<BoxData[]>>; // Add setBoxes to context
   channel: RealtimeChannel | null; // Add channel to context
+  concurrentUsers: number; // Add concurrentUsers to context
 }>({
   session: null,
   theme: "system",
@@ -53,6 +54,7 @@ const SessionContext = createContext<{
   boxes: [], // Default empty array for boxes
   setBoxes: () => {}, // Default empty function for setBoxes
   channel: null, // Default null for channel
+  concurrentUsers: 1, // Default to 1 concurrent user
 });
 
 // === Hook ===
@@ -68,6 +70,7 @@ export const useSession = () => {
 export const SessionProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [concurrentUsers, setConcurrentUsers] = useState(1); // New state for concurrent users
 
   const channel = useMemo(() => {
     if (session?.user?.id) {
@@ -179,12 +182,25 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
 
       channel.on('broadcast', { event: 'request_initial_data' }, handleRequestInitialData);
 
+      // Handle presence changes
+      channel.on('presence', { event: 'sync' }, () => {
+        const presenceState = channel.presenceState();
+        const userCount = Object.keys(presenceState).length;
+        console.log(`Concurrent users: ${userCount}`);
+        setConcurrentUsers(userCount);
+      });
+
+      // Track current user's presence
+      if (session?.user?.id) {
+        channel.track({ user_id: session.user.id });
+      }
+
       return () => {
         console.log(`Unsubscribing from Supabase channel: ${channel.topic}`);
         channel.unsubscribe();
       };
     }
-  }, [channel, batchesRef, boxesRef]);
+  }, [channel, batchesRef, boxesRef, session?.user?.id]);
 
   return (
     <SessionContext.Provider
@@ -197,6 +213,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
         boxes, // Provide boxes
         setBoxes, // Provide setBoxes
         channel, // Provide channel
+        concurrentUsers, // Provide concurrentUsers
       }}
     >
       {isLoading ? <LoadingPage /> : children}
