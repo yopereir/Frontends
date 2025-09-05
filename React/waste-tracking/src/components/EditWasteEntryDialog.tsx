@@ -7,10 +7,9 @@ interface WasteEntryMetadata {
 }
 
 interface WasteEntry {
-  id: number;
+  id: string; // Changed to string for UUID
   name: string;
   created_at: string;
-  restaurant_id: number;
   quantity?: number;
   metadata?: WasteEntryMetadata;
   waste_entry_id: string;

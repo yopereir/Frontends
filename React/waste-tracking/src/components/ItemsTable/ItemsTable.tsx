@@ -11,12 +11,12 @@ import supabase from "../../supabase"; // ✅ Import supabase
 import EditWasteEntryDialog from "../EditWasteEntryDialog";
 
 interface Item {
-  id: number;
+  id: string; // Changed to string for UUID
   name: string;
   created_at: string;
   restaurant_id: number;
   quantity?: number;
-  metadata?: any;
+  metadata?: { unit?: string; }; // Explicitly define unit within metadata
   waste_entry_id: string;
 }
 
@@ -73,7 +73,7 @@ const ItemsTable = forwardRef<ItemsTableHandle>((_props, ref) => {
           wasteData.map(async (wasteEntry) => {
             const { data: itemData } = await supabase
               .from("items")
-              .select("id, name, restaurant_id")
+              .select("id, name, restaurant_id, metadata") // Include metadata
               .eq("id", wasteEntry.item_id)
               .single();
 
@@ -83,10 +83,7 @@ const ItemsTable = forwardRef<ItemsTableHandle>((_props, ref) => {
               created_at: wasteEntry.created_at,
               quantity: wasteEntry.quantity,
               restaurant_id: itemData?.restaurant_id,
-              metadata: {
-                ...wasteEntry.metadata,
-                boxId: wasteEntry.metadata?.boxId,
-              },
+              metadata: itemData?.metadata, // Pass the entire metadata object
               waste_entry_id: wasteEntry.id,
             };
           })
