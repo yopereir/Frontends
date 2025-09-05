@@ -7,6 +7,7 @@ const HeaderBar = () => {
   const { session, theme, setTheme } = useSession();
   const [menuOpen, setMenuOpen] = useState(false);
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
+  const [concurrentSessions, setConcurrentSessions] = useState(1);
 
   const themeRef = useRef<HTMLDivElement>(null);
   const userRef = useRef<HTMLDivElement>(null);
@@ -34,6 +35,36 @@ const HeaderBar = () => {
     };
   }, []);
 
+  useEffect(() => {
+    const fetchConcurrentSessions = async () => {
+      try {
+        // Assuming a 'user_sessions' table with an 'is_active' column
+        // This is a placeholder and might need adjustment based on actual Supabase schema
+        const { count, error } = await supabase
+          .from('user_sessions')
+          .select('*', { count: 'exact', head: true })
+          .eq('is_active', true);
+
+        if (error) {
+          console.error("Error fetching concurrent sessions:", error.message);
+          // Fallback to 1 if there's an error, assuming current user is 1 session
+          setConcurrentSessions(1);
+        } else {
+          setConcurrentSessions(count || 1);
+        }
+      } catch (error) {
+        console.error("Unexpected error fetching concurrent sessions:", error);
+        setConcurrentSessions(1);
+      }
+    };
+
+    fetchConcurrentSessions();
+
+    // Optionally, refetch every now and then
+    const intervalId = setInterval(fetchConcurrentSessions, 60000); // Refetch every minute
+    return () => clearInterval(intervalId);
+  }, []);
+
   return (
     <header className="header-bar">
       <div className="header-left" />
@@ -43,6 +74,11 @@ const HeaderBar = () => {
       </Link>
 
       <div className="header-section right-section">
+        {/* Concurrent Sessions Button */}
+        <button className="icon-button" title="Currently active sessions">
+          {concurrentSessions}
+        </button>
+
         {/* Theme menu */}
         <div className="user-menu" ref={themeRef}>
           <button className="icon-button" onClick={() => setThemeMenuOpen((prev) => !prev)}>
