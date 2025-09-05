@@ -204,8 +204,24 @@ const ItemsPage = () => {
     } else {
       // Add or update batch
       if (existingBatch) {
-        // Update existing batch
-        const newQuantity = existingBatch.quantity_amount + totalQuantity;
+        // Re-fetch the latest batch data to avoid race conditions
+        const { data: latestBatchData, error: fetchLatestError } = await supabase
+          .from('batches')
+          .select('metadata')
+          .eq('id', existingBatch.id)
+          .single();
+
+        if (fetchLatestError || !latestBatchData) {
+          console.error("Error re-fetching latest batch data:", fetchLatestError);
+          alert(`Failed to get latest batch data for update: ${fetchLatestError?.message || "Unknown error"}`);
+          setShowQuantityDialog(false);
+          setSelectedItem(null);
+          return;
+        }
+
+        const latestQuantity = latestBatchData.metadata.quantity_amount; // Get latest quantity
+        const newQuantity = latestQuantity + totalQuantity;
+
         const { data: updatedBatchData, error: updateError } = await supabase
           .from('batches')
           .update({ metadata: { ...existingBatch.metadata, quantity_amount: newQuantity } })
