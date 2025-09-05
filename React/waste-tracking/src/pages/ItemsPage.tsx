@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useSession, BatchData, BoxData } from "../context/SessionContext";
 import HeaderBar from "../components/HeaderBar";
 import Batch from "../components/Batch";
+import LoadingOverlay from "../components/LoadingOverlay";
 import QuantityDialog from "../components/QuantityDialog";
 import BoxNameDialog from "../components/BoxNameDialog";
 import BoxContentDialog from "../components/BoxContentDialog"; // Make sure this is imported
@@ -80,6 +81,7 @@ const ItemsPage = () => {
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [selectedTab, setSelectedTab] = useState<'lunch' | 'breakfast' | null>(null);
   const [items, setItems] = useState<Item[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
   
   // BoxContentDialog states (local to ItemsPage as they manage UI visibility)
   const [showBoxContentDialog, setShowBoxContentDialog] = useState(false);
@@ -99,26 +101,31 @@ const ItemsPage = () => {
       return;
     }
 
-    const { data: newBoxData, error: boxInsertError } = await supabase
-      .from('boxes')
-      .insert({
-        name: boxName,
-        user_id: session.user.id,
-        metadata: { status: "open" }, // Set metadata as requested
-      })
-      .select('id');
+    setIsLoading(true); // Show loading overlay
+    try {
+      const { data: newBoxData, error: boxInsertError } = await supabase
+        .from('boxes')
+        .insert({
+          name: boxName,
+          user_id: session.user.id,
+          metadata: { status: "open" }, // Set metadata as requested
+        })
+        .select('id');
 
-    if (boxInsertError || !newBoxData || newBoxData.length === 0) {
-      console.error("Error inserting new box into Supabase:", boxInsertError);
-      alert(`Failed to create box: ${boxInsertError?.message || "Unknown error"}`);
+      if (boxInsertError || !newBoxData || newBoxData.length === 0) {
+        console.error("Error inserting new box into Supabase:", boxInsertError);
+        alert(`Failed to create box: ${boxInsertError?.message || "Unknown error"}`);
+        setShowBoxNameDialog(false);
+        return;
+      }
+
+      const newSupabaseBoxId = newBoxData[0].id;
+
+      setBoxes(prevBoxes => [...prevBoxes, { id: newSupabaseBoxId, name: boxName, batches: [] }]); // Use Supabase-generated ID
       setShowBoxNameDialog(false);
-      return;
+    } finally {
+      setIsLoading(false); // Hide loading overlay
     }
-
-    const newSupabaseBoxId = newBoxData[0].id;
-
-    setBoxes(prevBoxes => [...prevBoxes, { id: newSupabaseBoxId, name: boxName, batches: [] }]); // Use Supabase-generated ID
-    setShowBoxNameDialog(false);
   };
 
   const handleTabClick = (tab: 'lunch' | 'breakfast') => {
@@ -144,159 +151,165 @@ const ItemsPage = () => {
       return;
     }
 
-    let totalQuantity = 0;
-    if (typeof quantity === "object") {
-      if ("pounds" in quantity && "ounces" in quantity) {
-        totalQuantity = quantity.pounds * 16 + quantity.ounces;
-      } else if ("gallons" in quantity && "quarts" in quantity) {
-        totalQuantity = quantity.gallons * 4 + quantity.quarts;
-      }
-    } else {
-      totalQuantity = Number(quantity);
-    }
-
-    // Find if an existing batch for this item and donation status exists
-    const existingBatchInSupabaseQuery = supabase
-      .from('batches')
-      .select('*')
-      .eq('metadata->>itemId', selectedItem.id) // Corrected to query metadata->>itemId
-      .eq('user_id', session.user.id)
-      .eq('metadata->>status', 'open'); // Only consider open batches
-
-    // Add tag filter for donation status
-    if (tags.includes("donation")) {
-      existingBatchInSupabaseQuery.filter('metadata->>tags', 'like', '%"donation"%');
-    } else {
-      // Check if the 'tags' array within metadata does NOT contain 'donation'
-      existingBatchInSupabaseQuery.not('metadata->tags', 'cs', '["donation"]');
-    }
-
-    const { data: existingBatchesData, error: existingBatchesError } = await existingBatchInSupabaseQuery;
-
-    if (existingBatchesError) {
-      console.error("Error querying existing batches:", existingBatchesError);
-      alert(`Failed to check for existing batches: ${existingBatchesError.message}`);
-      setShowQuantityDialog(false);
-      setSelectedItem(null);
-      return;
-    }
-
-    const existingBatch = existingBatchesData?.[0];
-
-    if (totalQuantity === 0) {
-      // If quantity is 0, remove the batch if it exists
-      if (existingBatch) {
-        const { error: deleteError } = await supabase
-          .from('batches')
-          .delete()
-          .eq('id', existingBatch.id);
-
-        if (deleteError) {
-          console.error("Error deleting batch:", deleteError);
-          alert(`Failed to delete batch: ${deleteError.message}`);
-        } else {
-          setBatches((prevBatches) =>
-            prevBatches.filter((batch) => batch.id !== existingBatch.id)
-          );
-          console.log("Batch deleted successfully.");
-        }
-      }
-    } else {
-      // Add or update batch
-      if (existingBatch) {
-        // Re-fetch the latest batch data to avoid race conditions
-        const { data: latestBatchData, error: fetchLatestError } = await supabase
-          .from('batches')
-          .select('metadata')
-          .eq('id', existingBatch.id)
-          .single();
-
-        if (fetchLatestError || !latestBatchData) {
-          console.error("Error re-fetching latest batch data:", fetchLatestError);
-          alert(`Failed to get latest batch data for update: ${fetchLatestError?.message || "Unknown error"}`);
-          setShowQuantityDialog(false);
-          setSelectedItem(null);
-          return;
-        }
-
-        const latestQuantity = latestBatchData.metadata.quantity_amount; // Get latest quantity
-        const newQuantity = latestQuantity + totalQuantity;
-
-        const { data: updatedBatchData, error: updateError } = await supabase
-          .from('batches')
-          .update({ metadata: { ...existingBatch.metadata, quantity_amount: newQuantity } })
-          .eq('id', existingBatch.id)
-          .select('*');
-
-        if (updateError) {
-          console.error("Error updating batch:", updateError);
-          alert(`Failed to update batch: ${updateError.message}`);
-        } else if (updatedBatchData) {
-          const updatedBatch = updatedBatchData[0];
-          setBatches((prevBatches) =>
-            prevBatches.map((batch) =>
-              batch.id === updatedBatch.id
-                ? {
-                    ...batch,
-                    metadata: updatedBatch.metadata,
-                  }
-                : batch
-            )
-          );
-          console.log("Batch updated successfully.");
+    setIsLoading(true); // Show loading overlay
+    try {
+      let totalQuantity = 0;
+      if (typeof quantity === "object") {
+        if ("pounds" in quantity && "ounces" in quantity) {
+          totalQuantity = quantity.pounds * 16 + quantity.ounces;
+        } else if ("gallons" in quantity && "quarts" in quantity) {
+          totalQuantity = quantity.gallons * 4 + quantity.quarts;
         }
       } else {
-        // Create new batch
-        const newBatchData = {
-          user_id: session.user.id,
-          metadata: {
-            status: "open",
-            itemId: selectedItem.id,
-            itemName: selectedItem.name,
-            imageUrl: selectedItem.imageUrl,
-            startTime: new Date().toISOString(),
-            holdMinutes: selectedItem.holdMinutes,
-            unit: selectedItem.unit,
-            tags: tags,
-            quantity_amount: totalQuantity, // Moved quantity_amount to metadata
-          },
-        };
+        totalQuantity = Number(quantity);
+      }
 
-        const { data: insertedBatchData, error: insertError } = await supabase
-          .from('batches')
-          .insert(newBatchData)
-          .select('*');
+      // Find if an existing batch for this item and donation status exists
+      const existingBatchInSupabaseQuery = supabase
+        .from('batches')
+        .select('*')
+        .eq('metadata->>itemId', selectedItem.id) // Corrected to query metadata->>itemId
+        .eq('user_id', session.user.id)
+        .eq('metadata->>status', 'open') // Only consider open batches
+        .is('metadata->>boxId', null); // Only consider batches NOT in a box
 
-        if (insertError) {
-          console.error("Error inserting new batch:", insertError);
-          alert(`Failed to create new batch: ${insertError.message}`);
-        } else if (insertedBatchData) {
-          const insertedBatch = insertedBatchData[0];
-          setBatches((prevBatches) => [
-            ...prevBatches,
-            {
-              id: insertedBatch.id,
-              metadata: {
-                status: insertedBatch.metadata.status,
-                boxId: insertedBatch.metadata.boxId,
-                itemId: insertedBatch.metadata.itemId,
-                itemName: insertedBatch.metadata.itemName,
-                imageUrl: insertedBatch.metadata.imageUrl,
-                startTime: insertedBatch.metadata.startTime,
-                holdMinutes: insertedBatch.metadata.holdMinutes,
-                unit: insertedBatch.metadata.unit,
-                quantity_amount: insertedBatch.metadata.quantity_amount,
-                tags: insertedBatch.metadata.tags,
-              },
+      // Add tag filter for donation status
+      if (tags.includes("donation")) {
+        existingBatchInSupabaseQuery.filter('metadata->>tags', 'like', '%"donation"%');
+      } else {
+        // Check if the 'tags' array within metadata does NOT contain 'donation'
+        existingBatchInSupabaseQuery.not('metadata->tags', 'cs', '["donation"]');
+      }
+
+      const { data: existingBatchesData, error: existingBatchesError } = await existingBatchInSupabaseQuery;
+
+      if (existingBatchesError) {
+        console.error("Error querying existing batches:", existingBatchesError);
+        alert(`Failed to check for existing batches: ${existingBatchesError.message}`);
+        setShowQuantityDialog(false);
+        setSelectedItem(null);
+        return;
+      }
+
+      const existingBatch = existingBatchesData?.[0];
+
+      if (totalQuantity === 0) {
+        // If quantity is 0, remove the batch if it exists
+        if (existingBatch) {
+          const { error: deleteError } = await supabase
+            .from('batches')
+            .delete()
+            .eq('id', existingBatch.id);
+
+          if (deleteError) {
+            console.error("Error deleting batch:", deleteError);
+            alert(`Failed to delete batch: ${deleteError.message}`);
+          } else {
+            setBatches((prevBatches) =>
+              prevBatches.filter((batch) => batch.id !== existingBatch.id)
+            );
+            console.log("Batch deleted successfully.");
+          }
+        }
+      } else {
+        // Add or update batch
+        if (existingBatch) {
+          // Re-fetch the latest batch data to avoid race conditions
+          const { data: latestBatchData, error: fetchLatestError } = await supabase
+            .from('batches')
+            .select('metadata')
+            .eq('id', existingBatch.id)
+            .single();
+
+          if (fetchLatestError || !latestBatchData) {
+            console.error("Error re-fetching latest batch data:", fetchLatestError);
+            alert(`Failed to get latest batch data for update: ${fetchLatestError?.message || "Unknown error"}`);
+            setShowQuantityDialog(false);
+            setSelectedItem(null);
+            return;
+          }
+
+          const latestQuantity = latestBatchData.metadata.quantity_amount; // Get latest quantity
+          const newQuantity = latestQuantity + totalQuantity;
+
+          const { data: updatedBatchData, error: updateError } = await supabase
+            .from('batches')
+            .update({ metadata: { ...existingBatch.metadata, quantity_amount: newQuantity } })
+            .eq('id', existingBatch.id)
+            .select('*');
+
+          if (updateError) {
+            console.error("Error updating batch:", updateError);
+            alert(`Failed to update batch: ${updateError.message}`);
+          } else if (updatedBatchData) {
+            const updatedBatch = updatedBatchData[0];
+            setBatches((prevBatches) =>
+              prevBatches.map((batch) =>
+                batch.id === updatedBatch.id
+                  ? {
+                      ...batch,
+                      metadata: updatedBatch.metadata,
+                    }
+                  : batch
+              )
+            );
+            console.log("Batch updated successfully.");
+          }
+        } else {
+          // Create new batch
+          const newBatchData = {
+            user_id: session.user.id,
+            metadata: {
+              status: "open",
+              itemId: selectedItem.id,
+              itemName: selectedItem.name,
+              imageUrl: selectedItem.imageUrl,
+              startTime: new Date().toISOString(),
+              holdMinutes: selectedItem.holdMinutes,
+              unit: selectedItem.unit,
+              tags: tags,
+              quantity_amount: totalQuantity, // Moved quantity_amount to metadata
             },
-          ]);
-          console.log("New batch created successfully.");
+          };
+
+          const { data: insertedBatchData, error: insertError } = await supabase
+            .from('batches')
+            .insert(newBatchData)
+            .select('*');
+
+          if (insertError) {
+            console.error("Error inserting new batch:", insertError);
+            alert(`Failed to create new batch: ${insertError.message}`);
+          } else if (insertedBatchData) {
+            const insertedBatch = insertedBatchData[0];
+            setBatches((prevBatches) => [
+              ...prevBatches,
+              {
+                id: insertedBatch.id,
+                metadata: {
+                  status: insertedBatch.metadata.status,
+                  boxId: insertedBatch.metadata.boxId,
+                  itemId: insertedBatch.metadata.itemId,
+                  itemName: insertedBatch.metadata.itemName,
+                  imageUrl: insertedBatch.metadata.imageUrl,
+                  startTime: insertedBatch.metadata.startTime,
+                  holdMinutes: insertedBatch.metadata.holdMinutes,
+                  unit: insertedBatch.metadata.unit,
+                  quantity_amount: insertedBatch.metadata.quantity_amount,
+                  tags: insertedBatch.metadata.tags,
+                },
+              },
+            ]);
+            console.log("New batch created successfully.");
+          }
         }
       }
-    }
 
-    setShowQuantityDialog(false);
-    setSelectedItem(null);
+      setShowQuantityDialog(false);
+      setSelectedItem(null);
+    } finally {
+      setIsLoading(false); // Hide loading overlay
+    }
   };
 
   const handleRemoveBatch = async (batchIdToRemove: string) => {
@@ -306,17 +319,22 @@ const ItemsPage = () => {
       return;
     }
 
-    const { error: deleteError } = await supabase
-      .from('batches')
-      .delete()
-      .eq('id', batchIdToRemove);
+    setIsLoading(true); // Show loading overlay
+    try {
+      const { error: deleteError } = await supabase
+        .from('batches')
+        .delete()
+        .eq('id', batchIdToRemove);
 
-    if (deleteError) {
-      console.error("Error deleting batch:", deleteError);
-      alert(`Failed to delete batch: ${deleteError.message}`);
-    } else {
-      setBatches(prevBatches => prevBatches.filter(batch => batch.id !== batchIdToRemove));
-      console.log("Batch deleted successfully.");
+      if (deleteError) {
+        console.error("Error deleting batch:", deleteError);
+        alert(`Failed to delete batch: ${deleteError.message}`);
+      } else {
+        setBatches(prevBatches => prevBatches.filter(batch => batch.id !== batchIdToRemove));
+        console.log("Batch deleted successfully.");
+      }
+    } finally {
+      setIsLoading(false); // Hide loading overlay
     }
   };
 
@@ -339,30 +357,35 @@ const ItemsPage = () => {
       return;
     }
 
-    // Update Supabase: Set the boxId for the dropped batch
-    const { error: updateError } = await supabase
-      .from('batches')
-      .update({ metadata: { ...droppedBatch.metadata, boxId: targetBoxId } })
-      .eq('id', batchId);
+    setIsLoading(true); // Show loading overlay
+    try {
+      // Update Supabase: Set the boxId for the dropped batch
+      const { error: updateError } = await supabase
+        .from('batches')
+        .update({ metadata: { ...droppedBatch.metadata, boxId: targetBoxId } })
+        .eq('id', batchId);
 
-    if (updateError) {
-      console.error("Error updating batch with new boxId:", updateError);
-      alert(`Failed to move batch: ${updateError.message}`);
-      return;
-    }
-
-    // Update local state after successful Supabase update
-    setBoxes(prevBoxes => prevBoxes.map(box => {
-      if (box.id === targetBoxId) {
-        return {
-          ...box,
-          batches: [...box.batches, { ...droppedBatch, metadata: { ...droppedBatch.metadata, boxId: targetBoxId } }]
-        };
+      if (updateError) {
+        console.error("Error updating batch with new boxId:", updateError);
+        alert(`Failed to move batch: ${updateError.message}`);
+        return;
       }
-      return box;
-    }));
 
-    setBatches(prevBatches => prevBatches.filter(batch => batch.id !== batchId));
+      // Update local state after successful Supabase update
+      setBoxes(prevBoxes => prevBoxes.map(box => {
+        if (box.id === targetBoxId) {
+          return {
+            ...box,
+            batches: [...box.batches, { ...droppedBatch, metadata: { ...droppedBatch.metadata, boxId: targetBoxId } }]
+          };
+        }
+        return box;
+      }));
+
+      setBatches(prevBatches => prevBatches.filter(batch => batch.id !== batchId));
+    } finally {
+      setIsLoading(false); // Hide loading overlay
+    }
   };
 
   // BOX CONTENT DIALOG HANDLERS
@@ -404,42 +427,47 @@ const ItemsPage = () => {
       return;
     }
 
-    // Update Supabase: Set boxId to null for the removed batch
-    const { error: updateError } = await supabase
-      .from('batches')
-      .update({ metadata: { ...removedBatch.metadata, boxId: null } })
-      .eq('id', batchIdToRemove);
+    setIsLoading(true); // Show loading overlay
+    try {
+      // Update Supabase: Set boxId to null for the removed batch
+      const { error: updateError } = await supabase
+        .from('batches')
+        .update({ metadata: { ...removedBatch.metadata, boxId: null } })
+        .eq('id', batchIdToRemove);
 
-    if (updateError) {
-      console.error("Error removing batch from box in Supabase:", updateError);
-      alert(`Failed to remove batch from box: ${updateError.message}`);
-      return;
-    }
-
-    // Update local state after successful Supabase update
-    setBoxes(prevBoxes => prevBoxes.map(box => {
-      if (box.id === boxId) {
-        const updatedBatchesInBox = box.batches.filter(batch => batch.id !== batchIdToRemove);
-        return {
-          ...box,
-          batches: updatedBatchesInBox
-        };
+      if (updateError) {
+        console.error("Error removing batch from box in Supabase:", updateError);
+        alert(`Failed to remove batch from box: ${updateError.message}`);
+        return;
       }
-      return box;
-    }));
 
-    // Add the removed batch back to the main batches list with updated metadata
-    setBatches(prevBatches => [...prevBatches, { ...removedBatch!, metadata: { ...removedBatch!.metadata, boxId: null } }]);
-
-    setSelectedBoxForContent(prev => {
-        if (prev && prev.id === boxId) {
-            return {
-                ...prev,
-                batches: prev.batches.filter(batch => batch.id !== batchIdToRemove)
-            };
+      // Update local state after successful Supabase update
+      setBoxes(prevBoxes => prevBoxes.map(box => {
+        if (box.id === boxId) {
+          const updatedBatchesInBox = box.batches.filter(batch => batch.id !== batchIdToRemove);
+          return {
+            ...box,
+            batches: updatedBatchesInBox
+          };
         }
-        return prev;
-    });
+        return box;
+      }));
+
+      // Add the removed batch back to the main batches list with updated metadata
+      setBatches(prevBatches => [...prevBatches, { ...removedBatch!, metadata: { ...removedBatch!.metadata, boxId: null } }]);
+
+      setSelectedBoxForContent(prev => {
+          if (prev && prev.id === boxId) {
+              return {
+                  ...prev,
+                  batches: prev.batches.filter(batch => batch.id !== batchIdToRemove)
+              };
+          }
+          return prev;
+      });
+    } finally {
+      setIsLoading(false); // Hide loading overlay
+    }
   };
 
   // Handler for moving a batch to the first available box
@@ -456,31 +484,36 @@ const ItemsPage = () => {
 
     const firstBox = boxes[0];
 
-    // Update Supabase: Set the boxId for the batch
-    const { error: updateError } = await supabase
-      .from('batches')
-      .update({ metadata: { ...batchToMove.metadata, boxId: firstBox.id } })
-      .eq('id', batchToMove.id);
+    setIsLoading(true); // Show loading overlay
+    try {
+      // Update Supabase: Set the boxId for the batch
+      const { error: updateError } = await supabase
+        .from('batches')
+        .update({ metadata: { ...batchToMove.metadata, boxId: firstBox.id } })
+        .eq('id', batchToMove.id);
 
-    if (updateError) {
-      console.error("Error moving batch to first box in Supabase:", updateError);
-      alert(`Failed to move batch to box: ${updateError.message}`);
-      return false;
-    }
-
-    // Update local state after successful Supabase update
-    setBoxes(prevBoxes => prevBoxes.map(box => {
-      if (box.id === firstBox.id) {
-        return {
-          ...box,
-          batches: [...box.batches, { ...batchToMove, metadata: { ...batchToMove.metadata, boxId: firstBox.id } }]
-        };
+      if (updateError) {
+        console.error("Error moving batch to first box in Supabase:", updateError);
+        alert(`Failed to move batch to box: ${updateError.message}`);
+        return false;
       }
-      return box;
-    }));
 
-    setBatches(prevBatches => prevBatches.filter(batch => batch.id !== batchToMove.id));
-    return true; // Successfully moved
+      // Update local state after successful Supabase update
+      setBoxes(prevBoxes => prevBoxes.map(box => {
+        if (box.id === firstBox.id) {
+          return {
+            ...box,
+            batches: [...box.batches, { ...batchToMove, metadata: { ...batchToMove.metadata, boxId: firstBox.id } }]
+          };
+        }
+        return box;
+      }));
+
+      setBatches(prevBatches => prevBatches.filter(batch => batch.id !== batchToMove.id));
+      return true; // Successfully moved
+    } finally {
+      setIsLoading(false); // Hide loading overlay
+    }
   };
 
   // Handler to close a box and log its batches as waste
@@ -491,97 +524,107 @@ const ItemsPage = () => {
       return;
     }
 
-    // --- Step 1: Update the existing box in the public.boxes table to set its status to "closed" ---
-    const { error: boxUpdateError } = await supabase
-      .from('boxes')
-      .update({
-        metadata: { status: "closed" }, // Set metadata as requested
-      })
-      .eq('id', boxId); // Identify the box to update by its Supabase ID
+    setIsLoading(true); // Show loading overlay
+    try {
+      // --- Step 1: Update the existing box in the public.boxes table to set its status to "closed" ---
+      const { error: boxUpdateError } = await supabase
+        .from('boxes')
+        .update({
+          metadata: { status: "closed" }, // Set metadata as requested
+        })
+        .eq('id', boxId); // Identify the box to update by its Supabase ID
 
-    if (boxUpdateError) {
-      console.error("Error updating box in Supabase:", boxUpdateError);
-      setCloseBoxSupabaseError(`Failed to close box: ${boxUpdateError?.message || "Unknown error"}`);
-      return; // Stop here, do not proceed with waste logging or UI updates
-    }
-
-    // --- Step 2: Update all batches within this box to have status "closed" ---
-    const batchIdsToUpdate = batchesInBox.map(batch => batch.id);
-    if (batchIdsToUpdate.length > 0) {
-      const { error: batchesUpdateError } = await supabase
-        .from('batches')
-        .update({ metadata: { status: "closed", boxId: boxId } }) // Keep boxId for historical reference
-        .in('id', batchIdsToUpdate);
-
-      if (batchesUpdateError) {
-        console.error("Error updating batches status to closed:", batchesUpdateError);
-        alert(`Failed to update status of batches in the closed box: ${batchesUpdateError.message}`);
-        // Continue with waste logging, as the box itself is closed
-      }
-    }
-
-    const newSupabaseBoxId = boxId; // The boxId is already the Supabase ID
-
-    // --- Step 3: Log waste entries for batches in the box using the newSupabaseBoxId ---
-    const wasteEntries = batchesInBox.map(batch => {
-      let processedQuantity = batch.metadata.quantity_amount; // Get from metadata
-      const lowerUnit = batch.metadata.unit.toLowerCase(); // Get from metadata
-      if (lowerUnit === 'pounds/ounces') {
-        processedQuantity = batch.metadata.quantity_amount / 16; // Convert to pounds for waste logging
-      } else if (lowerUnit === 'gallons/quarts') {
-        processedQuantity = batch.metadata.quantity_amount / 4; // Convert to gallons for waste logging
+      if (boxUpdateError) {
+        console.error("Error updating box in Supabase:", boxUpdateError);
+        setCloseBoxSupabaseError(`Failed to close box: ${boxUpdateError?.message || "Unknown error"}`);
+        return; // Stop here, do not proceed with waste logging or UI updates
       }
 
-      return {
-        item_id: batch.metadata.itemId, // Get from metadata
-        user_id: session.user.id,
-        quantity: processedQuantity,
-        metadata: {
-          batchId: batch.id,
-          itemName: batch.metadata.itemName, // Get from metadata
-          unit: batch.metadata.unit, // Get from metadata
-          originalQuantity: batch.metadata.quantity_amount, // Get from metadata
-          boxId: newSupabaseBoxId, // Store the Supabase-generated box ID
-          tags: batch.metadata.tags, // Get from metadata
+      // --- Step 2: Update all batches within this box to have status "closed" ---
+      const batchIdsToUpdate = batchesInBox.map(batch => batch.id);
+      if (batchIdsToUpdate.length > 0) {
+        const { error: batchesUpdateError } = await supabase
+          .from('batches')
+          .update({ metadata: { status: "closed", boxId: boxId } }) // Keep boxId for historical reference
+          .in('id', batchIdsToUpdate);
+
+        if (batchesUpdateError) {
+          console.error("Error updating batches status to closed:", batchesUpdateError);
+          alert(`Failed to update status of batches in the closed box: ${batchesUpdateError.message}`);
+          // Continue with waste logging, as the box itself is closed
         }
-      };
-    });
-
-    if (wasteEntries.length > 0) {
-      const { error: wasteInsertError } = await supabase.from('waste_entries').insert(wasteEntries);
-      if (wasteInsertError) {
-        console.error("Error logging waste entries:", wasteInsertError);
-        // Alert the user that waste logging failed, but the box was saved.
-        alert("Failed to log all waste entries, but the box was successfully saved. " + wasteInsertError.message);
-      } else {
-        console.log("Waste entries logged successfully");
       }
-    }
 
-    // --- Step 4: Remove the box from the state and close dialog (only if box insertion was successful) ---
-    setBoxes(prevBoxes => prevBoxes.filter(box => box.id !== boxId));
-    setShowBoxContentDialog(false);
-    setSelectedBoxForContent(null);
-    setCloseBoxSupabaseError(null); // Clear error after successful operation
+      const newSupabaseBoxId = boxId; // The boxId is already the Supabase ID
+
+      // --- Step 3: Log waste entries for batches in the box using the newSupabaseBoxId ---
+      const wasteEntries = batchesInBox.map(batch => {
+        let processedQuantity = batch.metadata.quantity_amount; // Get from metadata
+        const lowerUnit = batch.metadata.unit.toLowerCase(); // Get from metadata
+        if (lowerUnit === 'pounds/ounces') {
+          processedQuantity = batch.metadata.quantity_amount / 16; // Convert to pounds for waste logging
+        } else if (lowerUnit === 'gallons/quarts') {
+          processedQuantity = batch.metadata.quantity_amount / 4; // Convert to gallons for waste logging
+        }
+
+        return {
+          item_id: batch.metadata.itemId, // Get from metadata
+          user_id: session.user.id,
+          quantity: processedQuantity,
+          metadata: {
+            batchId: batch.id,
+            itemName: batch.metadata.itemName, // Get from metadata
+            unit: batch.metadata.unit, // Get from metadata
+            originalQuantity: batch.metadata.quantity_amount, // Get from metadata
+            boxId: newSupabaseBoxId, // Store the Supabase-generated box ID
+            tags: batch.metadata.tags, // Get from metadata
+          }
+        };
+      });
+
+      if (wasteEntries.length > 0) {
+        const { error: wasteInsertError } = await supabase.from('waste_entries').insert(wasteEntries);
+        if (wasteInsertError) {
+          console.error("Error logging waste entries:", wasteInsertError);
+          // Alert the user that waste logging failed, but the box was saved.
+          alert("Failed to log all waste entries, but the box was successfully saved. " + wasteInsertError.message);
+        } else {
+          console.log("Waste entries logged successfully");
+        }
+      }
+
+      // --- Step 4: Remove the box from the state and close dialog (only if box insertion was successful) ---
+      setBoxes(prevBoxes => prevBoxes.filter(box => box.id !== boxId));
+      setShowBoxContentDialog(false);
+      setSelectedBoxForContent(null);
+      setCloseBoxSupabaseError(null); // Clear error after successful operation
+    } finally {
+      setIsLoading(false); // Hide loading overlay
+    }
   };
 
 
   useEffect(() => {
     const fetchItems = async () => {
-      const { data: itemsData, error: itemsError } = await supabase.from('items').select(`*`);
-      console.log("Fetched items:", itemsData, itemsError);
-      if (itemsError || !itemsData) {
-        console.error("Failed to fetch items", itemsError);
-      } else {
-        const parsedItems: Item[] = itemsData.map((item: any) => ({
-          id: item.id,
-          name: item.name,
-          imageUrl: item.metadata?.imageUrl || "",
-          holdMinutes: item.metadata?.holdMinutes || 0,
-          unit: item.metadata?.unit || "",
-          tags: item.metadata?.tags || [],
-        }));
-        setItems(parsedItems);
+      setIsLoading(true); // Show loading overlay
+      try {
+        const { data: itemsData, error: itemsError } = await supabase.from('items').select(`*`);
+        console.log("Fetched items:", itemsData, itemsError);
+        if (itemsError || !itemsData) {
+          console.error("Failed to fetch items", itemsError);
+        } else {
+          const parsedItems: Item[] = itemsData.map((item: any) => ({
+            id: item.id,
+            name: item.name,
+            imageUrl: item.metadata?.imageUrl || "",
+            holdMinutes: item.metadata?.holdMinutes || 0,
+            unit: item.metadata?.unit || "",
+            tags: item.metadata?.tags || [],
+          }));
+          setItems(parsedItems);
+        }
+      } finally {
+        setIsLoading(false); // Hide loading overlay
       }
     };
     fetchItems();
@@ -596,82 +639,87 @@ const ItemsPage = () => {
         return;
       }
 
-      // Fetch all open boxes
-      const { data: openBoxesData, error: openBoxesError } = await supabase
-        .from('boxes')
-        .select('id, name')
-        .eq('user_id', session.user.id)
-        .eq('metadata->>status', 'open');
+      setIsLoading(true); // Show loading overlay
+      try {
+        // Fetch all open boxes
+        const { data: openBoxesData, error: openBoxesError } = await supabase
+          .from('boxes')
+          .select('id, name')
+          .eq('user_id', session.user.id)
+          .eq('metadata->>status', 'open');
 
-      if (openBoxesError) {
-        console.error("Error fetching open boxes:", openBoxesError);
-        alert(`Failed to fetch open boxes: ${openBoxesError.message}`);
-        setBoxes([]);
-        setBatches([]);
-        return;
-      }
+        if (openBoxesError) {
+          console.error("Error fetching open boxes:", openBoxesError);
+          alert(`Failed to fetch open boxes: ${openBoxesError.message}`);
+          setBoxes([]);
+          setBatches([]);
+          return;
+        }
 
-      const loadedBoxes: BoxData[] = openBoxesData ? openBoxesData.map(box => ({
-        id: box.id,
-        name: box.name,
-        batches: [], // Initialize with empty batches, will populate next
-      })) : [];
+        const loadedBoxes: BoxData[] = openBoxesData ? openBoxesData.map(box => ({
+          id: box.id,
+          name: box.name,
+          batches: [], // Initialize with empty batches, will populate next
+        })) : [];
 
-      // Fetch all open batches for the user
-      const { data: openBatchesData, error: openBatchesError } = await supabase
-        .from('batches')
-        .select('*')
-        .eq('user_id', session.user.id)
-        .eq('metadata->>status', 'open');
+        // Fetch all open batches for the user
+        const { data: openBatchesData, error: openBatchesError } = await supabase
+          .from('batches')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .eq('metadata->>status', 'open');
 
-      if (openBatchesError) {
-        console.error("Error fetching open batches:", openBatchesError);
-        alert(`Failed to fetch open batches: ${openBatchesError.message}`);
-        setBoxes([]);
-        setBatches([]);
-        return;
-      }
+        if (openBatchesError) {
+          console.error("Error fetching open batches:", openBatchesError);
+          alert(`Failed to fetch open batches: ${openBatchesError.message}`);
+          setBoxes([]);
+          setBatches([]);
+          return;
+        }
 
-      const unboxedBatches: BatchData[] = [];
-      const batchesInBoxes: { [boxId: string]: BatchData[] } = {};
+        const unboxedBatches: BatchData[] = [];
+        const batchesInBoxes: { [boxId: string]: BatchData[] } = {};
 
-      if (openBatchesData) {
-        openBatchesData.forEach((batch: any) => {
-          const parsedBatch: BatchData = {
-            id: batch.id,
-            metadata: {
-              status: batch.metadata.status,
-              boxId: batch.metadata.boxId,
-              itemId: batch.metadata.itemId,
-              itemName: batch.metadata.itemName,
-              imageUrl: batch.metadata.imageUrl,
-              startTime: batch.metadata.startTime,
-              holdMinutes: batch.metadata.holdMinutes,
-              unit: batch.metadata.unit,
-              quantity_amount: batch.metadata.quantity_amount,
-              tags: batch.metadata.tags,
-            },
-          };
+        if (openBatchesData) {
+          openBatchesData.forEach((batch: any) => {
+            const parsedBatch: BatchData = {
+              id: batch.id,
+              metadata: {
+                status: batch.metadata.status,
+                boxId: batch.metadata.boxId,
+                itemId: batch.metadata.itemId,
+                itemName: batch.metadata.itemName,
+                imageUrl: batch.metadata.imageUrl,
+                startTime: batch.metadata.startTime,
+                holdMinutes: batch.metadata.holdMinutes,
+                unit: batch.metadata.unit,
+                quantity_amount: batch.metadata.quantity_amount,
+                tags: batch.metadata.tags,
+              },
+            };
 
-          if (batch.metadata?.boxId) {
-            if (!batchesInBoxes[batch.metadata.boxId]) {
-              batchesInBoxes[batch.metadata.boxId] = [];
+            if (batch.metadata?.boxId) {
+              if (!batchesInBoxes[batch.metadata.boxId]) {
+                batchesInBoxes[batch.metadata.boxId] = [];
+              }
+              batchesInBoxes[batch.metadata.boxId].push(parsedBatch);
+            } else {
+              unboxedBatches.push(parsedBatch);
             }
-            batchesInBoxes[batch.metadata.boxId].push(parsedBatch);
-          } else {
-            unboxedBatches.push(parsedBatch);
-          }
-        });
+          });
+        }
+
+        // Assign batches to their respective boxes
+        const finalLoadedBoxes = loadedBoxes.map(box => ({
+          ...box,
+          batches: batchesInBoxes[box.id] || [],
+        }));
+
+        setBoxes(finalLoadedBoxes);
+        setBatches(unboxedBatches);
+      } finally {
+        setIsLoading(false); // Hide loading overlay
       }
-
-      // Assign batches to their respective boxes
-      const finalLoadedBoxes = loadedBoxes.map(box => ({
-        ...box,
-        batches: batchesInBoxes[box.id] || [],
-      }));
-
-      setBoxes(finalLoadedBoxes);
-      setBatches(unboxedBatches);
     };
 
     fetchOpenBoxesAndBatches();
@@ -846,6 +894,7 @@ const ItemsPage = () => {
           closeBoxError={closeBoxSupabaseError} // Pass the error state
         />
       )}
+      {isLoading && <LoadingOverlay text="Updating..." />}
     </main>
   );
 };
