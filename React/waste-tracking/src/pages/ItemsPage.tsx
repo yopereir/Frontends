@@ -72,7 +72,7 @@ interface Item {
 }
 
 const ItemsPage = () => {
-  const { batches, setBatches, boxes, setBoxes, session } = useSession(); // Use boxes and setBoxes from context, also session
+  const { batches, setBatches, boxes, setBoxes, session, channel } = useSession(); // Use boxes and setBoxes from context, also session and channel
   const [now, setNow] = useState(new Date());
   const [view, setView] = useState<'batches' | 'items'>('batches');
   const [showQuantityDialog, setShowQuantityDialog] = useState(false);
@@ -92,7 +92,18 @@ const ItemsPage = () => {
   };
 
   const handleBoxNameSubmit = (boxName: string) => {
-    setBoxes(prevBoxes => [...prevBoxes, { id: crypto.randomUUID(), name: boxName, batches: [] }]); // Initialize with empty batches
+    const newBox = { id: crypto.randomUUID(), name: boxName, batches: [] };
+    setBoxes(prevBoxes => {
+      const updatedBoxes = [...prevBoxes, newBox];
+      if (channel) {
+        channel.send({
+          type: 'broadcast',
+          event: 'boxes_update',
+          payload: { boxes: updatedBoxes },
+        });
+      }
+      return updatedBoxes;
+    });
     setShowBoxNameDialog(false);
   };
 
@@ -139,14 +150,14 @@ const ItemsPage = () => {
         (batch) => batch.itemId === selectedItem.id && (batch.tags.includes("donation") === tags.includes("donation"))
       );
 
+      let updatedBatches;
       if (existingBatchIndex !== -1) {
-        const updatedBatches = [...prevBatches];
+        updatedBatches = [...prevBatches];
         updatedBatches[existingBatchIndex] = {
           ...updatedBatches[existingBatchIndex],
           quantity_amount:
             updatedBatches[existingBatchIndex].quantity_amount + totalQuantity,
         };
-        return updatedBatches;
       } else {
         const newBatch = {
           id: crypto.randomUUID(),
@@ -159,8 +170,17 @@ const ItemsPage = () => {
           quantity_amount: totalQuantity,
           tags: tags,
         };
-        return [...prevBatches, newBatch];
+        updatedBatches = [...prevBatches, newBatch];
       }
+
+      if (channel) {
+        channel.send({
+          type: 'broadcast',
+          event: 'batches_update',
+          payload: { batches: updatedBatches },
+        });
+      }
+      return updatedBatches;
     });
 
     setShowQuantityDialog(false);
@@ -168,7 +188,17 @@ const ItemsPage = () => {
   };
 
   const handleRemoveBatch = (batchIdToRemove: string) => {
-    setBatches(prevBatches => prevBatches.filter(batch => batch.id !== batchIdToRemove));
+    setBatches(prevBatches => {
+      const updatedBatches = prevBatches.filter(batch => batch.id !== batchIdToRemove);
+      if (channel) {
+        channel.send({
+          type: 'broadcast',
+          event: 'batches_update',
+          payload: { batches: updatedBatches },
+        });
+      }
+      return updatedBatches;
+    });
   };
 
   // DRAG AND DROP HANDLERS
@@ -184,17 +214,37 @@ const ItemsPage = () => {
       return;
     }
 
-    setBoxes(prevBoxes => prevBoxes.map(box => {
-      if (box.id === targetBoxId) {
-        return {
-          ...box,
-          batches: [...box.batches, droppedBatch]
-        };
+    setBoxes(prevBoxes => {
+      const updatedBoxes = prevBoxes.map(box => {
+        if (box.id === targetBoxId) {
+          return {
+            ...box,
+            batches: [...box.batches, droppedBatch]
+          };
+        }
+        return box;
+      });
+      if (channel) {
+        channel.send({
+          type: 'broadcast',
+          event: 'boxes_update',
+          payload: { boxes: updatedBoxes },
+        });
       }
-      return box;
-    }));
+      return updatedBoxes;
+    });
 
-    setBatches(prevBatches => prevBatches.filter(batch => batch.id !== batchId));
+    setBatches(prevBatches => {
+      const updatedBatches = prevBatches.filter(batch => batch.id !== batchId);
+      if (channel) {
+        channel.send({
+          type: 'broadcast',
+          event: 'batches_update',
+          payload: { batches: updatedBatches },
+        });
+      }
+      return updatedBatches;
+    });
   };
 
   // BOX CONTENT DIALOG HANDLERS
@@ -216,25 +266,45 @@ const ItemsPage = () => {
   const handleRemoveBatchFromBox = (boxId: string, batchIdToRemove: string) => {
     let removedBatch: BatchData | undefined;
 
-    setBoxes(prevBoxes => prevBoxes.map(box => {
-      if (box.id === boxId) {
-        const updatedBatchesInBox = box.batches.filter(batch => {
-            if (batch.id === batchIdToRemove) {
-                removedBatch = batch;
-                return false;
-            }
-            return true;
+    setBoxes(prevBoxes => {
+      const updatedBoxes = prevBoxes.map(box => {
+        if (box.id === boxId) {
+          const updatedBatchesInBox = box.batches.filter(batch => {
+              if (batch.id === batchIdToRemove) {
+                  removedBatch = batch;
+                  return false;
+              }
+              return true;
+          });
+          return {
+            ...box,
+            batches: updatedBatchesInBox
+          };
+        }
+        return box;
+      });
+      if (channel) {
+        channel.send({
+          type: 'broadcast',
+          event: 'boxes_update',
+          payload: { boxes: updatedBoxes },
         });
-        return {
-          ...box,
-          batches: updatedBatchesInBox
-        };
       }
-      return box;
-    }));
+      return updatedBoxes;
+    });
 
     if (removedBatch) {
-        setBatches(prevBatches => [...prevBatches, removedBatch!]);
+        setBatches(prevBatches => {
+          const updatedBatches = [...prevBatches, removedBatch!];
+          if (channel) {
+            channel.send({
+              type: 'broadcast',
+              event: 'batches_update',
+              payload: { batches: updatedBatches },
+            });
+          }
+          return updatedBatches;
+        });
     }
 
     setSelectedBoxForContent(prev => {
@@ -257,18 +327,38 @@ const ItemsPage = () => {
     const firstBox = boxes[0];
 
     // Add the batch to the first box's batches list
-    setBoxes(prevBoxes => prevBoxes.map(box => {
-      if (box.id === firstBox.id) {
-        return {
-          ...box,
-          batches: [...box.batches, batchToMove]
-        };
+    setBoxes(prevBoxes => {
+      const updatedBoxes = prevBoxes.map(box => {
+        if (box.id === firstBox.id) {
+          return {
+            ...box,
+            batches: [...box.batches, batchToMove]
+          };
+        }
+        return box;
+      });
+      if (channel) {
+        channel.send({
+          type: 'broadcast',
+          event: 'boxes_update',
+          payload: { boxes: updatedBoxes },
+        });
       }
-      return box;
-    }));
+      return updatedBoxes;
+    });
 
     // Remove the batch from the main batches list
-    setBatches(prevBatches => prevBatches.filter(batch => batch.id !== batchToMove.id));
+    setBatches(prevBatches => {
+      const updatedBatches = prevBatches.filter(batch => batch.id !== batchToMove.id);
+      if (channel) {
+        channel.send({
+          type: 'broadcast',
+          event: 'batches_update',
+          payload: { batches: updatedBatches },
+        });
+      }
+      return updatedBatches;
+    });
     return true; // Successfully moved
   };
 
@@ -334,7 +424,17 @@ const ItemsPage = () => {
     }
 
     // --- Step 3: Remove the box from the state and close dialog (only if box insertion was successful) ---
-    setBoxes(prevBoxes => prevBoxes.filter(box => box.id !== boxId));
+    setBoxes(prevBoxes => {
+      const updatedBoxes = prevBoxes.filter(box => box.id !== boxId);
+      if (channel) {
+        channel.send({
+          type: 'broadcast',
+          event: 'boxes_update',
+          payload: { boxes: updatedBoxes },
+        });
+      }
+      return updatedBoxes;
+    });
     setShowBoxContentDialog(false);
     setSelectedBoxForContent(null);
     setCloseBoxSupabaseError(null); // Clear error after successful operation
@@ -368,6 +468,49 @@ const ItemsPage = () => {
     }, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  // Effect for Supabase channel subscription and broadcast
+  useEffect(() => {
+    if (channel) {
+      // Listen for broadcast messages on the 'batches' topic
+      channel.on(
+        'broadcast',
+        { event: 'batches_update' },
+        ({ payload }) => {
+          console.log('Received batches_update:', payload);
+          setBatches(payload.batches.map((batch: BatchData) => ({
+            ...batch,
+            startTime: new Date(batch.startTime), // Ensure startTime is a Date object
+          })));
+        }
+      ).on(
+        'broadcast',
+        { event: 'boxes_update' },
+        ({ payload }) => {
+          console.log('Received boxes_update:', payload);
+          setBoxes(payload.boxes.map((box: BoxData) => ({
+            ...box,
+            batches: box.batches.map((batch: BatchData) => ({
+              ...batch,
+              startTime: new Date(batch.startTime), // Ensure startTime is a Date object
+            })),
+          })));
+        }
+      ); // Removed .subscribe() call
+
+      // Request initial data when component mounts or view changes
+      channel.send({
+        type: 'broadcast',
+        event: 'request_initial_data',
+        payload: {},
+      });
+
+      return () => {
+        // Listeners are automatically cleaned up when the component unmounts
+        // or when the channel dependency changes, but the channel itself remains subscribed.
+      };
+    }
+  }, [channel, setBatches, setBoxes, view]);
 
   const itemsContainer = (
     <>

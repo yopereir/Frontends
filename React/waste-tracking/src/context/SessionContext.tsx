@@ -3,11 +3,14 @@ import {
   useContext,
   useEffect,
   useState,
+  useCallback,
+  useRef,
+  useMemo,
   ReactNode,
 } from "react";
 import supabase from "../supabase";
 import LoadingPage from "../pages/LoadingPage";
-import { Session } from "@supabase/supabase-js";
+import { Session, RealtimeChannel } from "@supabase/supabase-js";
 
 // === Types ===
 export type Theme = "light" | "dark" | "system";
@@ -40,6 +43,7 @@ const SessionContext = createContext<{
   setBatches: React.Dispatch<React.SetStateAction<BatchData[]>>;
   boxes: BoxData[]; // Add boxes to context
   setBoxes: React.Dispatch<React.SetStateAction<BoxData[]>>; // Add setBoxes to context
+  channel: RealtimeChannel | null; // Add channel to context
 }>({
   session: null,
   theme: "system",
@@ -48,6 +52,7 @@ const SessionContext = createContext<{
   setBatches: () => {},
   boxes: [], // Default empty array for boxes
   setBoxes: () => {}, // Default empty function for setBoxes
+  channel: null, // Default null for channel
 });
 
 // === Hook ===
@@ -63,6 +68,16 @@ export const useSession = () => {
 export const SessionProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+
+  const channel = useMemo(() => {
+    if (session?.user?.id) {
+      const userId = session.user.id;
+      const channelTopic = `user_${userId}`;
+      console.log(`Memoizing Supabase channel for ID: ${channelTopic}`);
+      return supabase.channel(channelTopic);
+    }
+    return null;
+  }, [session?.user?.id]);
 
   const [theme, setThemeState] = useState<Theme>(
     () => (localStorage.getItem("theme") as Theme) || "system"
@@ -86,6 +101,18 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
         return value;
     }) : [];
   });
+
+  // Refs for batches and boxes to be used in channel listeners
+  const batchesRef = useRef(batches);
+  const boxesRef = useRef(boxes);
+
+  useEffect(() => {
+    batchesRef.current = batches;
+  }, [batches]);
+
+  useEffect(() => {
+    boxesRef.current = boxes;
+  }, [boxes]);
 
   // Theme toggle logic
   const setTheme = (newTheme: Theme) => {
@@ -124,10 +151,40 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
         setIsLoading(false);
       }
     );
+
     return () => {
       authStateListener.data.subscription.unsubscribe();
     };
   }, []);
+
+  // Effect to subscribe and unsubscribe the channel, and handle initial data requests
+  useEffect(() => {
+    if (channel) {
+      console.log(`Subscribing to Supabase channel: ${channel.topic}`);
+      channel.subscribe();
+
+      const handleRequestInitialData = () => {
+        console.log("Received request_initial_data. Broadcasting current state.");
+        channel.send({
+          type: 'broadcast',
+          event: 'batches_update',
+          payload: { batches: batchesRef.current },
+        });
+        channel.send({
+          type: 'broadcast',
+          event: 'boxes_update',
+          payload: { boxes: boxesRef.current },
+        });
+      };
+
+      channel.on('broadcast', { event: 'request_initial_data' }, handleRequestInitialData);
+
+      return () => {
+        console.log(`Unsubscribing from Supabase channel: ${channel.topic}`);
+        channel.unsubscribe();
+      };
+    }
+  }, [channel, batchesRef, boxesRef]);
 
   return (
     <SessionContext.Provider
@@ -139,6 +196,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
         setBatches,
         boxes, // Provide boxes
         setBoxes, // Provide setBoxes
+        channel, // Provide channel
       }}
     >
       {isLoading ? <LoadingPage /> : children}
