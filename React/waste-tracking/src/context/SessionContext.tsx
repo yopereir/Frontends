@@ -14,15 +14,18 @@ export type Theme = "light" | "dark" | "system";
 
 export interface BatchData {
   id: string;
-  itemId: string;
-  itemName: string;
-  imageUrl: string;
-  startTime: Date;
-  holdMinutes: number;
-  unit: string;
-  quantity_amount: number;
-  tags: string[];
-  metadata: { status: string; boxId?: string | null; }; // Added metadata
+  metadata: {
+    status: string;
+    boxId?: string | null;
+    itemId: string;
+    itemName: string;
+    imageUrl: string;
+    startTime: string; // Stored as ISO string in DB
+    holdMinutes: number;
+    unit: string;
+    quantity_amount: number;
+    tags: string[];
+  };
 }
 
 // Extend BatchData for Box content if needed, or just use BatchData directly

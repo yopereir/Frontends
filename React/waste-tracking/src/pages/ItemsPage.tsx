@@ -222,7 +222,6 @@ const ItemsPage = () => {
               batch.id === updatedBatch.id
                 ? {
                     ...batch,
-                    quantity_amount: updatedBatch.metadata.quantity_amount, // Corrected to get from metadata
                     metadata: updatedBatch.metadata,
                   }
                 : batch
@@ -261,15 +260,18 @@ const ItemsPage = () => {
             ...prevBatches,
             {
               id: insertedBatch.id,
-              itemId: insertedBatch.metadata.itemId, // Corrected to get from metadata
-              itemName: insertedBatch.metadata.itemName,
-              imageUrl: insertedBatch.metadata.imageUrl,
-              startTime: new Date(insertedBatch.metadata.startTime),
-              holdMinutes: insertedBatch.metadata.holdMinutes,
-              unit: insertedBatch.metadata.unit,
-              quantity_amount: insertedBatch.metadata.quantity_amount, // Corrected to get from metadata
-              tags: insertedBatch.metadata.tags,
-              metadata: insertedBatch.metadata,
+              metadata: {
+                status: insertedBatch.metadata.status,
+                boxId: insertedBatch.metadata.boxId,
+                itemId: insertedBatch.metadata.itemId,
+                itemName: insertedBatch.metadata.itemName,
+                imageUrl: insertedBatch.metadata.imageUrl,
+                startTime: insertedBatch.metadata.startTime,
+                holdMinutes: insertedBatch.metadata.holdMinutes,
+                unit: insertedBatch.metadata.unit,
+                quantity_amount: insertedBatch.metadata.quantity_amount,
+                tags: insertedBatch.metadata.tags,
+              },
             },
           ]);
           console.log("New batch created successfully.");
@@ -506,25 +508,25 @@ const ItemsPage = () => {
 
     // --- Step 3: Log waste entries for batches in the box using the newSupabaseBoxId ---
     const wasteEntries = batchesInBox.map(batch => {
-      let processedQuantity = batch.quantity_amount;
-      const lowerUnit = batch.unit.toLowerCase();
+      let processedQuantity = batch.metadata.quantity_amount; // Get from metadata
+      const lowerUnit = batch.metadata.unit.toLowerCase(); // Get from metadata
       if (lowerUnit === 'pounds/ounces') {
-        processedQuantity = batch.quantity_amount / 16; // Convert to pounds for waste logging
+        processedQuantity = batch.metadata.quantity_amount / 16; // Convert to pounds for waste logging
       } else if (lowerUnit === 'gallons/quarts') {
-        processedQuantity = batch.quantity_amount / 4; // Convert to gallons for waste logging
+        processedQuantity = batch.metadata.quantity_amount / 4; // Convert to gallons for waste logging
       }
 
       return {
-        item_id: batch.itemId,
+        item_id: batch.metadata.itemId, // Get from metadata
         user_id: session.user.id,
         quantity: processedQuantity,
         metadata: {
           batchId: batch.id,
-          itemName: batch.itemName,
-          unit: batch.unit,
-          originalQuantity: batch.quantity_amount,
+          itemName: batch.metadata.itemName, // Get from metadata
+          unit: batch.metadata.unit, // Get from metadata
+          originalQuantity: batch.metadata.quantity_amount, // Get from metadata
           boxId: newSupabaseBoxId, // Store the Supabase-generated box ID
-          tags: batch.tags,
+          tags: batch.metadata.tags, // Get from metadata
         }
       };
     });
@@ -621,15 +623,18 @@ const ItemsPage = () => {
         openBatchesData.forEach((batch: any) => {
           const parsedBatch: BatchData = {
             id: batch.id,
-            itemId: batch.item_id,
-            itemName: batch.metadata.itemName,
-            imageUrl: batch.metadata.imageUrl,
-            startTime: new Date(batch.metadata.startTime),
-            holdMinutes: batch.metadata.holdMinutes,
-            unit: batch.metadata.unit,
-            quantity_amount: batch.quantity_amount,
-            tags: batch.metadata.tags,
-            metadata: batch.metadata,
+            metadata: {
+              status: batch.metadata.status,
+              boxId: batch.metadata.boxId,
+              itemId: batch.metadata.itemId,
+              itemName: batch.metadata.itemName,
+              imageUrl: batch.metadata.imageUrl,
+              startTime: batch.metadata.startTime,
+              holdMinutes: batch.metadata.holdMinutes,
+              unit: batch.metadata.unit,
+              quantity_amount: batch.metadata.quantity_amount,
+              tags: batch.metadata.tags,
+            },
           };
 
           if (batch.metadata?.boxId) {
@@ -725,17 +730,9 @@ const ItemsPage = () => {
             >
               <Batch
                 id={batch.id}
-                itemId={batch.itemId}
-                itemName={batch.itemName}
-                imageUrl={batch.imageUrl}
-                startTime={batch.startTime}
-                holdMinutes={batch.holdMinutes}
-                unit={batch.unit}
-                quantity_amount={batch.quantity_amount}
-                tags={batch.tags}
-                metadata={batch.metadata} // Pass the metadata prop
-                onMoveToBox={handleMoveBatchToFirstBox} // Pass the new handler
-                onRemoveBatch={handleRemoveBatch} // Pass the remove handler
+                metadata={batch.metadata} // Pass the entire metadata object
+                onMoveToBox={handleMoveBatchToFirstBox}
+                onRemoveBatch={handleRemoveBatch}
               />
             </div>
           ))}

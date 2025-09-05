@@ -10,7 +10,7 @@ interface BatchProps extends BatchData {
   onRemoveBatch: (batchId: string) => void; // Function to remove the batch
 }
 
-const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_amount, tags, onMoveToBox, onRemoveBatch }: BatchProps) => {
+const Batch = ({ id, metadata, onMoveToBox, onRemoveBatch }: BatchProps) => {
   const [timeLeft, setTimeLeft] = useState("");
   const [timeColor, setTimeColor] = useState("#3ecf8e");
   const [showDialog, setShowDialog] = useState(false);
@@ -21,7 +21,7 @@ const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_
     newQuantity: number | { pounds?: number; ounces?: number; gallons?: number; quarts?: number },
     newTags: string[]
   ) => {
-    const lowerUnit = unit.toLowerCase();
+    const lowerUnit = metadata.unit.toLowerCase(); // Access unit from metadata
 
     let totalQuantity = 0;
     if (lowerUnit === 'pounds/ounces' && typeof newQuantity === "object") {
@@ -33,7 +33,7 @@ const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_
     }
 
     const updated = batches.map(batch =>
-      batch.id === id ? { ...batch, quantity_amount: totalQuantity, tags: newTags } : batch
+      batch.id === id ? { ...batch, metadata: { ...batch.metadata, quantity_amount: totalQuantity, tags: newTags } } : batch
     );
 
     setBatches(updated);
@@ -59,7 +59,7 @@ const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_
   useEffect(() => {
     const updateCountdown = () => {
       const now = new Date();
-      const endTime = new Date(new Date(startTime).getTime() + holdMinutes * 60000);
+      const endTime = new Date(new Date(metadata.startTime).getTime() + metadata.holdMinutes * 60000); // Access from metadata
       const diffMs = endTime.getTime() - now.getTime();
 
       if (diffMs <= 0) {
@@ -69,7 +69,7 @@ const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_
         const minutes = Math.floor(diffMs / 60000);
         const seconds = Math.floor((diffMs % 60000) / 1000);
         setTimeLeft(`${minutes}:${seconds.toString().padStart(2, "0")}`);
-        setTimeColor(diffMs/(holdMinutes * 60000) < .2 ? 'var(--error-color)' :
+        setTimeColor(diffMs/(metadata.holdMinutes * 60000) < .2 ? 'var(--error-color)' : // Access from metadata
          'var(--button-color)'); // Change color if less than 20% of time left
       }
     };
@@ -77,7 +77,7 @@ const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_
     updateCountdown();
     const interval = setInterval(updateCountdown, 1000);
     return () => clearInterval(interval);
-  }, [startTime, holdMinutes]);
+  }, [metadata.startTime, metadata.holdMinutes]); // Dependencies from metadata
 
 
   return (
@@ -103,27 +103,27 @@ const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_
         >
           X
         </button>
-        <img src={imageUrl} alt={itemName} className="batch-image" />
-        <div className="batch-title">{itemName}</div>
+        <img src={metadata.imageUrl} alt={metadata.itemName} className="batch-image" />
+        <div className="batch-title">{metadata.itemName}</div>
       </div>
       <div className="batch-right">
       <div className="batch-subtext">
         {(() => {
-          const lowerUnit = unit.toLowerCase();
+          const lowerUnit = metadata.unit.toLowerCase();
           if (lowerUnit === 'pounds/ounces') {
-            const pounds = Math.floor(quantity_amount / 16);
-            const ounces = quantity_amount % 16;
+            const pounds = Math.floor(metadata.quantity_amount / 16);
+            const ounces = metadata.quantity_amount % 16;
             return `${pounds} pound${pounds !== 1 ? 's' : ''} ${ounces} ounce${ounces !== 1 ? 's' : ''}`;
           } else if (lowerUnit === 'gallons/quarts') {
-            const gallons = Math.floor(quantity_amount / 4);
-            const quarts = quantity_amount % 4;
+            const gallons = Math.floor(metadata.quantity_amount / 4);
+            const quarts = metadata.quantity_amount % 4;
             return `${gallons} gallon${gallons !== 1 ? 's' : ''} ${quarts} quart${quarts !== 1 ? 's' : ''}`;
           } else {
-            return `${quantity_amount} ${unit}`;
+            return `${metadata.quantity_amount} ${metadata.unit}`;
           }
         })()}
       </div>
-        {holdMinutes > 0 && (<div className="batch-timer" style={{ color: timeColor }}>{timeLeft}</div>)}
+        {metadata.holdMinutes > 0 && (<div className="batch-timer" style={{ color: timeColor }}>{timeLeft}</div>)}
         <button className="batch-button" onClick={handleDone}>Done</button>
         {errorMessage && (
           <p style={{ color: 'var(--error-color)', fontSize: '0.75em', marginTop: '5px' }}>
@@ -133,9 +133,9 @@ const Batch = ({ id, itemName, imageUrl, startTime, holdMinutes, unit, quantity_
       </div>
       {showDialog && (
         <QuantityDialog
-          initialQuantity={quantity_amount}
-          unit={unit}
-          initialTags={tags} // Pass the tags to QuantityDialog
+          initialQuantity={metadata.quantity_amount}
+          unit={metadata.unit}
+          initialTags={metadata.tags} // Pass the tags to QuantityDialog
           onClose={() => setShowDialog(false)}
           onSubmit={handleUpdateQuantity}
         />

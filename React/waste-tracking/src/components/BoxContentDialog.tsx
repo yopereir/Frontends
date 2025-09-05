@@ -44,19 +44,19 @@ const BoxContentDialog = ({
                   borderBottom: '1px solid #eee',
                 }}>
                   <span style={{color: "var(--menu-text)"}}>
-                    {batch.itemName} -{' '}
+                    {batch.metadata.itemName} -{' '}
                     {(() => {
-                      const lowerUnit = batch.unit.toLowerCase();
+                      const lowerUnit = batch.metadata.unit.toLowerCase();
                       if (lowerUnit === 'pounds/ounces') {
-                        const pounds = Math.floor(batch.quantity_amount / 16);
-                        const ounces = batch.quantity_amount % 16;
+                        const pounds = Math.floor(batch.metadata.quantity_amount / 16);
+                        const ounces = batch.metadata.quantity_amount % 16;
                         return `${pounds} lb ${ounces} oz`;
                       } else if (lowerUnit === 'gallons/quarts') {
-                        const gallons = Math.floor(batch.quantity_amount / 4);
-                        const quarts = batch.quantity_amount % 4;
+                        const gallons = Math.floor(batch.metadata.quantity_amount / 4);
+                        const quarts = batch.metadata.quantity_amount % 4;
                         return `${gallons} gal ${quarts} qt`;
                       } else {
-                        return `${batch.quantity_amount} ${batch.unit}`;
+                        return `${batch.metadata.quantity_amount} ${batch.metadata.unit}`;
                       }
                     })()}
                   </span>
