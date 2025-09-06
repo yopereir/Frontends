@@ -388,21 +388,12 @@ const SettingsPage = () => {
     status: "ended",
     plan: "all",
   });
-  const [restaurantSettings, setRestaurantsSettings] = useState([{
-    id: "",
-    name: "My Waste Tracker",
-    location: "123 Green Way",
-    subscription: "USD",
-  }]);
-  const [itemSettings, setItemsSettings] = useState([{
-    id: "",
-    name: "Default Item",
-    holdMinutes: "30",
-    restaurant_id: "",
-    unit: "kg",
-    imageUrl: "",
-    tags: []
-  }]);
+  const [restaurantSettings, setRestaurantsSettings] = useState<any[]>([]);
+  const [itemSettings, setItemsSettings] = useState<any[]>([]);
+
+  const getFranchiseItems = useCallback(() => {
+    console.log("getFranchiseItems called");
+  }, []);
 
   const fetchSettings = useCallback(async () => {
     if (session?.user) {
@@ -429,18 +420,27 @@ const SettingsPage = () => {
       //Fetch item settings
       const { data: itemsData } = await supabase.from('items').select('*');
       if (itemsData) {
-        setItemsSettings(
-          itemsData.map((itemData) => ({
-            id: itemData.id,
-            name: itemData.name,
-            // Ensure holdMinutes is a string for the initialValue of EditableField
-            holdMinutes: itemData.metadata.holdMinutes !== null ? String(itemData.metadata.holdMinutes) : "",
-            restaurant_id: itemData.restaurant_id,
-            unit: itemData.metadata.unit,
-            imageUrl: itemData.metadata.imageUrl,
-            tags: Array.isArray(itemData.metadata?.tags) ? itemData.metadata.tags : []
-          }))
-        );
+        const newItems = itemsData.map((itemData) => ({
+          id: itemData.id,
+          name: itemData.name,
+          // Ensure holdMinutes is a string for the initialValue of EditableField
+          holdMinutes: itemData.metadata.holdMinutes !== null ? String(itemData.metadata.holdMinutes) : "",
+          restaurant_id: itemData.restaurant_id,
+          unit: itemData.metadata.unit,
+          imageUrl: itemData.metadata.imageUrl,
+          tags: Array.isArray(itemData.metadata?.tags) ? itemData.metadata.tags : []
+        }));
+        setItemsSettings(newItems);
+
+        // After fetching both restaurants and items, check for restaurants with 0 items
+        if (restaurantsData) {
+          restaurantsData.forEach(restaurantData => {
+            const itemsForRestaurant = newItems.filter(item => item.restaurant_id === restaurantData.id);
+            if (itemsForRestaurant.length === 0) {
+              getFranchiseItems();
+            }
+          });
+        }
       }
     }
   }, [session]);
