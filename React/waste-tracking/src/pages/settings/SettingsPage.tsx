@@ -391,8 +391,47 @@ const SettingsPage = () => {
   const [restaurantSettings, setRestaurantsSettings] = useState<any[]>([]);
   const [itemSettings, setItemsSettings] = useState<any[]>([]);
 
-  const getFranchiseItems = useCallback(() => {
-    console.log("getFranchiseItems called");
+  const getFranchiseItems = useCallback(async (restaurantId: string) => {
+    console.log(`getFranchiseItems called for restaurant: ${restaurantId}`);
+    try {
+      const { data, error } = await supabase.rpc('get_user_restaurant_items');
+      console.log("RPC get_user_restaurant_items response:", { data, error });
+      if (error) {
+        console.error("Error fetching user restaurant items RPC:", error);
+        return []; // Return empty array on error
+      }
+
+      if (data && data.length > 0) {
+        const matchingRestaurant = data.find((entry: { restaurant_id: string; item_ids: string[] }) => entry.restaurant_id === restaurantId);
+
+        if (matchingRestaurant && matchingRestaurant.item_ids && matchingRestaurant.item_ids.length > 0) {
+          console.log(`Found franchise items for restaurant ${restaurantId}:`, matchingRestaurant.item_ids);
+          const fetchedFranchiseItems: any[] = [];
+          for (const itemId of matchingRestaurant.item_ids) {
+            console.log("Fetching franchise item with ID:", itemId);
+            const { data: itemData, error: itemError } = await supabase.from('items').select('*').eq('id', itemId).single();
+            if (itemError) {
+              console.error(`Error fetching franchise item ${itemId}:`, itemError);
+            } else if (itemData) {
+              fetchedFranchiseItems.push({
+                id: itemData.id,
+                name: itemData.name,
+                holdMinutes: itemData.metadata.holdMinutes !== null ? String(itemData.metadata.holdMinutes) : "",
+                restaurant_id: itemData.restaurant_id,
+                unit: itemData.metadata.unit,
+                imageUrl: itemData.metadata.imageUrl,
+                tags: Array.isArray(itemData.metadata?.tags) ? itemData.metadata.tags : []
+              });
+            }
+          }
+          return fetchedFranchiseItems;
+        }
+      }
+      return []; // Return empty array if no matching restaurant or items
+    } catch (err) {
+      console.error("An unexpected error occurred in getFranchiseItems:", err);
+      return []; // Return empty array on unexpected error
+    }
   }, []);
 
   const fetchSettings = useCallback(async () => {
@@ -419,29 +458,41 @@ const SettingsPage = () => {
 
       //Fetch item settings
       const { data: itemsData } = await supabase.from('items').select('*');
-      if (itemsData) {
-        const newItems = itemsData.map((itemData) => ({
-          id: itemData.id,
-          name: itemData.name,
-          // Ensure holdMinutes is a string for the initialValue of EditableField
-          holdMinutes: itemData.metadata.holdMinutes !== null ? String(itemData.metadata.holdMinutes) : "",
-          restaurant_id: itemData.restaurant_id,
-          unit: itemData.metadata.unit,
-          imageUrl: itemData.metadata.imageUrl,
-          tags: Array.isArray(itemData.metadata?.tags) ? itemData.metadata.tags : []
-        }));
-        setItemsSettings(newItems);
+      const initialItems = itemsData ? itemsData.map((itemData) => ({
+        id: itemData.id,
+        name: itemData.name,
+        holdMinutes: itemData.metadata.holdMinutes !== null ? String(itemData.metadata.holdMinutes) : "",
+        restaurant_id: itemData.restaurant_id,
+        unit: itemData.metadata.unit,
+        imageUrl: itemData.metadata.imageUrl,
+        tags: Array.isArray(itemData.metadata?.tags) ? itemData.metadata.tags : []
+      })) : [];
+      
+      let currentAccumulatedItems = [...initialItems]; // Use a mutable local array
 
-        // After fetching both restaurants and items, check for restaurants with 0 items
-        if (restaurantsData) {
-          restaurantsData.forEach(restaurantData => {
-            const itemsForRestaurant = newItems.filter(item => item.restaurant_id === restaurantData.id);
-            if (itemsForRestaurant.length === 0) {
-              getFranchiseItems();
+      // After fetching both restaurants and initial items, check for restaurants with 0 items
+      if (restaurantsData) {
+        const processedRestaurantIds = new Set<string>(); // Track processed restaurant IDs
+        for (const restaurantData of restaurantsData) {
+          if (processedRestaurantIds.has(restaurantData.id)) {
+            console.log(`Skipping duplicate restaurant ID: ${restaurantData.id}`);
+            continue; // Skip if this restaurant ID has already been processed
+          }
+
+          // Filter against the current local accumulated items
+          const itemsForRestaurant = currentAccumulatedItems.filter(item => item.restaurant_id === restaurantData.id);
+          if (itemsForRestaurant.length === 0) {
+            console.log(`Restaurant ${restaurantData.id} has 0 items. Attempting to fetch franchise items.`);
+            const franchiseItems = await getFranchiseItems(restaurantData.id);
+            if (franchiseItems.length > 0) {
+              // Update the local accumulated items immediately
+              currentAccumulatedItems = [...currentAccumulatedItems, ...franchiseItems];
             }
-          });
+          }
+          processedRestaurantIds.add(restaurantData.id); // Mark this restaurant ID as processed
         }
       }
+      setItemsSettings(currentAccumulatedItems); // Update state once after all processing
     }
   }, [session]);
 
