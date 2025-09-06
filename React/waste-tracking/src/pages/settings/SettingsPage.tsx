@@ -244,12 +244,9 @@ const SettingsPage = () => {
     }
     let error;
     switch (fieldName) {
-      case 'username': ({ error } = await supabase.auth.updateUser({data: { username: newValue }}));
-        break;
-      case 'email': ({ error } = await supabase.auth.updateUser({ email: newValue.toString() }));
-        break;
-      case 'password': ({ error } = await supabase.auth.updateUser({password: newValue.toString() }));
-        break;
+      case 'username': { let error; ({ error } = await supabase.auth.updateUser({data: { username: newValue }})); break; }
+      case 'email': { let error; ({ error } = await supabase.auth.updateUser({ email: newValue.toString() })); break; }
+      case 'password': { let error; ({ error } = await supabase.auth.updateUser({password: newValue.toString() })); break; }
       default:
         throw new Error(`Unknown user setting: ${fieldName}`);
     }
@@ -268,9 +265,9 @@ const SettingsPage = () => {
     }
     let error;
     switch (fieldName) {
-      case 'endDate': ({ error } = await supabase.from('subscriptions').update({endDate: newValue}));break;
-      case 'plan': ({ error } = await supabase.from('subscriptions').update({plan: newValue}));break;
-      case 'status': ({ error } = await supabase.from('subscriptions').update({status: newValue}));break;
+      case 'endDate': { let error; ({ error } = await supabase.from('subscriptions').update({endDate: newValue})); break; }
+      case 'plan': { let error; ({ error } = await supabase.from('subscriptions').update({plan: newValue})); break; }
+      case 'status': { let error; ({ error } = await supabase.from('subscriptions').update({status: newValue})); break; }
       default:
         throw new Error(`Unknown subscription setting: ${fieldName}`);
     }
@@ -289,19 +286,20 @@ const SettingsPage = () => {
     }
     let error;
     switch (fieldName) {
-      case 'name': ({ error } = await supabase.from('items').update({name: newValue}).eq('id', itemId));break;
-      case 'restaurant_id': ({ error } = await supabase.from('items').update({restaurant_id: newValue}).eq('id', itemId));break
-      case 'unit': ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {unit: newValue}}));break;
-      case 'holdingtime':
+      case 'name': { let error; ({ error } = await supabase.from('items').update({name: newValue}).eq('id', itemId)); break; }
+      case 'restaurant_id': { let error; ({ error } = await supabase.from('items').update({restaurant_id: newValue}).eq('id', itemId)); break; }
+      case 'unit': { let error; ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {unit: newValue}})); break; }
+      case 'holdingtime': {
         const newValueString = newValue.toString(); // Ensure we're working with a string
         const parsedHoldingTime = parseInt(newValueString);
         if (newValueString !== '' && (isNaN(parsedHoldingTime) || parsedHoldingTime < 0)) {
           throw new Error("Holding Time must be 0 or a positive number.");
         }
-        ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {"holdMinutes": newValueString === '' ? null : parsedHoldingTime}}));
+        let error; ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {"holdMinutes": newValueString === '' ? null : parsedHoldingTime}}));
         break;
-      case 'imageUrl': ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {imageUrl: newValue}}));break;
-      case 'tags':
+      }
+      case 'imageUrl': { let error; ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {imageUrl: newValue}})); break; }
+      case 'tags': {
         let tagsToSave: string[];
         if (Array.isArray(newValue)) {
           tagsToSave = newValue;
@@ -310,8 +308,9 @@ const SettingsPage = () => {
         } else {
           throw new Error("Invalid type for tags. Expected string or string[].");
         }
-        ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {tags: tagsToSave}}));
+        let error; ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {tags: tagsToSave}}));
         break;
+      }
       default:
         throw new Error(`Unknown item setting: ${fieldName}`);
     }
@@ -402,32 +401,53 @@ const SettingsPage = () => {
       }
 
       if (data && data.length > 0) {
-        const matchingRestaurant = data.find((entry: { restaurant_id: string; item_ids: string[] }) => entry.restaurant_id === restaurantId);
-
-        if (matchingRestaurant && matchingRestaurant.item_ids && matchingRestaurant.item_ids.length > 0) {
-          console.log(`Found franchise items for restaurant ${restaurantId}:`, matchingRestaurant.item_ids);
-          const fetchedFranchiseItems: any[] = [];
-          for (const itemId of matchingRestaurant.item_ids) {
-            console.log("Fetching franchise item with ID:", itemId);
-            const { data: itemData, error: itemError } = await supabase.from('items').select('*').eq('id', itemId).single();
-            if (itemError) {
-              console.error(`Error fetching franchise item ${itemId}:`, itemError);
-            } else if (itemData) {
-              fetchedFranchiseItems.push({
-                id: itemData.id,
-                name: itemData.name,
-                holdMinutes: itemData.metadata.holdMinutes !== null ? String(itemData.metadata.holdMinutes) : "",
-                restaurant_id: itemData.restaurant_id,
-                unit: itemData.metadata.unit,
-                imageUrl: itemData.metadata.imageUrl,
-                tags: Array.isArray(itemData.metadata?.tags) ? itemData.metadata.tags : []
-              });
-            }
+        const itemsToInsert: any[] = [];
+        console.log(data)
+        for (const {items} of data) {
+          for (const item of items) {
+            // Construct the item object for insertion, similar to AddItemDialog
+            const newItem = {
+              name: item.name || '', // Ensure name is not null
+              restaurant_id: restaurantId, // Use the restaurantId passed to the function
+              metadata: {
+                unit: item.metadata?.unit || 'count', // Default to 'count' if not provided
+                holdMinutes: item.metadata?.holdMinutes !== undefined ? item.metadata.holdMinutes : null,
+                imageUrl: item.metadata?.imageUrl || '',
+                tags: Array.isArray(item.metadata?.tags) ? item.metadata.tags : [],
+              },
+            };
+            itemsToInsert.push(newItem);
           }
-          return fetchedFranchiseItems;
+        }
+        console.log(itemsToInsert);
+
+        if (itemsToInsert.length > 0) {
+          console.log(`Inserting ${itemsToInsert.length} franchise items for restaurant ${restaurantId}.`);
+          const { data: insertedData, error: insertError } = await supabase
+            .from('items')
+            .insert(itemsToInsert)
+            .select('*'); // Select the inserted data to return it
+
+          if (insertError) {
+            console.error("Error inserting franchise items:", insertError);
+            // Depending on desired behavior, might re-throw or return empty
+            return [];
+          } else if (insertedData) {
+            console.log("Successfully inserted franchise items:", insertedData);
+            // Format the inserted data to match the expected itemSettings structure
+            return insertedData.map((itemData: any) => ({
+              id: itemData.id,
+              name: itemData.name,
+              holdMinutes: itemData.metadata.holdMinutes !== null ? String(itemData.metadata.holdMinutes) : "",
+              restaurant_id: itemData.restaurant_id,
+              unit: itemData.metadata.unit,
+              imageUrl: itemData.metadata.imageUrl,
+              tags: Array.isArray(itemData.metadata?.tags) ? itemData.metadata.tags : []
+            }));
+          }
         }
       }
-      return []; // Return empty array if no matching restaurant or items
+      return []; // Return empty array if no matching restaurant or items to insert
     } catch (err) {
       console.error("An unexpected error occurred in getFranchiseItems:", err);
       return []; // Return empty array on unexpected error
@@ -494,7 +514,7 @@ const SettingsPage = () => {
       }
       setItemsSettings(currentAccumulatedItems); // Update state once after all processing
     }
-  }, [session]);
+  }, [session, getFranchiseItems]);
 
   //useEffect to fetch actual settings if needed
   useEffect(() => {
