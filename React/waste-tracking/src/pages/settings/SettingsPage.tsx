@@ -244,9 +244,9 @@ const SettingsPage = () => {
     }
     let error;
     switch (fieldName) {
-      case 'username': { let error; ({ error } = await supabase.auth.updateUser({data: { username: newValue }})); break; }
-      case 'email': { let error; ({ error } = await supabase.auth.updateUser({ email: newValue.toString() })); break; }
-      case 'password': { let error; ({ error } = await supabase.auth.updateUser({password: newValue.toString() })); break; }
+      case 'username': { ({ error } = await supabase.auth.updateUser({data: { username: newValue }})); break; }
+      case 'email': { ({ error } = await supabase.auth.updateUser({ email: newValue.toString() })); break; }
+      case 'password': { ({ error } = await supabase.auth.updateUser({password: newValue.toString() })); break; }
       default:
         throw new Error(`Unknown user setting: ${fieldName}`);
     }
@@ -265,9 +265,9 @@ const SettingsPage = () => {
     }
     let error;
     switch (fieldName) {
-      case 'endDate': { let error; ({ error } = await supabase.from('subscriptions').update({endDate: newValue})); break; }
-      case 'plan': { let error; ({ error } = await supabase.from('subscriptions').update({plan: newValue})); break; }
-      case 'status': { let error; ({ error } = await supabase.from('subscriptions').update({status: newValue})); break; }
+      case 'endDate': {({ error } = await supabase.from('subscriptions').update({endDate: newValue})); break; }
+      case 'plan': {({ error } = await supabase.from('subscriptions').update({plan: newValue})); break; }
+      case 'status': {({ error } = await supabase.from('subscriptions').update({status: newValue})); break; }
       default:
         throw new Error(`Unknown subscription setting: ${fieldName}`);
     }
@@ -286,9 +286,9 @@ const SettingsPage = () => {
     }
     let error;
     switch (fieldName) {
-      case 'name': { let error; ({ error } = await supabase.from('items').update({name: newValue}).eq('id', itemId)); break; }
-      case 'restaurant_id': { let error; ({ error } = await supabase.from('items').update({restaurant_id: newValue}).eq('id', itemId)); break; }
-      case 'unit': { let error; ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {unit: newValue}})); break; }
+      case 'name': {({ error } = await supabase.from('items').update({name: newValue}).eq('id', itemId)); break; }
+      case 'restaurant_id': {({ error } = await supabase.from('items').update({restaurant_id: newValue}).eq('id', itemId)); break; }
+      case 'unit': {({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {unit: newValue}})); break; }
       case 'holdingtime': {
         const newValueString = newValue.toString(); // Ensure we're working with a string
         const parsedHoldingTime = parseInt(newValueString);
@@ -403,7 +403,7 @@ const SettingsPage = () => {
       if (data && data.length > 0) {
         const itemsToInsert: any[] = [];
         console.log(data)
-        for (const {items} of data) {
+        for (const {items} of data.filter((entry: any) => entry.restaurant_id === restaurantId)) {
           for (const item of items) {
             // Construct the item object for insertion, similar to AddItemDialog
             const newItem = {
@@ -423,10 +423,7 @@ const SettingsPage = () => {
 
         if (itemsToInsert.length > 0) {
           console.log(`Inserting ${itemsToInsert.length} franchise items for restaurant ${restaurantId}.`);
-          const { data: insertedData, error: insertError } = await supabase
-            .from('items')
-            .insert(itemsToInsert)
-            .select('*'); // Select the inserted data to return it
+          const { data: insertedData, error: insertError } = await supabase.from('items').insert(itemsToInsert).select('*'); // Select the inserted data to return it
 
           if (insertError) {
             console.error("Error inserting franchise items:", insertError);
