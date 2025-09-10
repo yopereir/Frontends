@@ -120,10 +120,82 @@ const EditableField: React.FC<EditableFieldProps> = ({ label, initialValue, onSa
   );
 };
 
+
+
 type ItemTagsFieldProps = {
   itemId: string;
   initialTags: string[];
   onSave: (newTags: string[]) => Promise<void> | void;
+};
+
+type ItemCategoriesFieldProps = {
+  itemId: string;
+  label: string;
+  fieldId: string;
+  initialCategories: string[];
+  onSave: (newCategories: string[]) => Promise<void> | void;
+};
+
+const ItemCategoriesField: React.FC<ItemCategoriesFieldProps> = ({ label, fieldId, initialCategories, onSave }) => {
+  const [categories, setCategories] = useState<string[]>(initialCategories);
+  const [newCategoryInput, setNewCategoryInput] = useState<string>('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [isDirty, setIsDirty] = useState(false);
+
+  useEffect(() => {
+    setCategories(initialCategories);
+    setNewCategoryInput(initialCategories.join(', ')); // Initialize input with current categories
+    setIsDirty(false);
+  }, [initialCategories]);
+
+  const handleCategoryInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const inputValue = event.target.value;
+    setNewCategoryInput(inputValue);
+    setIsDirty(inputValue !== initialCategories.join(', '));
+    if (error) { setError(null); }
+  };
+
+  const handleSaveCategories = async () => {
+    if (!isDirty) return;
+
+    setIsSaving(true);
+    setError(null);
+    try {
+      const parsedCategories = newCategoryInput.split(',').map(category => category.trim()).filter(category => category !== '');
+      await onSave(parsedCategories);
+      setCategories(parsedCategories); // Update local state after successful save
+      setIsDirty(false);
+    } catch (err: any) {
+      console.error("Failed to save categories:", err);
+      setError(err.message || "Failed to update categories.");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  return (
+    <div className="setting-field">
+      <label htmlFor={fieldId}>{label}:</label>
+      <div className="input-with-button">
+        <input
+          id={fieldId}
+          type="text"
+          value={newCategoryInput}
+          onChange={handleCategoryInputChange}
+          placeholder="Enter categories, comma separated"
+          className={isDirty ? 'input-dirty' : ''}
+          disabled={isSaving}
+        />
+        {isDirty && (
+          <button onClick={handleSaveCategories} className="save-button" disabled={isSaving}>
+            {isSaving ? "Saving..." : "Save"}
+          </button>
+        )}
+      </div>
+      {error && <p style={{ color: "var(--error-color)", marginTop: "0.25rem", textAlign: 'left', width: '100%' }}>{error}</p>}
+    </div>
+  );
 };
 
 const ItemTagsField: React.FC<ItemTagsFieldProps> = ({ itemId, initialTags, onSave }) => {
@@ -229,6 +301,17 @@ const ItemTagsField: React.FC<ItemTagsFieldProps> = ({ itemId, initialTags, onSa
   );
 };
 
+type ItemSetting = {
+  id: string;
+  name: string;
+  holdMinutes: string;
+  restaurant_id: string;
+  unit: string;
+  imageUrl: string;
+  tags: string[];
+  categories: string[];
+};
+
 const SettingsPage = () => {
   const { session } = useSession();
   const [isAddItemDialogOpen, setAddItemDialogOpen] = useState(false);
@@ -311,6 +394,18 @@ const SettingsPage = () => {
         let error; ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {tags: tagsToSave}}));
         break;
       }
+      case 'categories': {
+        let categoriesToSave: string[];
+        if (Array.isArray(newValue)) {
+          categoriesToSave = newValue;
+        } else if (typeof newValue === 'string') {
+          categoriesToSave = newValue.split(',').map(category => category.trim());
+        } else {
+          throw new Error("Invalid type for categories. Expected string or string[].");
+        }
+        let error; ({ error } = await supabase.rpc('update_item_metadata', {item_id: itemId, new_metadata: {categories: categoriesToSave}}));
+        break;
+      }
       default:
         throw new Error(`Unknown item setting: ${fieldName}`);
     }
@@ -388,7 +483,7 @@ const SettingsPage = () => {
     plan: "all",
   });
   const [restaurantSettings, setRestaurantsSettings] = useState<any[]>([]);
-  const [itemSettings, setItemsSettings] = useState<any[]>([]);
+  const [itemSettings, setItemsSettings] = useState<ItemSetting[]>([]);
 
   const getFranchiseItems = useCallback(async (restaurantId: string) => {
     console.log(`getFranchiseItems called for restaurant: ${restaurantId}`);
@@ -414,6 +509,7 @@ const SettingsPage = () => {
                 holdMinutes: item.metadata?.holdMinutes !== undefined ? item.metadata.holdMinutes : null,
                 imageUrl: item.metadata?.imageUrl || '',
                 tags: Array.isArray(item.metadata?.tags) ? item.metadata.tags : [],
+                categories: Array.isArray(item.metadata?.categories) ? item.metadata.categories : [],
               },
             };
             itemsToInsert.push(newItem);
@@ -439,7 +535,8 @@ const SettingsPage = () => {
               restaurant_id: itemData.restaurant_id,
               unit: itemData.metadata.unit,
               imageUrl: itemData.metadata.imageUrl,
-              tags: Array.isArray(itemData.metadata?.tags) ? itemData.metadata.tags : []
+              tags: Array.isArray(itemData.metadata?.tags) ? itemData.metadata.tags : [],
+              categories: Array.isArray(itemData.metadata?.categories) ? itemData.metadata.categories : []
             }));
           }
         }
@@ -475,14 +572,15 @@ const SettingsPage = () => {
 
       //Fetch item settings
       const { data: itemsData } = await supabase.from('items').select('*');
-      const initialItems = itemsData ? itemsData.map((itemData) => ({
+      const initialItems: ItemSetting[] = itemsData ? itemsData.map((itemData) => ({
         id: itemData.id,
         name: itemData.name,
         holdMinutes: itemData.metadata.holdMinutes !== null ? String(itemData.metadata.holdMinutes) : "",
         restaurant_id: itemData.restaurant_id,
         unit: itemData.metadata.unit,
         imageUrl: itemData.metadata.imageUrl,
-        tags: Array.isArray(itemData.metadata?.tags) ? itemData.metadata.tags : []
+        tags: Array.isArray(itemData.metadata?.tags) ? itemData.metadata.tags : [],
+        categories: Array.isArray(itemData.metadata?.categories) ? itemData.metadata.categories : []
       })) : [];
       
       let currentAccumulatedItems = [...initialItems]; // Use a mutable local array
@@ -639,6 +737,12 @@ const SettingsPage = () => {
                       label="Image URL"
                       initialValue={itemData.imageUrl}
                       onSave={handleSaveItemSetting('imageUrl', itemData.id)}
+                    />
+                    <ItemCategoriesField
+                      fieldId={`item-categories-${itemData.id}`}
+                      label="Categories"
+                      initialCategories={itemData.categories}
+                      onSave={(newCategories) => handleSaveItemSetting('categories', itemData.id)(newCategories)}
                     />
                     <ItemTagsField
                       itemId={itemData.id}
