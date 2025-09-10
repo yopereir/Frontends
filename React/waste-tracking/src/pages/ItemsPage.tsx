@@ -73,14 +73,13 @@ interface Item {
 }
 
 const ItemsPage = () => {
-  const { batches, setBatches, boxes, setBoxes, session, channel } = useSession(); // Use boxes and setBoxes from context, also session and channel
+  const { batches, setBatches, boxes, setBoxes, session, channel, selectedCategories, setSelectedCategories } = useSession(); // Use boxes and setBoxes from context, also session and channel
   const [now, setNow] = useState(new Date());
   const [view, setView] = useState<'batches' | 'items'>('batches');
   const [showQuantityDialog, setShowQuantityDialog] = useState(false);
   const [showBoxNameDialog, setShowBoxNameDialog] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
   const [showCategoryFilterDropdown, setShowCategoryFilterDropdown] = useState(false);
-  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   
@@ -479,6 +478,11 @@ const ItemsPage = () => {
     }, 1000);
     return () => clearInterval(interval);
   }, []);
+
+  // Reset dropdown visibility when component mounts or view changes
+  useEffect(() => {
+    setShowCategoryFilterDropdown(false);
+  }, [view]);
 
   // Effect for Supabase channel subscription and broadcast
   useEffect(() => {

@@ -45,6 +45,8 @@ const SessionContext = createContext<{
   setBoxes: React.Dispatch<React.SetStateAction<BoxData[]>>; // Add setBoxes to context
   channel: RealtimeChannel | null; // Add channel to context
   concurrentUsers: number; // Add concurrentUsers to context
+  selectedCategories: string[]; // Add selectedCategories to context
+  setSelectedCategories: React.Dispatch<React.SetStateAction<string[]>>; // Add setSelectedCategories to context
 }>({
   session: null,
   theme: "system",
@@ -55,6 +57,8 @@ const SessionContext = createContext<{
   setBoxes: () => {}, // Default empty function for setBoxes
   channel: null, // Default null for channel
   concurrentUsers: 1, // Default to 1 concurrent user
+  selectedCategories: [], // Default empty array for selectedCategories
+  setSelectedCategories: () => {}, // Default empty function for setSelectedCategories
 });
 
 // === Hook ===
@@ -105,6 +109,12 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     }) : [];
   });
 
+  // State for selected categories, initialized from localStorage
+  const [selectedCategories, setSelectedCategories] = useState<string[]>(() => {
+    const stored = localStorage.getItem("selectedCategories");
+    return stored ? JSON.parse(stored) : [];
+  });
+
   // Refs for batches and boxes to be used in channel listeners
   const batchesRef = useRef(batches);
   const boxesRef = useRef(boxes);
@@ -145,6 +155,11 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   useEffect(() => {
     localStorage.setItem("boxes", JSON.stringify(boxes));
   }, [boxes]);
+
+  // Effect to save selectedCategories to localStorage
+  useEffect(() => {
+    localStorage.setItem("selectedCategories", JSON.stringify(selectedCategories));
+  }, [selectedCategories]);
 
   // Auth state handling
   useEffect(() => {
@@ -214,6 +229,8 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
         setBoxes, // Provide setBoxes
         channel, // Provide channel
         concurrentUsers, // Provide concurrentUsers
+        selectedCategories, // Provide selectedCategories
+        setSelectedCategories, // Provide setSelectedCategories
       }}
     >
       {isLoading ? <LoadingPage /> : children}
