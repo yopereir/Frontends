@@ -69,6 +69,7 @@ interface Item {
   holdMinutes: number;
   unit: string;
   tags: string[];
+  categories: string[];
 }
 
 const ItemsPage = () => {
@@ -78,7 +79,9 @@ const ItemsPage = () => {
   const [showQuantityDialog, setShowQuantityDialog] = useState(false);
   const [showBoxNameDialog, setShowBoxNameDialog] = useState(false);
   const [selectedItem, setSelectedItem] = useState<Item | null>(null);
-  const [selectedTab, setSelectedTab] = useState<'lunch' | 'breakfast' | null>(null);
+  const [showCategoryFilterDropdown, setShowCategoryFilterDropdown] = useState(false);
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   
   // BoxContentDialog states (local to ItemsPage as they manage UI visibility)
@@ -107,11 +110,11 @@ const ItemsPage = () => {
     setShowBoxNameDialog(false);
   };
 
-  const handleTabClick = (tab: 'lunch' | 'breakfast') => {
-    setSelectedTab(prev => (prev === tab ? null : tab));
-  };
+  
 
-  const filteredItems = selectedTab ? items.filter(item => item.tags.includes(selectedTab)) : items;
+  const filteredItems = selectedCategories.length > 0
+    ? items.filter(item => selectedCategories.some(cat => item.categories.includes(cat)))
+    : items;
 
   const handleAddWithQuantity = (item: Item) => {
     setSelectedItem(item);
@@ -455,8 +458,16 @@ const ItemsPage = () => {
           holdMinutes: item.metadata?.holdMinutes || 0,
           unit: item.metadata?.unit || "",
           tags: item.metadata?.tags || [],
+          categories: item.metadata?.categories || [],
         }));
         setItems(parsedItems);
+
+        // Extract unique categories
+        const allCategories = new Set<string>();
+        parsedItems.forEach(item => {
+          item.categories.forEach(category => allCategories.add(category));
+        });
+        setAvailableCategories(Array.from(allCategories));
       }
     };
     fetchItems();
@@ -515,27 +526,105 @@ const ItemsPage = () => {
   const itemsContainer = (
     <>
       <h2 className="header-text">Restaurant Items</h2>
-      <div className="tabs-container">
-        <button
-          className="tab-button"
-          style={{
-            backgroundColor: selectedTab === 'breakfast' ? 'var(--button-color)' : 'var(--menu-bg)',
-            color: "var(--menu-text)",
-          }}
-          onClick={() => handleTabClick('breakfast')}
-        >
-          Breakfast
-        </button>
-        <button
-          className="tab-button"
-          style={{
-            backgroundColor: selectedTab === 'lunch' ? 'var(--button-color)' : 'var(--menu-bg)',
-            color: "var(--menu-text)",
-          }}
-          onClick={() => handleTabClick('lunch')}
-        >
-          Lunch
-        </button>
+      <div style={{ marginBottom: '1rem', width: '100%' }}>
+        {!showCategoryFilterDropdown ? (
+          <div
+            onClick={() => setShowCategoryFilterDropdown(true)}
+            style={{
+              cursor: 'pointer',
+              padding: '10px 15px',
+              backgroundColor: 'var(--menu-bg)',
+              color: 'var(--menu-text)',
+              borderRadius: '8px',
+              border: '1px solid var(--button-color)',
+              display: 'flex',
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              userSelect: 'none',
+              width: '100%',
+            }}
+          >
+            <span>Filter by Category {selectedCategories.length > 0 ? `(${selectedCategories.length})` : ''}</span>
+            <span>▼</span>
+          </div>
+        ) : (
+          <div
+            style={{
+              backgroundColor: 'var(--menu-bg)',
+              border: '1px solid var(--button-color)',
+              borderRadius: '8px',
+              padding: '10px',
+              zIndex: 10,
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
+              gap: '10px',
+              placeItems: 'center',
+              maxHeight: '200px',
+              overflowY: 'auto',
+              width: '100%',
+            }}
+          >
+            {availableCategories.map(category => (
+              <button
+                key={category}
+                onClick={() => {
+                  setSelectedCategories(prev =>
+                    prev.includes(category)
+                      ? prev.filter(c => c !== category)
+                      : [...prev, category]
+                  );
+                }}
+                style={{
+                  backgroundColor: selectedCategories.includes(category) ? 'var(--button-color)' : 'var(--menu-bg)',
+                  color: 'var(--menu-text)',
+                  border: '1px solid var(--button-color)',
+                  borderRadius: '5px',
+                  padding: '8px 12px',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  width: '100%', // Ensure button takes full width of its grid cell
+                  textAlign: 'center', // Center the text within the button
+                }}
+              >
+                {category}
+              </button>
+            ))}
+            {availableCategories.length > 0 && (
+              <button
+                onClick={() => setSelectedCategories([])}
+                style={{
+                  backgroundColor: 'var(--error-color)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '5px',
+                  padding: '8px 12px',
+                  cursor: 'pointer',
+                  gridColumn: '1 / -1', // Span all columns
+                  marginTop: '10px',
+                }}
+              >
+                Clear Filters
+              </button>
+            )}
+            <button
+              onClick={() => setShowCategoryFilterDropdown(false)}
+              style={{
+                backgroundColor: 'var(--button-color)',
+                color: 'white',
+                border: 'none',
+                borderRadius: '5px',
+                padding: '8px 12px',
+                cursor: 'pointer',
+                gridColumn: '1 / -1', // Span all columns
+                marginTop: '10px',
+              }}
+            >
+              ▲ {/* Up arrow symbol */}
+            </button>
+          </div>
+        )}
       </div>
       <div className="grid-container">
         {filteredItems.map((item) => (

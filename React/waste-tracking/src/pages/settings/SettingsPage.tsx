@@ -129,7 +129,6 @@ type ItemTagsFieldProps = {
 };
 
 type ItemCategoriesFieldProps = {
-  itemId: string;
   label: string;
   fieldId: string;
   initialCategories: string[];
