@@ -52,6 +52,8 @@ export interface TotalBoxesCardHandle {
 
 // ✅ No longer accepts props, as it will now fetch its own data
 const TotalBoxesCard = forwardRef<TotalBoxesCardHandle>((_props, ref) => {
+  const [sortAsc, setSortAsc] = useState(true);
+  const [sortKey, setSortKey] = useState<"created_at" | "name">("created_at");
   const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 30));
   const [endDate, setEndDate] = useState<Date>(new Date());
   const [boxes, setBoxes] = useState<Box[]>([]); // ✅ New state for boxes
@@ -222,6 +224,36 @@ const TotalBoxesCard = forwardRef<TotalBoxesCardHandle>((_props, ref) => {
     return Array.from(names).sort();
   }, [boxesWithItems]);
 
+  const toggleSort = (key: "created_at" | "name") => {
+    if (sortKey === key) {
+      setSortAsc(!sortAsc);
+    } else {
+      setSortKey(key);
+      setSortAsc(true);
+    }
+  };
+
+  const sortedFinalBoxes = useMemo(() => {
+    return [...finalBoxes].sort((a, b) => {
+      const valA =
+        sortKey === "created_at"
+          ? new Date(a.created_at).getTime()
+          : a.name?.toLowerCase() || "";
+      const valB =
+        sortKey === "created_at"
+          ? new Date(b.created_at).getTime()
+          : b.name?.toLowerCase() || "";
+
+      if (typeof valA === "string" && typeof valB === "string") {
+        return sortAsc ? valA.localeCompare(valB) : valB.localeCompare(valA);
+      }
+
+      return sortAsc
+        ? (valA as number) - (valB as number)
+        : (valB as number) - (valA as number);
+    });
+  }, [finalBoxes, sortKey, sortAsc]);
+
   const generatePdf = async () => {
     if (tableRef.current) {
       if (tableRef.current) {
@@ -313,13 +345,31 @@ const TotalBoxesCard = forwardRef<TotalBoxesCardHandle>((_props, ref) => {
             <table className="items-table">
               <thead>
                 <tr>
-                  <th>Name</th>
-                  <th>Created At</th>
+                  <th>Name{" "}<button onClick={() => toggleSort("name")}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      fontSize: "0.8rem",
+                    }}
+                  >
+                    {sortKey === "name" ? (sortAsc ? "▲" : "▼") : "↕"}
+                  </button></th>
+                  <th>Created At{" "}<button onClick={() => toggleSort("created_at")}
+                    style={{
+                      background: "none",
+                      border: "none",
+                      cursor: "pointer",
+                      fontSize: "0.8rem",
+                    }}
+                  >
+                    {sortKey === "created_at" ? (sortAsc ? "▲" : "▼") : "↕"}
+                  </button></th>
                   <th>Items</th>
                 </tr>
               </thead>
               <tbody>
-                {finalBoxes.map((box) => (
+                {sortedFinalBoxes.map((box) => (
                   <tr key={box.id}>
                     <td>{box.name || "Unnamed Box"}</td>
                     <td>{new Date(box.created_at).toLocaleString()}</td>
