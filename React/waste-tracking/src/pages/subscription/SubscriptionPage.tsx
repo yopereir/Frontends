@@ -1,27 +1,13 @@
 import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useSession } from "../../context/SessionContext";
 import supabase from "../../supabase";
+import { loadStripe } from "@stripe/stripe-js";
+import { STRIPE_PUBLISHABLE_KEY } from "../../config";
 import "./SubscriptionPage.css";
-
-function getMonthsRemaining(endDate: string): number {
-  switch (endDate.toLowerCase()) {
-    case "1 month":
-      return 1;
-    case "3 months":
-      return 3;
-    case "6 months":
-      return 6;
-    case "1 year":
-      return 12;
-    default:
-      return 0;
-  }
-}
 
 const SubscriptionPage = () => {
   const { session } = useSession();
-  const navigate = useNavigate();
 
   const [status, setStatus] = useState("");
   const [supabaseError, setSupabaseError] = useState("");
@@ -41,7 +27,7 @@ const SubscriptionPage = () => {
 
   useEffect(() => {
     const fetchSubscriptionTypes = async () => {
-      const { data, error } = await supabase.from("subscription_type").select("*");
+      const { data } = await supabase.from("subscription_type").select("*");
       if (data) {
         setSubscriptionTypes(data.map((item: any) => item.name)); // adjust as needed
       } else {
@@ -96,13 +82,12 @@ const SubscriptionPage = () => {
 
     if (!validate()) return;
     console.log("Current userid: ", session?.user.id);
-    let userId = session?.user.id;
 
     try {
       setStatus("Creating account...");
 
       if (!session) {
-        const { data, error } = await supabase.auth.signUp({
+        const { error } = await supabase.auth.signUp({
           email: formValues.email,
           password: formValues.password,
           options: {
@@ -114,28 +99,27 @@ const SubscriptionPage = () => {
         });
 
         if (error) throw new Error(error.message);
-        userId = data?.user?.id;
       }
 
-      setStatus("Creating subscription...");
-      console.log("Creating subscription for user:", userId);
+      setStatus("Redirecting to checkout...");
 
-      // TODO: the below supabase query should ONLY be run on server-side AFTER stripe payment is successful
-      // This is a placeholder for the actual subscription creation logic and will fail due to RLS preventing users to add subscriptions
-      // Users should NOT be able to add or update subscriptions directly on client-side
-      const { error: subError } = await supabase.from("subscriptions").insert({
-        user_id: userId,
-        subscription_type: formValues.subscriptionType,
-        start_date: new Date().toISOString(),
-        end_date: new Date(new Date().setMonth(new Date().getMonth() + getMonthsRemaining(formValues.subscriptionPeriod))).toISOString(),
-        auto_renew: formValues.autoRenew,
+      const stripe = await loadStripe(STRIPE_PUBLISHABLE_KEY);
+
+      if (!stripe) {
+        throw new Error("Failed to load Stripe.");
+      }
+
+      const { error: stripeError } = await stripe.redirectToCheckout({
+        lineItems: [{ price: "price_1S6b4n2Ya66e7fDtLutPOFZb", quantity: 1 }],
+        mode: "subscription",
+        successUrl: `${window.location.origin}/`,
+        cancelUrl: `${window.location.origin}/subscription`,
       });
 
-      if (subError) throw new Error(subError.message);
+      if (stripeError) {
+        throw new Error(stripeError.message || "Stripe checkout failed.");
+      }
 
-      navigate("/thankyou", {
-        state: { message: "Subscription created successfully." },
-      });
     } catch (err: any) {
       setSupabaseError(err.message || "Unexpected error");
     } finally {
