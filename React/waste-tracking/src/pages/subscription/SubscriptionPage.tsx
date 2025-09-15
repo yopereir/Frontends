@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { useSession } from "../../context/SessionContext";
 import supabase from "../../supabase";
 import { loadStripe } from "@stripe/stripe-js";
-import { STRIPE_PUBLISHABLE_KEY } from "../../config";
+import { STRIPE_PUBLISHABLE_KEY, STRIPE_PRICE_ID_ALL_SUBSCRIPTION } from "../../config";
 import "./SubscriptionPage.css";
 
 const SubscriptionPage = () => {
@@ -110,7 +110,7 @@ const SubscriptionPage = () => {
       }
 
       const { error: stripeError } = await stripe.redirectToCheckout({
-        lineItems: [{ price: "price_1S6b4n2Ya66e7fDtLutPOFZb", quantity: 1 }],
+        lineItems: [{ price: STRIPE_PRICE_ID_ALL_SUBSCRIPTION, quantity: 1 }],
         mode: "subscription",
         successUrl: `${window.location.origin}/`,
         cancelUrl: `${window.location.origin}/subscription`,
