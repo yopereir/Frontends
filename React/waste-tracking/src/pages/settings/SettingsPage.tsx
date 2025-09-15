@@ -5,6 +5,7 @@ import supabase from "../../supabase";
 import './SettingsPage.css';
 import AddItemDialog, { unitOptions } from "../../components/AddItemDialog";
 import AddRestaurantDialog from "../../components/AddRestaurantDialog";
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "../../config";
 import { Link } from "react-router-dom";
 
 // Props for the EditableField component
@@ -349,7 +350,16 @@ const SettingsPage = () => {
     switch (fieldName) {
       case 'endDate': {({ error } = await supabase.from('subscriptions').update({endDate: newValue})); break; }
       case 'plan': {({ error } = await supabase.from('subscriptions').update({plan: newValue})); break; }
-      case 'status': {({ error } = await supabase.from('subscriptions').update({status: newValue})); break; }
+      case 'autorenew': {await fetch(`${SUPABASE_URL}/functions/v1/subscription-data`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+          },
+          body: JSON.stringify({ email: session?.user.email, autoRenew: false })
+        });
+        break;
+      }
       default:
         throw new Error(`Unknown subscription setting: ${fieldName}`);
     }
@@ -478,7 +488,7 @@ const SettingsPage = () => {
   const [subscriptionSettings, setSubscriptionSettings] = useState({
     id: "",
     endDate: "00-00-00",
-    status: "ended",
+    autorenew: false,
     plan: "all",
   });
   const [restaurantSettings, setRestaurantsSettings] = useState<any[]>([]);
@@ -553,8 +563,10 @@ const SettingsPage = () => {
       setUserSettings({ email: session.user.email || '', username: session.user.user_metadata.username || ''});
 
       //Fetch subscription settings
+      const stripeSubscriptionData = await (await fetch(`${SUPABASE_URL}/functions/v1/subscription-data?email=${session?.user.email||''}`)).json();
       const { data: subscriptionData } = await supabase.from('subscriptions').select('*').single();
-      if (subscriptionData) setSubscriptionSettings({ id: subscriptionData.id, endDate: subscriptionData.end_date, status: subscriptionData.status, plan: subscriptionData.plan });
+      console.log("Sub data: ", subscriptionData);
+      if (subscriptionData) setSubscriptionSettings({ id: subscriptionData.id, endDate: stripeSubscriptionData.current_period_end, autorenew: stripeSubscriptionData.auto_renew, plan: stripeSubscriptionData.name });
 
       //Fetch restaurant settings
       const { data: restaurantsData } = await supabase.from('restaurants').select('*');
@@ -667,12 +679,18 @@ const SettingsPage = () => {
               initialValue={subscriptionSettings.plan}
               onSave={handleSaveSubscriptionSetting('plan')}
             />
-            <EditableField
-              fieldId="status"
-              label="Subscription Status"
-              initialValue={subscriptionSettings.status}
-              onSave={handleSaveSubscriptionSetting('status')}
-            />
+
+            <div style={{ marginTop: '0.5rem' }}>
+              <label htmlFor={`autorenew`} className="checkbox-label">
+                <input
+                  type="checkbox"
+                  id={`autorenew`}
+                  checked={subscriptionSettings.autorenew}
+                  onChange={()=>handleSaveSubscriptionSetting('autorenew')}
+                />
+                Auto Renew
+              </label>
+            </div>
             <Link to="/subscription">Update Subscription</Link>
           </section>
 
