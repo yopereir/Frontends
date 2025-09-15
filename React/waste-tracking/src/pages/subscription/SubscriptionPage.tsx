@@ -114,6 +114,7 @@ const SubscriptionPage = () => {
         mode: "subscription",
         successUrl: `${window.location.origin}/`,
         cancelUrl: `${window.location.origin}/subscription`,
+        customerEmail: session?.user.email,
       });
 
       if (stripeError) {
