@@ -699,98 +699,100 @@ const SettingsPage = () => {
           </section>
 
           {/* Restaurant Settings */}
-          <section className="settings-category">
-            <h2>Restaurant Settings</h2>
-            { restaurantSettings.map((restaurantData, index) => (
-              <div key={restaurantData.id} className="restaurant-setting"> {/* Use unique ID for key */}
-                <h3>Restaurant {index + 1}</h3>
-                <EditableField
-                  fieldId={`name-${restaurantData.id}`}
-                  label="Name"
-                  initialValue={restaurantData.name}
-                  onSave={handleSaveRestaurantSetting('name', restaurantData.id)}
-                />
-                <EditableField
-                  fieldId={`location-${restaurantData.id}`}
-                  label="Location"
-                  initialValue={restaurantData.location}
-                  onSave={handleSaveRestaurantSetting('location', restaurantData.id)}
-                />
-                <EditableField
-                  fieldId={`subscription-${restaurantData.id}`}
-                  label="Subscription"
-                  initialValue={restaurantData.subscription}
-                  onSave={handleSaveRestaurantSetting('subscription', restaurantData.id)}
-                />
-                <h2></h2>
-                <h2>Item Settings</h2>
-                { itemSettings.map((itemData) => (
-                  itemData.restaurant_id === restaurantData.id &&
-                  <div key={itemData.id} className="item-setting"> {/* Use unique ID for key */}
-                    <EditableField
-                      fieldId={`item-name-${itemData.id}`}
-                      label="Item Name"
-                      initialValue={itemData.name}
-                      onSave={handleSaveItemSetting('name', itemData.id)}
-                    />
-                    <EditableField
-                      fieldId={`item-restaurant-${itemData.id}`}
-                      label="Restaurant ID"
-                      initialValue={itemData.restaurant_id}
-                      onSave={handleSaveItemSetting('restaurant_id', itemData.id)}
-                    />
-                    <EditableField
-                      fieldId={`item-unit-${itemData.id}`}
-                      label="Unit"
-                      initialValue={itemData.unit}
-                      onSave={handleSaveItemSetting('unit', itemData.id)}
-                      fieldType="select" // Specify fieldType as 'select'
-                      selectOptions={unitOptions} // Pass the unitOptions to the EditableField
-                    />
-                    <EditableField
-                      fieldId={`item-holdingtime-${itemData.id}`}
-                      label="Holdingtime"
-                      initialValue={itemData.holdMinutes}
-                      onSave={handleSaveItemSetting('holdingtime', itemData.id)}
-                    />
-                    <EditableField
-                      fieldId={`item-imageUrl-${itemData.id}`}
-                      label="Image URL"
-                      initialValue={itemData.imageUrl}
-                      onSave={handleSaveItemSetting('imageUrl', itemData.id)}
-                    />
-                    <ItemCategoriesField
-                      fieldId={`item-categories-${itemData.id}`}
-                      label="Categories"
-                      initialCategories={itemData.categories}
-                      onSave={(newCategories) => handleSaveItemSetting('categories', itemData.id)(newCategories)}
-                    />
-                    <ItemTagsField
-                      itemId={itemData.id}
-                      initialTags={itemData.tags}
-                      onSave={(newTags) => handleSaveItemSetting('tags', itemData.id)(newTags as any)} // Cast to any for now, will fix handleSaveItemSetting next
-                    />
-                    
-                    <button
-                      onClick={() => handleDeleteItem(itemData.id)}
-                      className="delete-button" // Add a class for styling
-                    >
-                      Delete Item
-                    </button>
-                    {itemDeleteErrors[itemData.id] && (
-                      <p style={{ color: "var(--error-color)", marginTop: "0.25rem", textAlign: 'center', width: '100%' }}>
-                        {itemDeleteErrors[itemData.id]}
-                      </p>
-                    )}
-                    <h2></h2>
-                  </div>
-                ))}
-                <button onClick={() => {setActiveRestaurantId(restaurantData.id);setAddItemDialogOpen(true)}}>Add New Item</button>
-                <h2></h2>
-              </div>
-            ))}
-            <button onClick={() => {setAddRestaurantDialogOpen(true)}}>Add New Restaurant</button>
-          </section>
+          {subscriptionSettings.id && (
+            <section className="settings-category">
+              <h2>Restaurant Settings</h2>
+              { restaurantSettings.map((restaurantData, index) => (
+                <div key={restaurantData.id} className="restaurant-setting"> {/* Use unique ID for key */}
+                  <h3>Restaurant {index + 1}</h3>
+                  <EditableField
+                    fieldId={`name-${restaurantData.id}`}
+                    label="Name"
+                    initialValue={restaurantData.name}
+                    onSave={handleSaveRestaurantSetting('name', restaurantData.id)}
+                  />
+                  <EditableField
+                    fieldId={`location-${restaurantData.id}`}
+                    label="Location"
+                    initialValue={restaurantData.location}
+                    onSave={handleSaveRestaurantSetting('location', restaurantData.id)}
+                  />
+                  <EditableField
+                    fieldId={`subscription-${restaurantData.id}`}
+                    label="Subscription"
+                    initialValue={restaurantData.subscription}
+                    onSave={handleSaveRestaurantSetting('subscription', restaurantData.id)}
+                  />
+                  <h2></h2>
+                  <h2>Item Settings</h2>
+                  { itemSettings.map((itemData) => (
+                    itemData.restaurant_id === restaurantData.id &&
+                    <div key={itemData.id} className="item-setting"> {/* Use unique ID for key */}
+                      <EditableField
+                        fieldId={`item-name-${itemData.id}`}
+                        label="Item Name"
+                        initialValue={itemData.name}
+                        onSave={handleSaveItemSetting('name', itemData.id)}
+                      />
+                      <EditableField
+                        fieldId={`item-restaurant-${itemData.id}`}
+                        label="Restaurant ID"
+                        initialValue={itemData.restaurant_id}
+                        onSave={handleSaveItemSetting('restaurant_id', itemData.id)}
+                      />
+                      <EditableField
+                        fieldId={`item-unit-${itemData.id}`}
+                        label="Unit"
+                        initialValue={itemData.unit}
+                        onSave={handleSaveItemSetting('unit', itemData.id)}
+                        fieldType="select" // Specify fieldType as 'select'
+                        selectOptions={unitOptions} // Pass the unitOptions to the EditableField
+                      />
+                      <EditableField
+                        fieldId={`item-holdingtime-${itemData.id}`}
+                        label="Holdingtime"
+                        initialValue={itemData.holdMinutes}
+                        onSave={handleSaveItemSetting('holdingtime', itemData.id)}
+                      />
+                      <EditableField
+                        fieldId={`item-imageUrl-${itemData.id}`}
+                        label="Image URL"
+                        initialValue={itemData.imageUrl}
+                        onSave={handleSaveItemSetting('imageUrl', itemData.id)}
+                      />
+                      <ItemCategoriesField
+                        fieldId={`item-categories-${itemData.id}`}
+                        label="Categories"
+                        initialCategories={itemData.categories}
+                        onSave={(newCategories) => handleSaveItemSetting('categories', itemData.id)(newCategories)}
+                      />
+                      <ItemTagsField
+                        itemId={itemData.id}
+                        initialTags={itemData.tags}
+                        onSave={(newTags) => handleSaveItemSetting('tags', itemData.id)(newTags as any)} // Cast to any for now, will fix handleSaveItemSetting next
+                      />
+                      
+                      <button
+                        onClick={() => handleDeleteItem(itemData.id)}
+                        className="delete-button" // Add a class for styling
+                      >
+                        Delete Item
+                      </button>
+                      {itemDeleteErrors[itemData.id] && (
+                        <p style={{ color: "var(--error-color)", marginTop: "0.25rem", textAlign: 'center', width: '100%' }}>
+                          {itemDeleteErrors[itemData.id]}
+                        </p>
+                      )}
+                      <h2></h2>
+                    </div>
+                  ))}
+                  <button onClick={() => {setActiveRestaurantId(restaurantData.id);setAddItemDialogOpen(true)}}>Add New Item</button>
+                  <h2></h2>
+                </div>
+              ))}
+              <button onClick={() => {setAddRestaurantDialogOpen(true)}}>Add New Restaurant</button>
+            </section>
+          )}
         </div>
       </main>
     </div>
