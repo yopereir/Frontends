@@ -697,7 +697,7 @@ const SettingsPage = () => {
                 </label>
               </div>
             </>)}
-            <Link to="/subscription">Update Subscription</Link>
+            <Link to="/subscription">Change Subscription</Link>
           </section>
 
           {/* Restaurant Settings */}

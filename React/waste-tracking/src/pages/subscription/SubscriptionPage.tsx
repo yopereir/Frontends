@@ -23,8 +23,7 @@ const SubscriptionPage = () => {
         {React.createElement('stripe-pricing-table', {
           'pricing-table-id': document.documentElement.classList.contains('dark') ? STRIPE_PRICING_TABLE_DARKTHEME : STRIPE_PRICING_TABLE_LIGHTTHEME,
           'publishable-key': STRIPE_PUBLISHABLE_KEY,
-          'customer-email': session?.user?.email || "",
-          'checkout-redirect-url': '/thankyou'
+          'customer-email': session?.user?.email || ""
         })}
       </form>
     </main>
