@@ -16,9 +16,10 @@ type EditableFieldProps = {
   fieldType?: 'text' | 'email' | 'password' | 'number' | 'select'; // Add 'select' type
   fieldId: string; // For label htmlFor
   selectOptions?: string[]; // New prop for select options
+  isEditable?: boolean; // New prop to control editability
 };
 
-const EditableField: React.FC<EditableFieldProps> = ({ label, initialValue, onSave, fieldType = 'text', fieldId, selectOptions }) => {
+const EditableField: React.FC<EditableFieldProps> = ({ label, initialValue, onSave, fieldType = 'text', fieldId, selectOptions, isEditable = true }) => {
   // Ensure initialValue is treated consistently as a string for direct comparison
   // This helps when initialValue might be a number like 0, and input is "0"
   const [value, setValue] = useState(String(initialValue));
@@ -91,7 +92,7 @@ const EditableField: React.FC<EditableFieldProps> = ({ label, initialValue, onSa
               value={value}
               onChange={handleChange}
               className={`unit-select ${isDirty ? 'input-dirty' : ''}`}
-              disabled={isSaving}
+              disabled={isSaving || !isEditable}
             >
               {currentSelectOptions.map((option) => (
                 <option key={option} value={option}>
@@ -106,7 +107,7 @@ const EditableField: React.FC<EditableFieldProps> = ({ label, initialValue, onSa
               value={value}
               onChange={handleChange}
               className={isDirty ? 'input-dirty' : ''}
-              disabled={isSaving}
+              disabled={isSaving || !isEditable}
             />
           )}
           {isDirty && (
@@ -349,8 +350,6 @@ const SettingsPage = () => {
     }
     let error;
     switch (fieldName) {
-      case 'endDate': {({ error } = await supabase.from('subscriptions').update({endDate: newValue})); break; }
-      case 'plan': {({ error } = await supabase.from('subscriptions').update({plan: newValue})); break; }
       case 'autorenew': {
         setIsAutoRenewSaving(true); // Disable checkbox
         try {
@@ -369,10 +368,6 @@ const SettingsPage = () => {
       }
       default:
         throw new Error(`Unknown subscription setting: ${fieldName}`);
-    }
-    if (error) {
-      console.error(`Error saving ${fieldName}:`, error.message);
-      throw new Error(`Failed to update ${fieldName}. `+error.message);
     }
     console.log(`${fieldName} updated successfully.`);
     fetchSettings(); // Re-fetch settings to update the UI
@@ -685,12 +680,14 @@ const SettingsPage = () => {
                 label="Subscription End Date"
                 initialValue={subscriptionSettings.endDate}
                 onSave={handleSaveSubscriptionSetting('endDate')}
+                isEditable={false}
               />
               <EditableField
                 fieldId="plan"
                 label="Subscription plan"
                 initialValue={subscriptionSettings.plan}
                 onSave={handleSaveSubscriptionSetting('plan')}
+                isEditable={false}
               />
 
               <div style={{ marginTop: '0.5rem' }}>
