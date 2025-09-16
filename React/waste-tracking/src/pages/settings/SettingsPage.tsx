@@ -563,62 +563,66 @@ const SettingsPage = () => {
       setUserSettings({ email: session.user.email || '', username: session.user.user_metadata.username || ''});
 
       //Fetch subscription settings
-      const stripeSubscriptionData = await (await fetch(`${SUPABASE_URL}/functions/v1/subscription-data?email=${session?.user.email||''}`)).json();
       const { data: subscriptionData } = await supabase.from('subscriptions').select('*').single();
-      console.log("Sub data: ", subscriptionData);
-      if (subscriptionData) setSubscriptionSettings({ id: subscriptionData.id, endDate: stripeSubscriptionData.current_period_end, autorenew: stripeSubscriptionData.auto_renew, plan: stripeSubscriptionData.name });
+      // Check if user is subscriber
+      if (subscriptionData) {
+        // Get subscription data
+        const stripeSubscriptionData = await (await fetch(`${SUPABASE_URL}/functions/v1/subscription-data?email=${session?.user.email||''}`)).json();
+        setSubscriptionSettings({ id: subscriptionData.id, endDate: stripeSubscriptionData.current_period_end, autorenew: stripeSubscriptionData.auto_renew, plan: stripeSubscriptionData.name });
 
-      //Fetch restaurant settings
-      const { data: restaurantsData } = await supabase.from('restaurants').select('*');
-      if (restaurantsData) {
-        setRestaurantsSettings(
-          restaurantsData.map((restaurantData) => ({
-            id: restaurantData.id,
-            name: restaurantData.name,
-            location: restaurantData.location,
-            subscription: restaurantData.subscription_id
-          }))
-        );
-      }
-
-      //Fetch item settings
-      const { data: itemsData } = await supabase.from('items').select('*');
-      const initialItems: ItemSetting[] = itemsData ? itemsData.map((itemData) => ({
-        id: itemData.id,
-        name: itemData.name,
-        holdMinutes: itemData.metadata.holdMinutes !== null ? String(itemData.metadata.holdMinutes) : "",
-        restaurant_id: itemData.restaurant_id,
-        unit: itemData.metadata.unit,
-        imageUrl: itemData.metadata.imageUrl,
-        tags: Array.isArray(itemData.metadata?.tags) ? itemData.metadata.tags : [],
-        categories: Array.isArray(itemData.metadata?.categories) ? itemData.metadata.categories : []
-      })) : [];
-      
-      let currentAccumulatedItems = [...initialItems]; // Use a mutable local array
-
-      // After fetching both restaurants and initial items, check for restaurants with 0 items
-      if (restaurantsData) {
-        const processedRestaurantIds = new Set<string>(); // Track processed restaurant IDs
-        for (const restaurantData of restaurantsData) {
-          if (processedRestaurantIds.has(restaurantData.id)) {
-            console.log(`Skipping duplicate restaurant ID: ${restaurantData.id}`);
-            continue; // Skip if this restaurant ID has already been processed
-          }
-
-          // Filter against the current local accumulated items
-          const itemsForRestaurant = currentAccumulatedItems.filter(item => item.restaurant_id === restaurantData.id);
-          if (itemsForRestaurant.length === 0) {
-            console.log(`Restaurant ${restaurantData.id} has 0 items. Attempting to fetch franchise items.`);
-            const franchiseItems = await getFranchiseItems(restaurantData.id);
-            if (franchiseItems.length > 0) {
-              // Update the local accumulated items immediately
-              currentAccumulatedItems = [...currentAccumulatedItems, ...franchiseItems];
-            }
-          }
-          processedRestaurantIds.add(restaurantData.id); // Mark this restaurant ID as processed
+        //Fetch restaurant settings
+        const { data: restaurantsData } = await supabase.from('restaurants').select('*');
+        if (restaurantsData) {
+          setRestaurantsSettings(
+            restaurantsData.map((restaurantData) => ({
+              id: restaurantData.id,
+              name: restaurantData.name,
+              location: restaurantData.location,
+              subscription: restaurantData.subscription_id
+            }))
+          );
         }
+
+        //Fetch item settings
+        const { data: itemsData } = await supabase.from('items').select('*');
+        const initialItems: ItemSetting[] = itemsData ? itemsData.map((itemData) => ({
+          id: itemData.id,
+          name: itemData.name,
+          holdMinutes: itemData.metadata.holdMinutes !== null ? String(itemData.metadata.holdMinutes) : "",
+          restaurant_id: itemData.restaurant_id,
+          unit: itemData.metadata.unit,
+          imageUrl: itemData.metadata.imageUrl,
+          tags: Array.isArray(itemData.metadata?.tags) ? itemData.metadata.tags : [],
+          categories: Array.isArray(itemData.metadata?.categories) ? itemData.metadata.categories : []
+        })) : [];
+        
+        let currentAccumulatedItems = [...initialItems]; // Use a mutable local array
+
+        // After fetching both restaurants and initial items, check for restaurants with 0 items
+        if (restaurantsData) {
+          const processedRestaurantIds = new Set<string>(); // Track processed restaurant IDs
+          for (const restaurantData of restaurantsData) {
+            if (processedRestaurantIds.has(restaurantData.id)) {
+              console.log(`Skipping duplicate restaurant ID: ${restaurantData.id}`);
+              continue; // Skip if this restaurant ID has already been processed
+            }
+
+            // Filter against the current local accumulated items
+            const itemsForRestaurant = currentAccumulatedItems.filter(item => item.restaurant_id === restaurantData.id);
+            if (itemsForRestaurant.length === 0) {
+              console.log(`Restaurant ${restaurantData.id} has 0 items. Attempting to fetch franchise items.`);
+              const franchiseItems = await getFranchiseItems(restaurantData.id);
+              if (franchiseItems.length > 0) {
+                // Update the local accumulated items immediately
+                currentAccumulatedItems = [...currentAccumulatedItems, ...franchiseItems];
+              }
+            }
+            processedRestaurantIds.add(restaurantData.id); // Mark this restaurant ID as processed
+          }
+        }
+        setItemsSettings(currentAccumulatedItems); // Update state once after all processing
+
       }
-      setItemsSettings(currentAccumulatedItems); // Update state once after all processing
     }
   }, [session, getFranchiseItems]);
 
