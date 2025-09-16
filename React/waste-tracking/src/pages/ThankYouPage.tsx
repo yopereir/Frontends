@@ -1,20 +1,25 @@
 // ThankYouPage.tsx
-import { useLocation, Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
-interface LocationState {
-  message?: string;
-}
+const messageDigest = {
+  "new-subscriber":"Thank you for subscribing!",
+  "renew-subscriber":"Thank you for renewing your subscription!",
+  "":"You reached our thank you page for no reason at all :P",
+};
+
+type MessageKey = keyof typeof messageDigest;
 
 const ThankYouPage: React.FC = () => {
-  const location = useLocation();
-  const state = location.state as LocationState;
+  const [searchParams] = useSearchParams();
+  const messageKey = (searchParams.get("message") || "") as MessageKey;
+  const message = messageDigest[messageKey];
 
   return (
     <main>
       <section className="main-container">
         <h1 className="header-text">Thank You</h1>
         <div style={{ marginTop: "1rem", fontSize: "1rem" }}>
-          {state?.message ? <p>{state.message}</p> : <p>Your action was successful.</p>}
+          {message ? <p>{message}</p> : <p>Your action was successful.</p>}
         </div>
         <Link to="/" style={{ marginTop: "2rem", display: "inline-block" }}>
           Go back to Home
