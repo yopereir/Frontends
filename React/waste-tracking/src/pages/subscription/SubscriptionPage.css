@@ -6,7 +6,6 @@
   justify-content: flex-start; /* Align form elements to the top */
   overflow-y: auto;          /* Allow scrolling on smaller screens */
   gap: 0.25rem;                /* Add small, consistent spacing between elements */
-  max-width: 750px; /* Smaller width for the container */
   width: 90%; /* Ensure it's responsive */
 }
 

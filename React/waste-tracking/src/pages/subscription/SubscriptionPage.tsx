@@ -113,7 +113,7 @@ const SubscriptionPage = () => {
       <form className="main-container" noValidate>
         <h1 className="header-text">Subscription</h1>
         {React.createElement('stripe-pricing-table', {
-          'pricing-table-id': STRIPE_PRICING_TABLE_LIGHTTHEME,
+          'pricing-table-id': theme === "dark" ? STRIPE_PRICING_TABLE_DARKTHEME: STRIPE_PRICING_TABLE_LIGHTTHEME,
           'publishable-key': STRIPE_PUBLISHABLE_KEY,
           'customer-email': session?.user?.email || "",
           ...(formValues.autoRenew && { 'auto-renew': "true" }),
