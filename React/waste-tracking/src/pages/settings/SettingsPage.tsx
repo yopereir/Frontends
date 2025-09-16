@@ -340,7 +340,7 @@ const SettingsPage = () => {
     console.log(`${fieldName} updated successfully.`);
   };
 
-  const handleSaveSubscriptionSetting = (fieldName: string) => async (newValue: string | number) => {
+  const handleSaveSubscriptionSetting = (fieldName: string) => async (newValue: string | number | boolean) => {
     console.log(`Attempting to save Subscription Setting - ${fieldName}: ${newValue}`);
     if (!session?.user) {
       console.error("User not authenticated");
@@ -356,7 +356,7 @@ const SettingsPage = () => {
             "Content-Type": "application/json",
             Authorization: `Bearer ${SUPABASE_ANON_KEY}`
           },
-          body: JSON.stringify({ email: session?.user.email, autoRenew: false })
+          body: JSON.stringify({ email: session?.user.email, autoRenew: newValue })
         });
         break;
       }
@@ -368,6 +368,7 @@ const SettingsPage = () => {
       throw new Error(`Failed to update ${fieldName}. `+error.message);
     }
     console.log(`${fieldName} updated successfully.`);
+    fetchSettings(); // Re-fetch settings to update the UI
   };
 
   const handleSaveItemSetting = (fieldName: string, itemId: string) => async (newValue: string | number | string[]) => {
@@ -691,7 +692,7 @@ const SettingsPage = () => {
                     type="checkbox"
                     id={`autorenew`}
                     checked={subscriptionSettings.autorenew}
-                    onChange={()=>handleSaveSubscriptionSetting('autorenew')}
+                    onChange={(e) => handleSaveSubscriptionSetting('autorenew')(e.target.checked)}
                   />
                   Auto Renew
                 </label>
