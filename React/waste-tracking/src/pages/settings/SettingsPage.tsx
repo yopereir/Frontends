@@ -318,6 +318,7 @@ const SettingsPage = () => {
   const [isAddRestaurantDialogOpen, setAddRestaurantDialogOpen] = useState(false);
   const [activeRestaurantId, setActiveRestaurantId] = useState<string>("");
   const [itemDeleteErrors, setItemDeleteErrors] = useState<{[key: string]: string | null}>({});
+  const [isAutoRenewSaving, setIsAutoRenewSaving] = useState(false); // New state for auto-renew checkbox
 
   const handleSaveUserSetting = (fieldName: string) => async (newValue: string | number) => {
     console.log(`Attempting to save User Setting - ${fieldName}: ${newValue}`);
@@ -350,14 +351,20 @@ const SettingsPage = () => {
     switch (fieldName) {
       case 'endDate': {({ error } = await supabase.from('subscriptions').update({endDate: newValue})); break; }
       case 'plan': {({ error } = await supabase.from('subscriptions').update({plan: newValue})); break; }
-      case 'autorenew': {await fetch(`${SUPABASE_URL}/functions/v1/subscription-data`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${SUPABASE_ANON_KEY}`
-          },
-          body: JSON.stringify({ email: session?.user.email, autoRenew: newValue })
-        });
+      case 'autorenew': {
+        setIsAutoRenewSaving(true); // Disable checkbox
+        try {
+          await fetch(`${SUPABASE_URL}/functions/v1/subscription-data`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+            },
+            body: JSON.stringify({ email: session?.user.email, autoRenew: newValue })
+          });
+        } finally {
+          setIsAutoRenewSaving(false); // Re-enable checkbox
+        }
         break;
       }
       default:
@@ -693,6 +700,7 @@ const SettingsPage = () => {
                     id={`autorenew`}
                     checked={subscriptionSettings.autorenew}
                     onChange={(e) => handleSaveSubscriptionSetting('autorenew')(e.target.checked)}
+                    disabled={isAutoRenewSaving} // Disable while saving
                   />
                   Auto Renew
                 </label>
