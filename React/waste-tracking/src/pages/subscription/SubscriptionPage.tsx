@@ -30,13 +30,13 @@ const SubscriptionPage = () => {
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [subscriptionTypes, setSubscriptionTypes] = useState<{ name: string; description: string }[]>([]);
+  const [subscriptionTypes, setSubscriptionTypes] = useState<{ name: string; description: string; prices: any }[]>([]);
 
   useEffect(() => {
     const fetchSubscriptionTypes = async () => {
-      const { data } = await supabase.from("subscription_type").select("name, description");
+      const { data } = await supabase.from("subscription_type").select("name, description, prices");
       if (data) {
-        setSubscriptionTypes(data.map((item: any) => ({ name: item.name, description: item.description })));
+        setSubscriptionTypes(data.map((item: any) => ({ name: item.name, description: item.description, prices: item.prices })));
       } else {
         setSupabaseError("Failed to load subscription types.");
       }
@@ -152,9 +152,11 @@ const SubscriptionPage = () => {
 
   const isLoading = status !== "";
   console.log(subscriptionTypes);
-  const selectedSubscriptionTypeDescription = subscriptionTypes.find(
+  const selectedSubscriptionType = subscriptionTypes.find(
     (type) => type.name === formValues.subscriptionType
-  )?.description || "";
+  );
+  const selectedSubscriptionTypeDescription = selectedSubscriptionType?.description || "";
+  const selectedPrice = selectedSubscriptionType?.prices?.[formValues.subscriptionPeriod.toLowerCase()] || "N/A";
 
   return (
     <main>
@@ -236,6 +238,9 @@ const SubscriptionPage = () => {
           {errors.subscriptionPeriod && <p style={{ color: "red" }}>{errors.subscriptionPeriod}</p>}
         </div>
 
+        {selectedPrice !== "N/A" && (
+          <div style={{ textAlign: "center", marginTop: "1rem" }}>Price: {selectedPrice}</div>
+        )}
         <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
           <input
             type="checkbox"
