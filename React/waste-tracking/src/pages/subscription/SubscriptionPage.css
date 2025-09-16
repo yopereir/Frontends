@@ -6,8 +6,35 @@
   justify-content: flex-start; /* Align form elements to the top */
   overflow-y: auto;          /* Allow scrolling on smaller screens */
   gap: 0.25rem;                /* Add small, consistent spacing between elements */
+  max-width: 750px; /* Smaller width for the container */
+  width: 90%; /* Ensure it's responsive */
 }
 
+/* Styles for the groups of subscription options (type and period) */
+.subscription-options-group {
+  width: 100%;
+  margin-bottom: 1.5rem; /* Space between different option groups */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.subscription-options-group h3 {
+  font-size: 1.2em;
+  color: var(--header-color);
+  margin-bottom: 0.75rem;
+  text-align: center;
+  width: 100%;
+}
+
+.subscription-description {
+  font-size: 0.9em;
+  color: var(--menu-text);
+  text-align: center;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0 1rem;
+}
 
 /* ----- Form Element Styling ----- */
 
@@ -24,35 +51,6 @@
 /* Remove top margin from the first heading to reduce excessive space */
 .main-container h2:first-of-type {
   margin-top: 0.5rem;
-}
-
-/*
-  Styles for <select> dropdowns to match the look of <input> fields
-  from index.css.
-*/
-.main-container select {
-  padding: 1rem;
-  border-radius: 4px;
-  outline: none;
-  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
-  background-color: var(--input-bg, #3a3a3a);
-  border: 1px solid #4a4a4a;
-  font-size: 1rem;
-  color: var(--input-color, white);
-  margin-top: 7px;
-  width: 100%;
-  height: 50px; /* Consistent height with inputs */
-  cursor: pointer;
-
-  /* Remove default browser arrow and add a custom SVG arrow */
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23cccccc' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M2 5l6 6 6-6'/%3e%3c/svg%3e");
-  background-repeat: no-repeat;
-  background-position: right 1rem center;
-  background-size: 1em;
-  padding-right: 3rem; /* Make space for the custom arrow */
 }
 
 /*
@@ -75,7 +73,7 @@
   background: none;
   border: none;
   height: auto;
-  justify-content: flex-start;
+  justify-content: center;
 }
 
 /* Styles the checkbox input itself */
@@ -98,7 +96,7 @@
   font-size: 0.875rem;
   margin-top: 4px;
   margin-bottom: 4px;
-  width: 300px;
+  width: 100%; /* Ensure error messages span full width */
   text-align: left;
 }
 
@@ -117,8 +115,76 @@
 /* Add a bit more space above the final submit button for better separation */
 .main-container button[type="submit"] {
   margin-top: 1.5rem; /* More space above the submit button */
-  width: 100%; /* Allow it to fill the container */
+  width: auto; /* Allow width to be based on content */
+  max-width: 200px; /* Prevent stretching */
+  margin-left: auto; /* Center the button */
+  margin-right: auto; /* Center the button */
   display: flex; /* Center text inside the button */
   justify-content: center;
   align-items: center;
+}
+
+/* --- View Toggle Buttons Container --- */
+.view-toggle-buttons {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  width: 100%; /* Ensure it takes full width of its parent */
+}
+
+/* --- Individual Toggle Buttons --- */
+.toggle-button {
+  flex: 1; /* Distribute space equally */
+  padding: 0.75rem 1rem;
+  font-size: 1rem;
+  font-weight: 500;
+  border: 1px solid var(--border-color); /* A consistent border for all buttons */
+  background-color: var(--menu-bg); /* Default background */
+  color: var(--menu-text); /* Default text color */
+  cursor: pointer;
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+  white-space: nowrap;
+  border-radius: 0;
+}
+
+/* Remove left border for subsequent buttons to create a connected look */
+.toggle-button + .toggle-button {
+  border-left: none;
+}
+
+/* Style for the active (selected) button */
+.toggle-button.active {
+  background-color: var(--button-color); /* The green color you want */
+  color: white; /* Text color for the active button */
+  font-weight: 600;
+  border-color: var(--button-color); /* Make the border color match the background */
+  z-index: 1;
+  position: relative;
+}
+
+/* Ensure the first and last buttons have rounded corners, but only on the outside */
+.toggle-button:first-child {
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+
+.toggle-button:last-child {
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+
+/* Adjust for hover state */
+.toggle-button:hover {
+  background-color: var(--button-hover-color); /* Use the hover color from global vars */
+  color: white; /* Keep text color consistent on hover for non-active */
+}
+
+/* Ensure active button hover doesn't change its color */
+.toggle-button.active:hover {
+  background-color: var(--button-color); /* Stays green */
+  color: white; /* Stays white */
+  cursor: default; /* Optional: indicates it's already selected */
 }

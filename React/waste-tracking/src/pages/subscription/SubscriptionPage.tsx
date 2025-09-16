@@ -23,13 +23,13 @@ const SubscriptionPage = () => {
   });
 
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [subscriptionTypes, setSubscriptionTypes] = useState<string[]>([]);
+  const [subscriptionTypes, setSubscriptionTypes] = useState<{ name: string; description: string }[]>([]);
 
   useEffect(() => {
     const fetchSubscriptionTypes = async () => {
-      const { data } = await supabase.from("subscription_type").select("*");
+      const { data } = await supabase.from("subscription_type").select("name, description");
       if (data) {
-        setSubscriptionTypes(data.map((item: any) => item.name)); // adjust as needed
+        setSubscriptionTypes(data.map((item: any) => ({ name: item.name, description: item.description })));
       } else {
         setSupabaseError("Failed to load subscription types.");
       }
@@ -37,19 +37,10 @@ const SubscriptionPage = () => {
     fetchSubscriptionTypes();
   }, []);
 
-  const handleInputChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
-  ) => {
-    const target = e.target as HTMLInputElement | HTMLSelectElement;
-    const { name, value, type } = target;
-
-    const actualValue = type === "checkbox" && "checked" in target
-      ? (target as HTMLInputElement).checked
-      : value;
-
+  const handleButtonClick = (name: string, value: string) => {
     setFormValues((prev) => ({
       ...prev,
-      [name]: actualValue,
+      [name]: value,
     }));
 
     if (errors[name]) {
@@ -59,6 +50,14 @@ const SubscriptionPage = () => {
     if (supabaseError) {
       setSupabaseError("");
     }
+  };
+
+  const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, checked } = e.target;
+    setFormValues((prev) => ({
+      ...prev,
+      [name]: checked,
+    }));
   };
 
   const validate = () => {
@@ -129,6 +128,10 @@ const SubscriptionPage = () => {
   };
 
   const isLoading = status !== "";
+  console.log(subscriptionTypes);
+  const selectedSubscriptionTypeDescription = subscriptionTypes.find(
+    (type) => type.name === formValues.subscriptionType
+  )?.description || "";
 
   return (
     <main>
@@ -169,41 +172,53 @@ const SubscriptionPage = () => {
           </>
         )}
 
-        <select
-          name="subscriptionType"
-          onChange={handleInputChange}
-          value={formValues.subscriptionType}
-          disabled={isLoading}
-          aria-invalid={!!errors.subscriptionType}
-        >
-          <option value="">Select Subscription Type</option>
-          {subscriptionTypes.map((type) => (
-            <option key={type} value={type}>{type}</option>
-          ))}
-        </select>
-        {errors.subscriptionType && <p style={{ color: "red" }}>{errors.subscriptionType}</p>}
+        <div className="subscription-options-group">
+          <h3>Subscription Type</h3>
+          <div className="view-toggle-buttons">
+            {subscriptionTypes.map((type) => (
+              <button
+                key={type.name}
+                type="button"
+                className={`toggle-button ${formValues.subscriptionType === type.name ? "active" : ""}`}
+                onClick={() => handleButtonClick("subscriptionType", type.name)}
+                disabled={isLoading}
+              >
+                {type.name}
+              </button>
+            ))}
+          </div>
+          {selectedSubscriptionTypeDescription && (
+            <p className="subscription-description">
+              {selectedSubscriptionTypeDescription}
+            </p>
+          )}
+          {errors.subscriptionType && <p style={{ color: "red" }}>{errors.subscriptionType}</p>}
+        </div>
 
-        <select
-          name="subscriptionPeriod"
-          onChange={handleInputChange}
-          value={formValues.subscriptionPeriod}
-          disabled={isLoading}
-          aria-invalid={!!errors.subscriptionPeriod}
-        >
-          <option value="">Select Period</option>
-          <option value="1 month">1 Month</option>
-          <option value="3 months">3 Months</option>
-          <option value="6 months">6 Months</option>
-          <option value="1 year">1 Year</option>
-        </select>
-        {errors.subscriptionPeriod && <p style={{ color: "red" }}>{errors.subscriptionPeriod}</p>}
+        <div className="subscription-options-group">
+          <h3>Subscription Period</h3>
+          <div className="view-toggle-buttons">
+            {["1 month", "3 months", "6 months", "1 year"].map((period) => (
+              <button
+                key={period}
+                type="button"
+                className={`toggle-button ${formValues.subscriptionPeriod === period ? "active" : ""}`}
+                onClick={() => handleButtonClick("subscriptionPeriod", period)}
+                disabled={isLoading}
+              >
+                {period}
+              </button>
+            ))}
+          </div>
+          {errors.subscriptionPeriod && <p style={{ color: "red" }}>{errors.subscriptionPeriod}</p>}
+        </div>
 
         <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
           <input
             type="checkbox"
             name="autoRenew"
             checked={formValues.autoRenew}
-            onChange={handleInputChange}
+            onChange={handleCheckboxChange}
             disabled={isLoading}
           />
           Auto-Renew Subscription
