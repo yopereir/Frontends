@@ -21,8 +21,8 @@ const ThankYouPage: React.FC = () => {
         <div style={{ marginTop: "1rem", fontSize: "1rem" }}>
           {message ? <p>{message}</p> : <p>Your action was successful.</p>}
         </div>
-        <Link to="/" style={{ marginTop: "2rem", display: "inline-block" }}>
-          Go back to Home
+        <Link to="/" style={{ marginTop: "2rem", width: "fit-content" }}>
+          Go to Homepage
         </Link>
       </section>
     </main>
