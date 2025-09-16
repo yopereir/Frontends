@@ -1,6 +1,7 @@
 import { useSession } from "../../context/SessionContext";
 import HeaderBar from "../../components/HeaderBar";
 import React, { useState, useEffect, useCallback } from 'react';
+import { format } from 'date-fns';
 import supabase from "../../supabase";
 import './SettingsPage.css';
 import AddItemDialog, { unitOptions } from "../../components/AddItemDialog";
@@ -571,7 +572,7 @@ const SettingsPage = () => {
       if (subscriptionData) {
         // Get subscription data
         const stripeSubscriptionData = await (await fetch(`${SUPABASE_URL}/functions/v1/subscription-data?email=${session?.user.email||''}`)).json();
-        setSubscriptionSettings({ id: subscriptionData.id, endDate: stripeSubscriptionData.current_period_end, autorenew: stripeSubscriptionData.auto_renew, plan: stripeSubscriptionData.name });
+        setSubscriptionSettings({ id: subscriptionData.id, endDate: format(new Date(stripeSubscriptionData.current_period_end), 'MM/dd/yyyy'), autorenew: stripeSubscriptionData.auto_renew, plan: stripeSubscriptionData.name });
 
         //Fetch restaurant settings
         const { data: restaurantsData } = await supabase.from('restaurants').select('*');
@@ -684,7 +685,7 @@ const SettingsPage = () => {
               />
               <EditableField
                 fieldId="plan"
-                label="Subscription plan"
+                label="Subscription Plan"
                 initialValue={subscriptionSettings.plan}
                 onSave={handleSaveSubscriptionSetting('plan')}
                 isEditable={false}
