@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useSession } from "../../context/SessionContext";
 import supabase from "../../supabase";
@@ -12,7 +12,7 @@ const SubscriptionPage = () => {
 
   useEffect(() => {
     if (!session) {
-      navigate("/auth/signin");
+      navigate("/auth/sign-in");
     }
   }, [session, navigate]);
 
@@ -156,7 +156,8 @@ const SubscriptionPage = () => {
     (type) => type.name === formValues.subscriptionType
   );
   const selectedSubscriptionTypeDescription = selectedSubscriptionType?.description || "";
-  const selectedPrice = selectedSubscriptionType?.prices?.[formValues.subscriptionPeriod.toLowerCase()] || "N/A";
+  // INFO: decided to not show price here, to avoid running a server side function to get Stripe price, when it is shown on the next page anyway.
+  const selectedPrice = "N/A" //|| selectedSubscriptionType?.prices?.[formValues.subscriptionPeriod.toLowerCase()];
 
   return (
     <main>
@@ -196,51 +197,16 @@ const SubscriptionPage = () => {
             <br/>
           </>
         )}
-
-        <div className="subscription-options-group">
-          <h3>Subscription Type</h3>
-          <div className="view-toggle-buttons">
-            {subscriptionTypes.map((type) => (
-              <button
-                key={type.name}
-                type="button"
-                className={`toggle-button ${formValues.subscriptionType === type.name ? "active" : ""}`}
-                onClick={() => handleButtonClick("subscriptionType", type.name)}
-                disabled={isLoading}
-              >
-                {type.name}
-              </button>
-            ))}
-          </div>
-          {selectedSubscriptionTypeDescription && (
-            <div className="subscription-description-text">
-              {selectedSubscriptionTypeDescription}
-            </div>
-          )}
-          {errors.subscriptionType && <p style={{ color: "red" }}>{errors.subscriptionType}</p>}
-        </div>
-
-        <div className="subscription-options-group">
-          <h3>Subscription Period</h3>
-          <div className="view-toggle-buttons">
-            {["Monthly", "Yearly"].map((period) => (
-              <button
-                key={period}
-                type="button"
-                className={`toggle-button ${formValues.subscriptionPeriod === period ? "active" : ""}`}
-                onClick={() => handleButtonClick("subscriptionPeriod", period)}
-                disabled={isLoading}
-              >
-                {period}
-              </button>
-            ))}
-          </div>
-          {errors.subscriptionPeriod && <p style={{ color: "red" }}>{errors.subscriptionPeriod}</p>}
-        </div>
-
         {selectedPrice !== "N/A" && (
           <div style={{ textAlign: "center", marginTop: "1rem" }}>Price: {selectedPrice}</div>
         )}
+
+      {/* Stripe Pricing Table */}
+      {React.createElement('stripe-pricing-table', {
+        'pricing-table-id': "prctbl_1S81j32Ya66e7fDtEmANsRj1",
+        'publishable-key': STRIPE_PUBLISHABLE_KEY,
+        'customer-email': session?.user?.email || "",
+      })}
         <label style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
           <input
             type="checkbox"
