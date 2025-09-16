@@ -671,30 +671,32 @@ const SettingsPage = () => {
           {/* Subscription Settings */}
           <section className="settings-category">
             <h2>Subscription Settings</h2>
-            <EditableField
-              fieldId="endDate"
-              label="Subscription End Date"
-              initialValue={subscriptionSettings.endDate}
-              onSave={handleSaveSubscriptionSetting('endDate')}
-            />
-            <EditableField
-              fieldId="plan"
-              label="Subscription plan"
-              initialValue={subscriptionSettings.plan}
-              onSave={handleSaveSubscriptionSetting('plan')}
-            />
+            {subscriptionSettings.id && (<>
+              <EditableField
+                fieldId="endDate"
+                label="Subscription End Date"
+                initialValue={subscriptionSettings.endDate}
+                onSave={handleSaveSubscriptionSetting('endDate')}
+              />
+              <EditableField
+                fieldId="plan"
+                label="Subscription plan"
+                initialValue={subscriptionSettings.plan}
+                onSave={handleSaveSubscriptionSetting('plan')}
+              />
 
-            <div style={{ marginTop: '0.5rem' }}>
-              <label htmlFor={`autorenew`} className="checkbox-label">
-                <input
-                  type="checkbox"
-                  id={`autorenew`}
-                  checked={subscriptionSettings.autorenew}
-                  onChange={()=>handleSaveSubscriptionSetting('autorenew')}
-                />
-                Auto Renew
-              </label>
-            </div>
+              <div style={{ marginTop: '0.5rem' }}>
+                <label htmlFor={`autorenew`} className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    id={`autorenew`}
+                    checked={subscriptionSettings.autorenew}
+                    onChange={()=>handleSaveSubscriptionSetting('autorenew')}
+                  />
+                  Auto Renew
+                </label>
+              </div>
+            </>)}
             <Link to="/subscription">Update Subscription</Link>
           </section>
 
