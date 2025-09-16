@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useSession } from "../../context/SessionContext";
 import supabase from "../../supabase";
 import { loadStripe } from "@stripe/stripe-js";
@@ -8,6 +8,13 @@ import "./SubscriptionPage.css";
 
 const SubscriptionPage = () => {
   const { session } = useSession();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!session) {
+      navigate("/auth/signin");
+    }
+  }, [session, navigate]);
 
   const [status, setStatus] = useState("");
   const [supabaseError, setSupabaseError] = useState("");
@@ -198,7 +205,7 @@ const SubscriptionPage = () => {
         <div className="subscription-options-group">
           <h3>Subscription Period</h3>
           <div className="view-toggle-buttons">
-            {["1 month", "3 months", "6 months", "1 year"].map((period) => (
+            {["Monthly", "Yearly"].map((period) => (
               <button
                 key={period}
                 type="button"
