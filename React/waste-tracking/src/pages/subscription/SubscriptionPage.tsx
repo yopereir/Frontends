@@ -59,6 +59,22 @@ const SubscriptionPage = () => {
     }
   };
 
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormValues((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+
+    if (supabaseError) {
+      setSupabaseError("");
+    }
+  };
+
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target;
     setFormValues((prev) => ({
@@ -195,9 +211,9 @@ const SubscriptionPage = () => {
             ))}
           </div>
           {selectedSubscriptionTypeDescription && (
-            <p className="subscription-description">
+            <div className="subscription-description-text">
               {selectedSubscriptionTypeDescription}
-            </p>
+            </div>
           )}
           {errors.subscriptionType && <p style={{ color: "red" }}>{errors.subscriptionType}</p>}
         </div>
