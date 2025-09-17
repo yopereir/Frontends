@@ -2,6 +2,7 @@
 import { Link, useSearchParams } from "react-router-dom";
 
 const messageDigest = {
+  "new-signup":"Thank you for signing up! You should receive a confirmation email in your inbox. You can now add any subscriptions you want from the Settings page from the Main menu.",
   "new-subscriber":"Thank you for subscribing!",
   "renew-subscriber":"Thank you for renewing your subscription!",
   "":"You reached our thank you page for no reason at all :P",

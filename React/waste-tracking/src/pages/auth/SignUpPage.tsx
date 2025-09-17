@@ -61,7 +61,7 @@ const SignUpPage = () => {
       setStatus("");
       setSupabaseError(error.message);
     } else {
-      navigate("/thankyou", {
+      navigate("/thankyou?message=new-signup", {
         state: {
           message: "Your account has been created. Please check your email to confirm your account.",
         }
