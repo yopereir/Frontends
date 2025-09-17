@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { useSession } from "../context/SessionContext";
 import supabase from "../supabase";
 
 const HeaderBar = () => {
   const { session, theme, setTheme, concurrentUsers } = useSession();
+  const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
   const [themeMenuOpen, setThemeMenuOpen] = useState(false);
 
@@ -87,7 +88,7 @@ const HeaderBar = () => {
               {session ? (
                 <>
                   <Link to="/settings">Settings</Link>
-                  <button onClick={() => supabase.auth.signOut()}>Log Out</button>
+                  <button onClick={async () => { await supabase.auth.signOut(); navigate('/'); }}>Log Out</button>
                 </>
               ) : (
                 <Link to="/auth/sign-in">Login</Link>
