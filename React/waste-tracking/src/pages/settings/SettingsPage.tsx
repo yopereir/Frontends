@@ -344,6 +344,8 @@ const SettingsPage = () => {
   };
 
   const openCustomerPortal = async () => {
+    // If user has existing subscription go to customer portal
+    if (subscriptionSettings.id) {
     const res = await fetch(`${SUPABASE_URL}/functions/v1/create_portal_session`, {
       method: "POST",
       headers: { 
@@ -355,6 +357,11 @@ const SettingsPage = () => {
     if (!res.ok) {throw new Error(`HTTP error! status: ${res.status}`)}
     const { url } = await res.json();
     window.location.href = url;
+    }
+    // If no active subscription, go to subscription page
+    else {
+      window.location.href = '/subscription';
+    }
   }
 
   const handleSaveSubscriptionSetting = (fieldName: string) => async (newValue: string | number | boolean) => {
