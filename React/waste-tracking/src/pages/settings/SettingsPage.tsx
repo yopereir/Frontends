@@ -343,6 +343,20 @@ const SettingsPage = () => {
     console.log(`${fieldName} updated successfully.`);
   };
 
+  const openCustomerPortal = async () => {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/create_portal_session`, {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session?.access_token}`
+      },
+      body: JSON.stringify({ user_id: session?.user.id })
+    });
+    if (!res.ok) {throw new Error(`HTTP error! status: ${res.status}`)}
+    const { url } = await res.json();
+    window.location.href = url;
+  }
+
   const handleSaveSubscriptionSetting = (fieldName: string) => async (newValue: string | number | boolean) => {
     console.log(`Attempting to save Subscription Setting - ${fieldName}: ${newValue}`);
     if (!session?.user) {
@@ -493,7 +507,7 @@ const SettingsPage = () => {
     id: "",
     endDate: "00-00-00",
     autorenew: false,
-    plan: "all",
+    plan: "all"
   });
   const [restaurantSettings, setRestaurantsSettings] = useState<any[]>([]);
   const [itemSettings, setItemsSettings] = useState<ItemSetting[]>([]);
@@ -704,7 +718,7 @@ const SettingsPage = () => {
                 </label>
               </div>
             </>)}
-            <Link to="/subscription">Change Subscription</Link>
+            <button onClick={openCustomerPortal}>Change Subscription</button>
           </section>
 
           {/* Restaurant Settings */}
