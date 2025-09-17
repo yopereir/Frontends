@@ -14,7 +14,6 @@ const SignUpPage = () => {
   const [formValues, setFormValues] = useState({
     email: "",
     name: "",
-    location: "",
     password: "",
   });
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
@@ -54,7 +53,6 @@ const SignUpPage = () => {
       options: {
         data: {
           name: formValues.name,
-          location: formValues.location,
         },
       },
     });
@@ -76,7 +74,7 @@ const SignUpPage = () => {
       <Link className="home-link" to="/">
         Home
       </Link>
-      <form className="main-container" onSubmit={handleSubmit} noValidate>
+      <form style={{width:"50%"}} className="main-container" onSubmit={handleSubmit} noValidate>
         <h1 className="header-text">Sign Up</h1>
         <p style={{ textAlign: "center", fontSize: "0.8rem", color: "#777" }}>
           Please fill in the details below to create a new account.
@@ -100,13 +98,7 @@ const SignUpPage = () => {
           name="name"
           onChange={handleInputChange}
           type="text"
-          placeholder="Full Name"
-        />
-        <input
-          name="location"
-          onChange={handleInputChange}
-          type="address"
-          placeholder="Address"
+          placeholder="Name"
         />
 
         <input
