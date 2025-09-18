@@ -1,10 +1,12 @@
 import { useSession } from "../../context/SessionContext";
 import HeaderBar from "../../components/HeaderBar";
 import React, { useState, useEffect, useCallback } from 'react';
+import { format } from 'date-fns';
 import supabase from "../../supabase";
 import './SettingsPage.css';
 import AddItemDialog, { unitOptions } from "../../components/AddItemDialog";
 import AddRestaurantDialog from "../../components/AddRestaurantDialog";
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from "../../config";
 import { Link } from "react-router-dom";
 
 // Props for the EditableField component
@@ -15,9 +17,10 @@ type EditableFieldProps = {
   fieldType?: 'text' | 'email' | 'password' | 'number' | 'select'; // Add 'select' type
   fieldId: string; // For label htmlFor
   selectOptions?: string[]; // New prop for select options
+  isEditable?: boolean; // New prop to control editability
 };
 
-const EditableField: React.FC<EditableFieldProps> = ({ label, initialValue, onSave, fieldType = 'text', fieldId, selectOptions }) => {
+const EditableField: React.FC<EditableFieldProps> = ({ label, initialValue, onSave, fieldType = 'text', fieldId, selectOptions, isEditable = true }) => {
   // Ensure initialValue is treated consistently as a string for direct comparison
   // This helps when initialValue might be a number like 0, and input is "0"
   const [value, setValue] = useState(String(initialValue));
@@ -90,7 +93,7 @@ const EditableField: React.FC<EditableFieldProps> = ({ label, initialValue, onSa
               value={value}
               onChange={handleChange}
               className={`unit-select ${isDirty ? 'input-dirty' : ''}`}
-              disabled={isSaving}
+              disabled={isSaving || !isEditable}
             >
               {currentSelectOptions.map((option) => (
                 <option key={option} value={option}>
@@ -105,7 +108,7 @@ const EditableField: React.FC<EditableFieldProps> = ({ label, initialValue, onSa
               value={value}
               onChange={handleChange}
               className={isDirty ? 'input-dirty' : ''}
-              disabled={isSaving}
+              disabled={isSaving || !isEditable}
             />
           )}
           {isDirty && (
@@ -317,6 +320,7 @@ const SettingsPage = () => {
   const [isAddRestaurantDialogOpen, setAddRestaurantDialogOpen] = useState(false);
   const [activeRestaurantId, setActiveRestaurantId] = useState<string>("");
   const [itemDeleteErrors, setItemDeleteErrors] = useState<{[key: string]: string | null}>({});
+  const [isAutoRenewSaving, setIsAutoRenewSaving] = useState(false); // New state for auto-renew checkbox
 
   const handleSaveUserSetting = (fieldName: string) => async (newValue: string | number) => {
     console.log(`Attempting to save User Setting - ${fieldName}: ${newValue}`);
@@ -326,7 +330,7 @@ const SettingsPage = () => {
     }
     let error;
     switch (fieldName) {
-      case 'username': { ({ error } = await supabase.auth.updateUser({data: { username: newValue }})); break; }
+      case 'name': { ({ error } = await supabase.auth.updateUser({data: { name: newValue }})); break; }
       case 'email': { ({ error } = await supabase.auth.updateUser({ email: newValue.toString() })); break; }
       case 'password': { ({ error } = await supabase.auth.updateUser({password: newValue.toString() })); break; }
       default:
@@ -339,7 +343,28 @@ const SettingsPage = () => {
     console.log(`${fieldName} updated successfully.`);
   };
 
-  const handleSaveSubscriptionSetting = (fieldName: string) => async (newValue: string | number) => {
+  const openCustomerPortal = async () => {
+    // If user has existing subscription go to customer portal
+    if (subscriptionSettings.id) {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/create_portal_session`, {
+      method: "POST",
+      headers: { 
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${session?.access_token}`
+      },
+      body: JSON.stringify({ user_id: session?.user.id })
+    });
+    if (!res.ok) {throw new Error(`HTTP error! status: ${res.status}`)}
+    const { url } = await res.json();
+    window.location.href = url;
+    }
+    // If no active subscription, go to subscription page
+    else {
+      window.location.href = '/subscription';
+    }
+  }
+
+  const handleSaveSubscriptionSetting = (fieldName: string) => async (newValue: string | number | boolean) => {
     console.log(`Attempting to save Subscription Setting - ${fieldName}: ${newValue}`);
     if (!session?.user) {
       console.error("User not authenticated");
@@ -347,17 +372,27 @@ const SettingsPage = () => {
     }
     let error;
     switch (fieldName) {
-      case 'endDate': {({ error } = await supabase.from('subscriptions').update({endDate: newValue})); break; }
-      case 'plan': {({ error } = await supabase.from('subscriptions').update({plan: newValue})); break; }
-      case 'status': {({ error } = await supabase.from('subscriptions').update({status: newValue})); break; }
+      case 'autorenew': {
+        setIsAutoRenewSaving(true); // Disable checkbox
+        try {
+          await fetch(`${SUPABASE_URL}/functions/v1/subscription-data`, {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+            },
+            body: JSON.stringify({ email: session?.user.email, autoRenew: newValue })
+          });
+        } finally {
+          setIsAutoRenewSaving(false); // Re-enable checkbox
+        }
+        break;
+      }
       default:
         throw new Error(`Unknown subscription setting: ${fieldName}`);
     }
-    if (error) {
-      console.error(`Error saving ${fieldName}:`, error.message);
-      throw new Error(`Failed to update ${fieldName}. `+error.message);
-    }
     console.log(`${fieldName} updated successfully.`);
+    fetchSettings(); // Re-fetch settings to update the UI
   };
 
   const handleSaveItemSetting = (fieldName: string, itemId: string) => async (newValue: string | number | string[]) => {
@@ -472,14 +507,14 @@ const SettingsPage = () => {
   // --- Example Initial Values ---
   // In a real app, you'd fetch these from your backend/Supabase when the component mounts.
   const [userSettings, setUserSettings] = useState({
-    username: session?.user?.user_metadata?.username || session?.user?.email?.split('@')[0] || "User",
+    name: session?.user?.user_metadata?.name || session?.user?.email?.split('@')[0] || "User",
     email: session?.user?.email || "",
   });
   const [subscriptionSettings, setSubscriptionSettings] = useState({
     id: "",
     endDate: "00-00-00",
-    status: "ended",
-    plan: "all",
+    autorenew: false,
+    plan: "all"
   });
   const [restaurantSettings, setRestaurantsSettings] = useState<any[]>([]);
   const [itemSettings, setItemsSettings] = useState<ItemSetting[]>([]);
@@ -550,63 +585,69 @@ const SettingsPage = () => {
   const fetchSettings = useCallback(async () => {
     if (session?.user) {
       //Fetch user settings (e.g., from a 'profiles' table or user_metadata)
-      setUserSettings({ email: session.user.email || '', username: session.user.user_metadata.username || ''});
+      setUserSettings({ email: session.user.email || '', name: session.user.user_metadata.name || ''});
 
       //Fetch subscription settings
       const { data: subscriptionData } = await supabase.from('subscriptions').select('*').single();
-      if (subscriptionData) setSubscriptionSettings({ id: subscriptionData.id, endDate: subscriptionData.end_date, status: subscriptionData.status, plan: subscriptionData.plan });
+      // Check if user is subscriber
+      if (subscriptionData) {
+        // Get subscription data
+        const stripeSubscriptionData = await (await fetch(`${SUPABASE_URL}/functions/v1/subscription-data?email=${session?.user.email||''}`)).json();
+        setSubscriptionSettings({ id: subscriptionData.id, endDate: format(new Date(stripeSubscriptionData.current_period_end), 'MM/dd/yyyy'), autorenew: stripeSubscriptionData.auto_renew, plan: stripeSubscriptionData.name });
 
-      //Fetch restaurant settings
-      const { data: restaurantsData } = await supabase.from('restaurants').select('*');
-      if (restaurantsData) {
-        setRestaurantsSettings(
-          restaurantsData.map((restaurantData) => ({
-            id: restaurantData.id,
-            name: restaurantData.name,
-            location: restaurantData.location,
-            subscription: restaurantData.subscription_id
-          }))
-        );
-      }
-
-      //Fetch item settings
-      const { data: itemsData } = await supabase.from('items').select('*');
-      const initialItems: ItemSetting[] = itemsData ? itemsData.map((itemData) => ({
-        id: itemData.id,
-        name: itemData.name,
-        holdMinutes: itemData.metadata.holdMinutes !== null ? String(itemData.metadata.holdMinutes) : "",
-        restaurant_id: itemData.restaurant_id,
-        unit: itemData.metadata.unit,
-        imageUrl: itemData.metadata.imageUrl,
-        tags: Array.isArray(itemData.metadata?.tags) ? itemData.metadata.tags : [],
-        categories: Array.isArray(itemData.metadata?.categories) ? itemData.metadata.categories : []
-      })) : [];
-      
-      let currentAccumulatedItems = [...initialItems]; // Use a mutable local array
-
-      // After fetching both restaurants and initial items, check for restaurants with 0 items
-      if (restaurantsData) {
-        const processedRestaurantIds = new Set<string>(); // Track processed restaurant IDs
-        for (const restaurantData of restaurantsData) {
-          if (processedRestaurantIds.has(restaurantData.id)) {
-            console.log(`Skipping duplicate restaurant ID: ${restaurantData.id}`);
-            continue; // Skip if this restaurant ID has already been processed
-          }
-
-          // Filter against the current local accumulated items
-          const itemsForRestaurant = currentAccumulatedItems.filter(item => item.restaurant_id === restaurantData.id);
-          if (itemsForRestaurant.length === 0) {
-            console.log(`Restaurant ${restaurantData.id} has 0 items. Attempting to fetch franchise items.`);
-            const franchiseItems = await getFranchiseItems(restaurantData.id);
-            if (franchiseItems.length > 0) {
-              // Update the local accumulated items immediately
-              currentAccumulatedItems = [...currentAccumulatedItems, ...franchiseItems];
-            }
-          }
-          processedRestaurantIds.add(restaurantData.id); // Mark this restaurant ID as processed
+        //Fetch restaurant settings
+        const { data: restaurantsData } = await supabase.from('restaurants').select('*');
+        if (restaurantsData) {
+          setRestaurantsSettings(
+            restaurantsData.map((restaurantData) => ({
+              id: restaurantData.id,
+              name: restaurantData.name,
+              location: restaurantData.location,
+              subscription: restaurantData.subscription_id
+            }))
+          );
         }
+
+        //Fetch item settings
+        const { data: itemsData } = await supabase.from('items').select('*');
+        const initialItems: ItemSetting[] = itemsData ? itemsData.map((itemData) => ({
+          id: itemData.id,
+          name: itemData.name,
+          holdMinutes: itemData.metadata.holdMinutes !== null ? String(itemData.metadata.holdMinutes) : "",
+          restaurant_id: itemData.restaurant_id,
+          unit: itemData.metadata.unit,
+          imageUrl: itemData.metadata.imageUrl,
+          tags: Array.isArray(itemData.metadata?.tags) ? itemData.metadata.tags : [],
+          categories: Array.isArray(itemData.metadata?.categories) ? itemData.metadata.categories : []
+        })) : [];
+        
+        let currentAccumulatedItems = [...initialItems]; // Use a mutable local array
+
+        // After fetching both restaurants and initial items, check for restaurants with 0 items
+        if (restaurantsData) {
+          const processedRestaurantIds = new Set<string>(); // Track processed restaurant IDs
+          for (const restaurantData of restaurantsData) {
+            if (processedRestaurantIds.has(restaurantData.id)) {
+              console.log(`Skipping duplicate restaurant ID: ${restaurantData.id}`);
+              continue; // Skip if this restaurant ID has already been processed
+            }
+
+            // Filter against the current local accumulated items
+            const itemsForRestaurant = currentAccumulatedItems.filter(item => item.restaurant_id === restaurantData.id);
+            if (itemsForRestaurant.length === 0) {
+              console.log(`Restaurant ${restaurantData.id} has 0 items. Attempting to fetch franchise items.`);
+              const franchiseItems = await getFranchiseItems(restaurantData.id);
+              if (franchiseItems.length > 0) {
+                // Update the local accumulated items immediately
+                currentAccumulatedItems = [...currentAccumulatedItems, ...franchiseItems];
+              }
+            }
+            processedRestaurantIds.add(restaurantData.id); // Mark this restaurant ID as processed
+          }
+        }
+        setItemsSettings(currentAccumulatedItems); // Update state once after all processing
+
       }
-      setItemsSettings(currentAccumulatedItems); // Update state once after all processing
     }
   }, [session, getFranchiseItems]);
 
@@ -631,10 +672,10 @@ const SettingsPage = () => {
           <section className="settings-category">
             <h2>User Settings</h2>
             <EditableField
-              fieldId="username"
-              label="Username"
-              initialValue={userSettings.username}
-              onSave={handleSaveUserSetting('username')}
+              fieldId="name"
+              label="Name"
+              initialValue={userSettings.name}
+              onSave={handleSaveUserSetting('name')}
             />
             <EditableField
               fieldId="email"
@@ -655,120 +696,133 @@ const SettingsPage = () => {
           {/* Subscription Settings */}
           <section className="settings-category">
             <h2>Subscription Settings</h2>
-            <EditableField
-              fieldId="endDate"
-              label="Subscription End Date"
-              initialValue={subscriptionSettings.endDate}
-              onSave={handleSaveSubscriptionSetting('endDate')}
-            />
-            <EditableField
-              fieldId="plan"
-              label="Subscription plan"
-              initialValue={subscriptionSettings.plan}
-              onSave={handleSaveSubscriptionSetting('plan')}
-            />
-            <EditableField
-              fieldId="status"
-              label="Subscription Status"
-              initialValue={subscriptionSettings.status}
-              onSave={handleSaveSubscriptionSetting('status')}
-            />
-            <Link to="/subscription">Update Subscription</Link>
+            {subscriptionSettings.id && (<>
+              <EditableField
+                fieldId="endDate"
+                label="Subscription End Date"
+                initialValue={subscriptionSettings.endDate}
+                onSave={handleSaveSubscriptionSetting('endDate')}
+                isEditable={false}
+              />
+              <EditableField
+                fieldId="plan"
+                label="Subscription Plan"
+                initialValue={subscriptionSettings.plan}
+                onSave={handleSaveSubscriptionSetting('plan')}
+                isEditable={false}
+              />
+
+              <div style={{ marginTop: '0.5rem' }}>
+                <label htmlFor={`autorenew`} className="checkbox-label">
+                  <input
+                    type="checkbox"
+                    id={`autorenew`}
+                    checked={subscriptionSettings.autorenew}
+                    onChange={(e) => handleSaveSubscriptionSetting('autorenew')(e.target.checked)}
+                    disabled={isAutoRenewSaving} // Disable while saving
+                  />
+                  Auto Renew
+                </label>
+              </div>
+            </>)}
+            <button onClick={openCustomerPortal}>Change Subscription</button>
           </section>
 
           {/* Restaurant Settings */}
-          <section className="settings-category">
-            <h2>Restaurant Settings</h2>
-            { restaurantSettings.map((restaurantData, index) => (
-              <div key={restaurantData.id} className="restaurant-setting"> {/* Use unique ID for key */}
-                <h3>Restaurant {index + 1}</h3>
-                <EditableField
-                  fieldId={`name-${restaurantData.id}`}
-                  label="Name"
-                  initialValue={restaurantData.name}
-                  onSave={handleSaveRestaurantSetting('name', restaurantData.id)}
-                />
-                <EditableField
-                  fieldId={`location-${restaurantData.id}`}
-                  label="Location"
-                  initialValue={restaurantData.location}
-                  onSave={handleSaveRestaurantSetting('location', restaurantData.id)}
-                />
-                <EditableField
-                  fieldId={`subscription-${restaurantData.id}`}
-                  label="Subscription"
-                  initialValue={restaurantData.subscription}
-                  onSave={handleSaveRestaurantSetting('subscription', restaurantData.id)}
-                />
-                <h2></h2>
-                <h2>Item Settings</h2>
-                { itemSettings.map((itemData) => (
-                  itemData.restaurant_id === restaurantData.id &&
-                  <div key={itemData.id} className="item-setting"> {/* Use unique ID for key */}
-                    <EditableField
-                      fieldId={`item-name-${itemData.id}`}
-                      label="Item Name"
-                      initialValue={itemData.name}
-                      onSave={handleSaveItemSetting('name', itemData.id)}
-                    />
-                    <EditableField
-                      fieldId={`item-restaurant-${itemData.id}`}
-                      label="Restaurant ID"
-                      initialValue={itemData.restaurant_id}
-                      onSave={handleSaveItemSetting('restaurant_id', itemData.id)}
-                    />
-                    <EditableField
-                      fieldId={`item-unit-${itemData.id}`}
-                      label="Unit"
-                      initialValue={itemData.unit}
-                      onSave={handleSaveItemSetting('unit', itemData.id)}
-                      fieldType="select" // Specify fieldType as 'select'
-                      selectOptions={unitOptions} // Pass the unitOptions to the EditableField
-                    />
-                    <EditableField
-                      fieldId={`item-holdingtime-${itemData.id}`}
-                      label="Holdingtime"
-                      initialValue={itemData.holdMinutes}
-                      onSave={handleSaveItemSetting('holdingtime', itemData.id)}
-                    />
-                    <EditableField
-                      fieldId={`item-imageUrl-${itemData.id}`}
-                      label="Image URL"
-                      initialValue={itemData.imageUrl}
-                      onSave={handleSaveItemSetting('imageUrl', itemData.id)}
-                    />
-                    <ItemCategoriesField
-                      fieldId={`item-categories-${itemData.id}`}
-                      label="Categories"
-                      initialCategories={itemData.categories}
-                      onSave={(newCategories) => handleSaveItemSetting('categories', itemData.id)(newCategories)}
-                    />
-                    <ItemTagsField
-                      itemId={itemData.id}
-                      initialTags={itemData.tags}
-                      onSave={(newTags) => handleSaveItemSetting('tags', itemData.id)(newTags as any)} // Cast to any for now, will fix handleSaveItemSetting next
-                    />
-                    
-                    <button
-                      onClick={() => handleDeleteItem(itemData.id)}
-                      className="delete-button" // Add a class for styling
-                    >
-                      Delete Item
-                    </button>
-                    {itemDeleteErrors[itemData.id] && (
-                      <p style={{ color: "var(--error-color)", marginTop: "0.25rem", textAlign: 'center', width: '100%' }}>
-                        {itemDeleteErrors[itemData.id]}
-                      </p>
-                    )}
-                    <h2></h2>
-                  </div>
-                ))}
-                <button onClick={() => {setActiveRestaurantId(restaurantData.id);setAddItemDialogOpen(true)}}>Add New Item</button>
-                <h2></h2>
-              </div>
-            ))}
-            <button onClick={() => {setAddRestaurantDialogOpen(true)}}>Add New Restaurant</button>
-          </section>
+          {subscriptionSettings.id && (
+            <section className="settings-category">
+              <h2>Restaurant Settings</h2>
+              { restaurantSettings.map((restaurantData, index) => (
+                <div key={restaurantData.id} className="restaurant-setting"> {/* Use unique ID for key */}
+                  <h3>Restaurant {index + 1}</h3>
+                  <EditableField
+                    fieldId={`name-${restaurantData.id}`}
+                    label="Name"
+                    initialValue={restaurantData.name}
+                    onSave={handleSaveRestaurantSetting('name', restaurantData.id)}
+                  />
+                  <EditableField
+                    fieldId={`location-${restaurantData.id}`}
+                    label="Location"
+                    initialValue={restaurantData.location}
+                    onSave={handleSaveRestaurantSetting('location', restaurantData.id)}
+                  />
+                  <EditableField
+                    fieldId={`subscription-${restaurantData.id}`}
+                    label="Subscription"
+                    initialValue={restaurantData.subscription}
+                    onSave={handleSaveRestaurantSetting('subscription', restaurantData.id)}
+                  />
+                  <h2></h2>
+                  <h2>Item Settings</h2>
+                  { itemSettings.map((itemData) => (
+                    itemData.restaurant_id === restaurantData.id &&
+                    <div key={itemData.id} className="item-setting"> {/* Use unique ID for key */}
+                      <EditableField
+                        fieldId={`item-name-${itemData.id}`}
+                        label="Item Name"
+                        initialValue={itemData.name}
+                        onSave={handleSaveItemSetting('name', itemData.id)}
+                      />
+                      <EditableField
+                        fieldId={`item-restaurant-${itemData.id}`}
+                        label="Restaurant ID"
+                        initialValue={itemData.restaurant_id}
+                        onSave={handleSaveItemSetting('restaurant_id', itemData.id)}
+                      />
+                      <EditableField
+                        fieldId={`item-unit-${itemData.id}`}
+                        label="Unit"
+                        initialValue={itemData.unit}
+                        onSave={handleSaveItemSetting('unit', itemData.id)}
+                        fieldType="select" // Specify fieldType as 'select'
+                        selectOptions={unitOptions} // Pass the unitOptions to the EditableField
+                      />
+                      <EditableField
+                        fieldId={`item-holdingtime-${itemData.id}`}
+                        label="Holdingtime"
+                        initialValue={itemData.holdMinutes}
+                        onSave={handleSaveItemSetting('holdingtime', itemData.id)}
+                      />
+                      <EditableField
+                        fieldId={`item-imageUrl-${itemData.id}`}
+                        label="Image URL"
+                        initialValue={itemData.imageUrl}
+                        onSave={handleSaveItemSetting('imageUrl', itemData.id)}
+                      />
+                      <ItemCategoriesField
+                        fieldId={`item-categories-${itemData.id}`}
+                        label="Categories"
+                        initialCategories={itemData.categories}
+                        onSave={(newCategories) => handleSaveItemSetting('categories', itemData.id)(newCategories)}
+                      />
+                      <ItemTagsField
+                        itemId={itemData.id}
+                        initialTags={itemData.tags}
+                        onSave={(newTags) => handleSaveItemSetting('tags', itemData.id)(newTags as any)} // Cast to any for now, will fix handleSaveItemSetting next
+                      />
+                      
+                      <button
+                        onClick={() => handleDeleteItem(itemData.id)}
+                        className="delete-button" // Add a class for styling
+                      >
+                        Delete Item
+                      </button>
+                      {itemDeleteErrors[itemData.id] && (
+                        <p style={{ color: "var(--error-color)", marginTop: "0.25rem", textAlign: 'center', width: '100%' }}>
+                          {itemDeleteErrors[itemData.id]}
+                        </p>
+                      )}
+                      <h2></h2>
+                    </div>
+                  ))}
+                  <button onClick={() => {setActiveRestaurantId(restaurantData.id);setAddItemDialogOpen(true)}}>Add New Item</button>
+                  <h2></h2>
+                </div>
+              ))}
+              <button onClick={() => {setAddRestaurantDialogOpen(true)}}>Add New Restaurant</button>
+            </section>
+          )}
         </div>
       </main>
     </div>

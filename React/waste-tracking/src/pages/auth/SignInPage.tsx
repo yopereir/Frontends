@@ -75,7 +75,7 @@ const SignInPage = () => {
   return (
     <main>
       <Link className="home-link" to="/">Home</Link>
-      <form className="main-container" onSubmit={handleSubmit}>
+      <form style={{width:"50%"}} className="main-container" onSubmit={handleSubmit}>
         <h1 className="header-text">{forgotPasswordMode ? "Reset Password" : "Sign In"}</h1>
 
         <input

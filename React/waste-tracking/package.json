@@ -12,6 +12,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@stripe/stripe-js": "^7.9.0",
     "@supabase/supabase-js": "^2.49.4",
     "date-fns": "^4.1.0",
     "html2canvas": "^1.4.1",
