@@ -330,7 +330,7 @@ const SettingsPage = () => {
     }
     let error;
     switch (fieldName) {
-      case 'username': { ({ error } = await supabase.auth.updateUser({data: { username: newValue }})); break; }
+      case 'name': { ({ error } = await supabase.auth.updateUser({data: { name: newValue }})); break; }
       case 'email': { ({ error } = await supabase.auth.updateUser({ email: newValue.toString() })); break; }
       case 'password': { ({ error } = await supabase.auth.updateUser({password: newValue.toString() })); break; }
       default:
@@ -507,7 +507,7 @@ const SettingsPage = () => {
   // --- Example Initial Values ---
   // In a real app, you'd fetch these from your backend/Supabase when the component mounts.
   const [userSettings, setUserSettings] = useState({
-    username: session?.user?.user_metadata?.username || session?.user?.email?.split('@')[0] || "User",
+    name: session?.user?.user_metadata?.name || session?.user?.email?.split('@')[0] || "User",
     email: session?.user?.email || "",
   });
   const [subscriptionSettings, setSubscriptionSettings] = useState({
@@ -585,7 +585,7 @@ const SettingsPage = () => {
   const fetchSettings = useCallback(async () => {
     if (session?.user) {
       //Fetch user settings (e.g., from a 'profiles' table or user_metadata)
-      setUserSettings({ email: session.user.email || '', username: session.user.user_metadata.username || ''});
+      setUserSettings({ email: session.user.email || '', name: session.user.user_metadata.name || ''});
 
       //Fetch subscription settings
       const { data: subscriptionData } = await supabase.from('subscriptions').select('*').single();
@@ -672,10 +672,10 @@ const SettingsPage = () => {
           <section className="settings-category">
             <h2>User Settings</h2>
             <EditableField
-              fieldId="username"
-              label="Username"
-              initialValue={userSettings.username}
-              onSave={handleSaveUserSetting('username')}
+              fieldId="name"
+              label="Name"
+              initialValue={userSettings.name}
+              onSave={handleSaveUserSetting('name')}
             />
             <EditableField
               fieldId="email"
