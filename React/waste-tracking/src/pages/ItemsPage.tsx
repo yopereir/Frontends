@@ -1,5 +1,6 @@
 // === ItemsPage.tsx ===
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useSession, BatchData, BoxData } from "../context/SessionContext";
 import HeaderBar from "../components/HeaderBar";
 import Batch from "../components/Batch";
@@ -73,7 +74,8 @@ interface Item {
 }
 
 const ItemsPage = () => {
-  const { batches, setBatches, boxes, setBoxes, session, channel, selectedCategories, setSelectedCategories } = useSession(); // Use boxes and setBoxes from context, also session and channel
+  const { batches, setBatches, boxes, setBoxes, session, channel, selectedCategories, setSelectedCategories, stripeSubscriptionData } = useSession(); // Use boxes and setBoxes from context, also session and channel
+  const navigate = useNavigate();
   const [now, setNow] = useState(new Date());
   const [view, setView] = useState<'batches' | 'items'>('batches');
   const [showQuantityDialog, setShowQuantityDialog] = useState(false);
@@ -442,6 +444,12 @@ const ItemsPage = () => {
     setCloseBoxSupabaseError(null); // Clear error after successful operation
   };
 
+
+  useEffect(() => {
+    if (stripeSubscriptionData && !['All Services', 'Waste Tracking'].includes(stripeSubscriptionData.plan)) {
+      navigate("/thankyou");
+    }
+  }, [stripeSubscriptionData, navigate]);
 
   useEffect(() => {
     const fetchItems = async () => {
