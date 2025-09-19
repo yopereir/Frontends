@@ -126,10 +126,7 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
   });
 
   // State for selected categories, initialized from localStorage
-  const [selectedCategories, setSelectedCategories] = useState<string[]>(() => {
-    const stored = localStorage.getItem("selectedCategories");
-    return stored ? JSON.parse(stored) : [];
-  });
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
 
   // Refs for batches and boxes to be used in channel listeners
   const batchesRef = useRef(batches);

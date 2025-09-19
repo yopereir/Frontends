@@ -454,7 +454,6 @@ const ItemsPage = () => {
   useEffect(() => {
     const fetchItems = async () => {
       const { data: itemsData, error: itemsError } = await supabase.from('items').select(`*`);
-      console.log("Fetched items:", itemsData, itemsError);
       if (itemsError || !itemsData) {
         console.error("Failed to fetch items", itemsError);
       } else {
