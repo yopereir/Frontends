@@ -229,6 +229,13 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
     }
   }, [session, stripeSubscriptionData]);
 
+  // Effect to fetch Stripe subscription data when session is available and data is not yet fetched
+  useEffect(() => {
+    if (session?.user && !stripeSubscriptionData) {
+      fetchStripeSubscriptionData();
+    }
+  }, [session, stripeSubscriptionData, fetchStripeSubscriptionData]);
+
   // Effect to subscribe and unsubscribe the channel, and handle initial data requests
   useEffect(() => {
     if (channel) {
