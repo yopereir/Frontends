@@ -446,7 +446,7 @@ const ItemsPage = () => {
 
 
   useEffect(() => {
-    if (stripeSubscriptionData && !['All Services', 'Waste Management'].includes(stripeSubscriptionData.plan)) {
+    if (stripeSubscriptionData && !['All Services', 'Waste Tracking'].includes(stripeSubscriptionData.plan)) {
       navigate("/dialog?heading=Subscription Required&message=unauthorized-access");
     }
   }, [stripeSubscriptionData, navigate]);
