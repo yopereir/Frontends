@@ -1,12 +1,11 @@
 import { useSession } from "../../context/SessionContext";
 import HeaderBar from "../../components/HeaderBar";
 import React, { useState, useEffect, useCallback } from 'react';
-import { format } from 'date-fns';
 import supabase from "../../supabase";
 import './SettingsPage.css';
 import AddItemDialog, { unitOptions } from "../../components/AddItemDialog";
 import AddRestaurantDialog from "../../components/AddRestaurantDialog";
-import { SUPABASE_URL, SUPABASE_ANON_KEY } from "../../config";
+import { SUPABASE_URL } from "../../config"; // Keep SUPABASE_URL for openCustomerPortal
 import { Link } from "react-router-dom";
 
 // Props for the EditableField component
@@ -315,12 +314,49 @@ type ItemSetting = {
 };
 
 const SettingsPage = () => {
-  const { session } = useSession();
+  const { session, stripeSubscriptionData, fetchStripeSubscriptionData, setStripeSubscriptionData } = useSession();
   const [isAddItemDialogOpen, setAddItemDialogOpen] = useState(false);
   const [isAddRestaurantDialogOpen, setAddRestaurantDialogOpen] = useState(false);
   const [activeRestaurantId, setActiveRestaurantId] = useState<string>("");
   const [itemDeleteErrors, setItemDeleteErrors] = useState<{[key: string]: string | null}>({});
   const [isAutoRenewSaving, setIsAutoRenewSaving] = useState(false); // New state for auto-renew checkbox
+
+  // --- Example Initial Values ---
+  // In a real app, you'd fetch these from your backend/Supabase when the component mounts.
+  const [userSettings, setUserSettings] = useState({
+    name: "User",
+    email: "",
+  });
+  const [subscriptionSettings, setSubscriptionSettings] = useState({
+    id: "",
+    endDate: "00-00-00",
+    autorenew: false,
+    plan: "all"
+  });
+
+  useEffect(() => {
+    if (session?.user) {
+      setUserSettings({
+        name: session.user.user_metadata?.name || session.user.email?.split('@')[0] || "User",
+        email: session.user.email || "",
+      });
+    }
+  }, [session]);
+
+  useEffect(() => {
+    if (stripeSubscriptionData) {
+      setSubscriptionSettings(stripeSubscriptionData);
+    } else {
+      setSubscriptionSettings({
+        id: "",
+        endDate: "00-00-00",
+        autorenew: false,
+        plan: "all"
+      });
+    }
+  }, [stripeSubscriptionData]);
+  const [restaurantSettings, setRestaurantsSettings] = useState<any[]>([]);
+  const [itemSettings, setItemsSettings] = useState<ItemSetting[]>([]);
 
   const handleSaveUserSetting = (fieldName: string) => async (newValue: string | number) => {
     console.log(`Attempting to save User Setting - ${fieldName}: ${newValue}`);
@@ -375,14 +411,19 @@ const SettingsPage = () => {
       case 'autorenew': {
         setIsAutoRenewSaving(true); // Disable checkbox
         try {
-          await fetch(`${SUPABASE_URL}/functions/v1/subscription-data`, {
+          const response = await fetch(`${SUPABASE_URL}/functions/v1/subscription-data`, {
             method: "PATCH",
             headers: {
               "Content-Type": "application/json",
-              Authorization: `Bearer ${SUPABASE_ANON_KEY}`
+              Authorization: `Bearer ${session?.access_token}`
             },
             body: JSON.stringify({ email: session?.user.email, autoRenew: newValue })
           });
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          // After successful update, re-fetch the subscription data to update the context
+          await fetchStripeSubscriptionData();
         } finally {
           setIsAutoRenewSaving(false); // Re-enable checkbox
         }
@@ -392,7 +433,6 @@ const SettingsPage = () => {
         throw new Error(`Unknown subscription setting: ${fieldName}`);
     }
     console.log(`${fieldName} updated successfully.`);
-    fetchSettings(); // Re-fetch settings to update the UI
   };
 
   const handleSaveItemSetting = (fieldName: string, itemId: string) => async (newValue: string | number | string[]) => {
@@ -504,21 +544,6 @@ const SettingsPage = () => {
     }
   };
 
-  // --- Example Initial Values ---
-  // In a real app, you'd fetch these from your backend/Supabase when the component mounts.
-  const [userSettings, setUserSettings] = useState({
-    name: session?.user?.user_metadata?.name || session?.user?.email?.split('@')[0] || "User",
-    email: session?.user?.email || "",
-  });
-  const [subscriptionSettings, setSubscriptionSettings] = useState({
-    id: "",
-    endDate: "00-00-00",
-    autorenew: false,
-    plan: "all"
-  });
-  const [restaurantSettings, setRestaurantsSettings] = useState<any[]>([]);
-  const [itemSettings, setItemsSettings] = useState<ItemSetting[]>([]);
-
   const getFranchiseItems = useCallback(async (restaurantId: string) => {
     console.log(`getFranchiseItems called for restaurant: ${restaurantId}`);
     try {
@@ -587,13 +612,9 @@ const SettingsPage = () => {
       //Fetch user settings (e.g., from a 'profiles' table or user_metadata)
       setUserSettings({ email: session.user.email || '', name: session.user.user_metadata.name || ''});
 
-      //Fetch subscription settings
-      const { data: subscriptionData } = await supabase.from('subscriptions').select('*').single();
-      // Check if user is subscriber
-      if (subscriptionData) {
-        // Get subscription data
-        const stripeSubscriptionData = await (await fetch(`${SUPABASE_URL}/functions/v1/subscription-data?email=${session?.user.email||''}`)).json();
-        setSubscriptionSettings({ id: subscriptionData.id, endDate: format(new Date(stripeSubscriptionData.current_period_end), 'MM/dd/yyyy'), autorenew: stripeSubscriptionData.auto_renew, plan: stripeSubscriptionData.name });
+      // Fetch subscription settings from context and use the returned value
+      const currentSubscriptionData = await fetchStripeSubscriptionData();
+      if (currentSubscriptionData) {
 
         //Fetch restaurant settings
         const { data: restaurantsData } = await supabase.from('restaurants').select('*');
@@ -649,7 +670,7 @@ const SettingsPage = () => {
 
       }
     }
-  }, [session, getFranchiseItems]);
+  }, [session, getFranchiseItems, stripeSubscriptionData, fetchStripeSubscriptionData]);
 
   //useEffect to fetch actual settings if needed
   useEffect(() => {
