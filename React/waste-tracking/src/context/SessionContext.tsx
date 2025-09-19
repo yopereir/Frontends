@@ -73,7 +73,7 @@ const SessionContext = createContext<{
   setSelectedCategories: () => {}, // Default empty function for setSelectedCategories
   stripeSubscriptionData: null,
   setStripeSubscriptionData: () => {},
-  fetchStripeSubscriptionData: async () => {},
+  fetchStripeSubscriptionData: async () => null,
 });
 
 // === Hook ===
@@ -242,21 +242,44 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
       console.log(`Subscribing to Supabase channel: ${channel.topic}`);
       channel.subscribe();
 
+      const sendBroadcast = (channel: any, payload: any) => {
+        channel.send(payload);
+      };
+
+      // Request initial data from other clients when this client subscribes
+      sendBroadcast(channel, {
+        type: 'broadcast',
+        event: 'request_initial_data',
+        payload: {},
+      });
+
       const handleRequestInitialData = () => {
         console.log("Received request_initial_data. Broadcasting current state.");
-        channel.send({
+        sendBroadcast(channel, {
           type: 'broadcast',
           event: 'batches_update',
           payload: { batches: batchesRef.current },
         });
-        channel.send({
+        sendBroadcast(channel, {
           type: 'broadcast',
           event: 'boxes_update',
           payload: { boxes: boxesRef.current },
         });
       };
 
-      channel.on('broadcast', { event: 'request_initial_data' }, handleRequestInitialData);
+      const handleBatchesUpdate = (payload: { batches: BatchData[] }) => {
+        console.log("Received batches_update:", payload.batches);
+        setBatches(payload.batches);
+      };
+
+      const handleBoxesUpdate = (payload: { boxes: BoxData[] }) => {
+        console.log("Received boxes_update:", payload.boxes);
+        setBoxes(payload.boxes);
+      };
+
+      (channel.on as any)('broadcast', { event: 'request_initial_data' }, handleRequestInitialData);
+      (channel.on as any)('broadcast', { event: 'batches_update' }, handleBatchesUpdate);
+      (channel.on as any)('broadcast', { event: 'boxes_update' }, handleBoxesUpdate);
 
       // Handle presence changes
       channel.on('presence', { event: 'sync' }, () => {
