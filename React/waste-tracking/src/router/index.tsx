@@ -6,7 +6,7 @@ import ResetPasswordPage from "../pages/auth/ResetPasswordPage.tsx";
 import ConfirmPage from "../pages/ConfirmPage.tsx";
 import DashboardPage from "../pages/DashboardPage.tsx";
 import ItemsPage from "../pages/ItemsPage.tsx";
-import ThankYouPage from "../pages/ThankYouPage.tsx";
+import DialogPage from "../pages/DialogPage.tsx";
 import SettingsPage from "../pages/settings/SettingsPage.tsx";
 import NotFoundPage from "../pages/404Page.tsx";
 import SubscriptionPage from "../pages/subscription/SubscriptionPage.tsx";
@@ -41,8 +41,8 @@ const router = createBrowserRouter([
         element: <ConfirmPage />,
       },
       {
-        path: "/thankyou",
-        element: <ThankYouPage />,
+        path: "/dialog",
+        element: <DialogPage />,
       },
       {
         path: "/subscription",
