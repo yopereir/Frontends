@@ -319,7 +319,6 @@ const SettingsPage = () => {
   const [isAddRestaurantDialogOpen, setAddRestaurantDialogOpen] = useState(false);
   const [activeRestaurantId, setActiveRestaurantId] = useState<string>("");
   const [itemDeleteErrors, setItemDeleteErrors] = useState<{[key: string]: string | null}>({});
-  const [isAutoRenewSaving, setIsAutoRenewSaving] = useState(false); // New state for auto-renew checkbox
 
   // --- Example Initial Values ---
   // In a real app, you'd fetch these from your backend/Supabase when the component mounts.
@@ -408,27 +407,6 @@ const SettingsPage = () => {
     }
     let error;
     switch (fieldName) {
-      case 'autorenew': {
-        setIsAutoRenewSaving(true); // Disable checkbox
-        try {
-          const response = await fetch(`${SUPABASE_URL}/functions/v1/subscription-data`, {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${session?.access_token}`
-            },
-            body: JSON.stringify({ email: session?.user.email, autoRenew: newValue })
-          });
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-          // After successful update, re-fetch the subscription data to update the context
-          await fetchStripeSubscriptionData();
-        } finally {
-          setIsAutoRenewSaving(false); // Re-enable checkbox
-        }
-        break;
-      }
       default:
         throw new Error(`Unknown subscription setting: ${fieldName}`);
     }
@@ -732,19 +710,6 @@ const SettingsPage = () => {
                 onSave={handleSaveSubscriptionSetting('plan')}
                 isEditable={false}
               />
-
-              <div style={{ marginTop: '0.5rem' }}>
-                <label htmlFor={`autorenew`} className="checkbox-label">
-                  <input
-                    type="checkbox"
-                    id={`autorenew`}
-                    checked={subscriptionSettings.autorenew}
-                    onChange={(e) => handleSaveSubscriptionSetting('autorenew')(e.target.checked)}
-                    disabled={isAutoRenewSaving} // Disable while saving
-                  />
-                  Auto Renew
-                </label>
-              </div>
             </>)}
             <button onClick={openCustomerPortal}>Change Subscription</button>
           </section>
