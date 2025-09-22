@@ -108,21 +108,41 @@ export const SessionProvider = ({ children }: { children: ReactNode }) => {
 
   const [batches, setBatches] = useState<BatchData[]>(() => {
     const stored = localStorage.getItem("batches");
-    return stored ? JSON.parse(stored, (key, value) =>
-      key === "startTime" ? new Date(value) : value
-    ) : [];
+    // Only parse if 'stored' is a non-empty string and not the literal string "undefined"
+    if (stored && stored !== "undefined") {
+      try {
+        return JSON.parse(stored, (key, value) =>
+          key === "startTime" ? new Date(value) : value
+        );
+      } catch (e) {
+        console.error("Error parsing stored batches from localStorage:", e);
+        // Fallback to empty array if parsing fails
+        return [];
+      }
+    }
+    return [];
   });
 
   // State for boxes, initialized from localStorage
   const [boxes, setBoxes] = useState<BoxData[]>(() => {
     const stored = localStorage.getItem("boxes");
-    return stored ? JSON.parse(stored, (key, value) => {
-        // Parse startTime within batches inside boxes
-        if (key === "startTime") {
+    // Only parse if 'stored' is a non-empty string and not the literal string "undefined"
+    if (stored && stored !== "undefined") {
+      try {
+        return JSON.parse(stored, (key, value) => {
+          // Parse startTime within batches inside boxes
+          if (key === "startTime") {
             return new Date(value);
-        }
-        return value;
-    }) : [];
+          }
+          return value;
+        });
+      } catch (e) {
+        console.error("Error parsing stored boxes from localStorage:", e);
+        // Fallback to empty array if parsing fails
+        return [];
+      }
+    }
+    return [];
   });
 
   // State for selected categories, initialized from localStorage
