@@ -92,7 +92,7 @@ main {
 /* Header */
 header {
     display: flex;
-    justify-content: space-between;
+    justify-content: space-between; /* Align logo left, nav right */
     align-items: center;
     padding: 20px;
     background-color: var(--header-color); /* Use generic variable */
@@ -104,14 +104,16 @@ header {
 header .logo {
     font-size: 1.5em;
     font-weight: bold;
-    margin-right: auto;
+    margin-right: auto; /* Push logo to the left */
 }
 
 header nav ul {
     list-style: none;
     display: flex;
-    margin-left: auto;
+    margin-left: auto; /* Push nav to the right */
     align-items: center;
+    width: 40vw; /* Take 50% of the viewport width */
+    justify-content: space-around; /* Distribute items within the ul */
 }
 
 header nav li {
@@ -123,6 +125,7 @@ header nav a, header div a {
     text-decoration: none;
     color: var(--header-text-color); /* Use generic variable */
     transition: color 0.3s;
+    font-size: 1.3em; /* Increased font size */
 }
 
 header .dropdown-content {
