@@ -11,12 +11,12 @@ import jsPDF from "jspdf";
 const DashboardPage = () => {
   const { session } = useSession();
 
-  const [activeTab, setActiveTab] = useState("totalItems"); // Default active tab
+  const [activeTab, setActiveTab] = useState("itemsLineChart"); // Default active tab
 
   const tabs = [
+    { id: "itemsLineChart", name: "Items Line Chart" },
     { id: "totalItems", name: "Total Items" },
     { id: "totalBoxes", name: "Total Boxes" },
-    { id: "itemsLineChart", name: "Items Line Chart" },
     { id: "itemsTable", name: "Waste Item Log" },
   ];
 
@@ -103,20 +103,12 @@ const DashboardPage = () => {
           Download Report
         </button>
 
-        <div style={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
+        <div className="view-toggle-buttons">
                   {tabs.map((tab) => (
                     <button
                       key={tab.id}
+                      className={`toggle-button ${activeTab === tab.id ? 'active' : ''}`}
                       onClick={() => setActiveTab(tab.id)}
-                      style={{
-                        padding: "0.5rem 1rem",
-                        borderRadius: "0.5rem",
-                        border: "1px solid var(--primary-color)",
-                        backgroundColor: activeTab === tab.id ? "var(--primary-color)" : "transparent",
-                        color: activeTab === tab.id ? "white" : "var(--primary-color)",
-                        cursor: "pointer",
-                        fontSize: "1rem",
-                      }}
                     >
                       {tab.name}
                     </button>
