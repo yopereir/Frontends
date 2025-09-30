@@ -39,7 +39,7 @@ export interface TotalItemsCardHandle {
 }
 
 const TotalItemsCard = forwardRef<TotalItemsCardHandle>((_props, ref) => {
-  const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 30));
+  const [startDate, setStartDate] = useState<Date>(new Date());
   const [endDate, setEndDate] = useState<Date>(new Date());
   const [items, setItems] = useState<Item[]>([]); // ✅ New state for fetched data
   const [filteredItems, setFilteredItems] = useState<Item[]>([]);

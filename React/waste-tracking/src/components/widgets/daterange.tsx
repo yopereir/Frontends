@@ -1,12 +1,11 @@
 import { useState, useEffect } from "react";
-import { subDays } from "date-fns";
 
 interface DateRangeProps {
   onDateRangeChange: (startDate: Date, endDate: Date) => void;
 }
 
 const DateRange = ({ onDateRangeChange }: DateRangeProps) => {
-  const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 30));
+  const [startDate, setStartDate] = useState<Date>(new Date());
   const [endDate, setEndDate] = useState<Date>(new Date());
 
   useEffect(() => {

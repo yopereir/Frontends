@@ -54,7 +54,7 @@ export interface TotalBoxesCardHandle {
 const TotalBoxesCard = forwardRef<TotalBoxesCardHandle>((_props, ref) => {
   const [sortAsc, setSortAsc] = useState(true);
   const [sortKey, setSortKey] = useState<"created_at" | "name">("created_at");
-  const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 30));
+  const [startDate, setStartDate] = useState<Date>(new Date());
   const [endDate, setEndDate] = useState<Date>(new Date());
   const [boxes, setBoxes] = useState<Box[]>([]); // ✅ New state for boxes
   const [wasteEntries, setWasteEntries] = useState<WasteEntry[]>([]); // ✅ New state for waste entries

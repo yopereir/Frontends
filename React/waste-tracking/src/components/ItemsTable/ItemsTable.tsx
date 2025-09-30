@@ -43,7 +43,7 @@ const ItemsTable = forwardRef<ItemsTableHandle>((_props, ref) => {
   const [sortAsc, setSortAsc] = useState(true);
   const [sortKey, setSortKey] = useState<"created_at" | "name">("created_at");
   const [selectedNames, setSelectedNames] = useState<string[]>([]);
-  const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 30));
+  const [startDate, setStartDate] = useState<Date>(new Date());
   const [endDate, setEndDate] = useState<Date>(new Date());
   const [items, setItems] = useState<Item[]>([]);
   const [isDonationFilterActive, setIsDonationFilterActive] = useState(false);
