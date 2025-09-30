@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
-import { format, subDays, startOfDay, endOfDay, eachDayOfInterval, addDays } from "date-fns";
+import { format, subDays, startOfDay, endOfDay, eachDayOfInterval, differenceInDays, eachHourOfInterval } from "date-fns";
 import {
   LineChart,
   Line,
@@ -36,7 +36,7 @@ interface WasteEntry {
 }
 
 interface DailyWasteData {
-  date: string;
+  date: string | number;
   [key: string]: string | number;
 }
 
@@ -57,6 +57,8 @@ const ItemsLineChart = forwardRef<ItemsLineChartHandle>((_props, ref) => {
   const [loading, setLoading] = useState(false); // ✅ New loading state
   const [lineConfigs, setLineConfigs] = useState<{ dataKey: string; stroke: string; yAxisId: string }[]>([]);
   const [yAxisConfigs, setYAxisConfigs] = useState<{ yAxisId: string; orientation: "left" | "right"; label: string }[]>([]);
+  const [xAxisProps, setXAxisProps] = useState({ dataKey: "date" });
+  const [tooltipLabelFormatter, setTooltipLabelFormatter] = useState<((label: any) => React.ReactNode) | null>(null);
   const chartRef = useRef<HTMLDivElement>(null);
 
   const handleDateRangeChange = (start: Date, end: Date) => {
@@ -135,64 +137,126 @@ const ItemsLineChart = forwardRef<ItemsLineChartHandle>((_props, ref) => {
       selectedNames.length === 0 || selectedNames.includes(item.name)
     );
 
-    const dailyQuantities: Record<string, Record<string, number>> = {};
-    const uniqueUnits = new Set<string>();
-    const dateFormat = "yyyy-MM-dd";
-
-    filtered.forEach((item) => {
-      const dateKey = format(new Date(item.created_at), dateFormat);
-      const unit = item.metadata?.unit || "units";
-      uniqueUnits.add(unit);
-
-      if (!dailyQuantities[dateKey]) {
-        dailyQuantities[dateKey] = {};
-      }
-      const dataKey = `${item.name}_${unit}`;
-      dailyQuantities[dateKey][dataKey] = (dailyQuantities[dateKey][dataKey] || 0) + (item.quantity || 0);
-    });
-
     const startOfRange = startOfDay(startDate);
-    const endOfRange = startOfDay(endDate);
+    const endOfRange = endOfDay(endDate);
+    const durationInDays = differenceInDays(endOfRange, startOfRange);
 
-    const daysInInterval = eachDayOfInterval({
-      start: startOfRange,
-      end: endOfRange,
-    });
+    let dataPoints: DailyWasteData[] = [];
 
-    const dataPoints = daysInInterval.map((day) => {
-      const dateKey = format(day, dateFormat);
-      const dayData: DailyWasteData = { date: format(day, "MMM d") };
-      Object.entries(dailyQuantities[dateKey] || {}).forEach(([key, value]) => {
-        dayData[key] = value;
+    if (durationInDays === 0) {
+      // Single day view: group by hour
+      const hourlyQuantities: Record<string, Record<string, number>> = {};
+      const dateFormat = "yyyy-MM-dd HH";
+
+      filtered.forEach((item) => {
+        const dateKey = format(new Date(item.created_at), dateFormat);
+        const unit = item.metadata?.unit || "units";
+        if (!hourlyQuantities[dateKey]) {
+          hourlyQuantities[dateKey] = {};
+        }
+        const dataKey = `${item.name}_${unit}`;
+        hourlyQuantities[dateKey][dataKey] = (hourlyQuantities[dateKey][dataKey] || 0) + (item.quantity || 0);
       });
-      return dayData;
-    });
+
+      const hours = eachHourOfInterval({ start: startOfRange, end: endOfRange });
+      dataPoints = hours.map(hour => {
+        const dateKey = format(hour, dateFormat);
+        const hourData: DailyWasteData = { date: format(hour, 'HH:00') };
+        Object.entries(hourlyQuantities[dateKey] || {}).forEach(([key, value]) => {
+          hourData[key] = value;
+        });
+        return hourData;
+      });
+
+      setXAxisProps({ dataKey: "date" });
+      setTooltipLabelFormatter(null);
+
+    } else if (durationInDays < 10) {
+      // Less than 10 days view: group by minute, show days on x-axis
+      const minuteQuantities: Record<string, Record<string, number>> = {};
+      const dateFormat = "yyyy-MM-dd HH:mm";
+
+      filtered.forEach((item) => {
+        const dateKey = format(new Date(item.created_at), dateFormat);
+        const unit = item.metadata?.unit || "units";
+        if (!minuteQuantities[dateKey]) {
+          minuteQuantities[dateKey] = {};
+        }
+        const dataKey = `${item.name}_${unit}`;
+        minuteQuantities[dateKey][dataKey] = (minuteQuantities[dateKey][dataKey] || 0) + (item.quantity || 0);
+      });
+
+      dataPoints = Object.entries(minuteQuantities).map(([dateKey, quantities]) => {
+        const dataPoint: DailyWasteData = {
+          date: new Date(dateKey).getTime(),
+        };
+        Object.entries(quantities).forEach(([key, value]) => {
+          dataPoint[key] = value;
+        });
+        return dataPoint;
+      });
+
+      const days = eachDayOfInterval({ start: startOfRange, end: endOfRange });
+      const dailyTicks = days.map(day => startOfDay(day).getTime());
+
+      setXAxisProps({
+        dataKey: "date",
+        type: "number",
+        domain: ['dataMin', 'dataMax'],
+        ticks: dailyTicks,
+        tickFormatter: (unixTime) => format(new Date(unixTime), 'MMM d'),
+      } as any);
+      setTooltipLabelFormatter(() => (unixTime: number) => format(new Date(unixTime), 'MMM d, HH:mm'));
+
+    } else {
+      // Default view: 10 days or more, group by day
+      const dailyQuantities: Record<string, Record<string, number>> = {};
+      const dateFormat = "yyyy-MM-dd";
+
+      filtered.forEach((item) => {
+        const dateKey = format(new Date(item.created_at), dateFormat);
+        const unit = item.metadata?.unit || "units";
+        if (!dailyQuantities[dateKey]) {
+          dailyQuantities[dateKey] = {};
+        }
+        const dataKey = `${item.name}_${unit}`;
+        dailyQuantities[dateKey][dataKey] = (dailyQuantities[dateKey][dataKey] || 0) + (item.quantity || 0);
+      });
+
+      const days = eachDayOfInterval({ start: startOfRange, end: endOfRange });
+      dataPoints = days.map((day) => {
+        const dateKey = format(day, dateFormat);
+        const dayData: DailyWasteData = { date: format(day, "MMM d") };
+        Object.entries(dailyQuantities[dateKey] || {}).forEach(([key, value]) => {
+          dayData[key] = value;
+        });
+        return dayData;
+      });
+
+      setXAxisProps({ dataKey: "date" });
+      setTooltipLabelFormatter(null);
+    }
 
     setGroupedData(
-      dataPoints.sort(
-        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
-      )
+      dataPoints.sort((a, b) => {
+        if (typeof a.date === 'number' && typeof b.date === 'number') {
+          return a.date - b.date;
+        }
+        // For string-based dates, you might need a different sorting logic if they are not naturally sortable
+        return 0;
+      })
     );
 
     // Generate line configurations and Y-axis configurations
     const colors = [
-      "#8884d8",
-      "#82ca9d",
-      "#ffc658",
-      "#ff7300",
-      "#0088fe",
-      "#00c49f",
-      "#ffbb28",
-      "#a4de6c",
-      "#d0ed57",
-      "#83a6ed",
-    ]; // Example colors
+      "#8884d8", "#82ca9d", "#ffc658", "#ff7300", "#0088fe",
+      "#00c49f", "#ffbb28", "#a4de6c", "#d0ed57", "#83a6ed",
+    ];
     let colorIndex = 0;
     const generatedLineConfigs: { dataKey: string; stroke: string; yAxisId: string }[] = [];
     const generatedYAxisConfigs: { yAxisId: string; orientation: "left" | "right"; label: string }[] = [];
     const usedUnits = new Set<string>();
 
-    // Collect all unique dataKeys (item_name_unit) from the processed data
     const allDataKeys = new Set<string>();
     dataPoints.forEach(dp => {
       Object.keys(dp).forEach(key => {
@@ -204,7 +268,7 @@ const ItemsLineChart = forwardRef<ItemsLineChartHandle>((_props, ref) => {
 
     Array.from(allDataKeys).sort().forEach(dataKey => {
       const parts = dataKey.split('_');
-      const unit = parts[parts.length - 1]; // Last part is the unit
+      const unit = parts[parts.length - 1];
       const yAxisId = `yAxis_${unit}`;
 
       if (!usedUnits.has(unit)) {
@@ -232,7 +296,7 @@ const ItemsLineChart = forwardRef<ItemsLineChartHandle>((_props, ref) => {
   const generatePdf = async () => {
     if (chartRef.current) {
       const canvas = await html2canvas(chartRef.current, { scale: 2 });
-      return canvas; // Return the canvas object
+      return canvas;
     }
     return null;
   };
@@ -249,23 +313,21 @@ const ItemsLineChart = forwardRef<ItemsLineChartHandle>((_props, ref) => {
       const pdf = new jsPDF('p', 'mm', 'a4');
       const imgProps = pdf.getImageProperties(imgData);
       const pageWidth = pdf.internal.pageSize.getWidth();
-      let yOffset = 10; // Initial Y offset for content
+      let yOffset = 10;
 
-      // Add title for the component
       pdf.setFontSize(18);
       pdf.setTextColor(0, 0, 0);
       pdf.text("Items Line Chart", pageWidth / 2, yOffset, { align: 'center' });
-      yOffset += 7; // Space after title
+      yOffset += 7;
 
-      // Add date range subheading
       pdf.setFontSize(12);
       pdf.setTextColor(0, 0, 0);
       pdf.text(`Date Range: ${startDate.toLocaleDateString()} - ${endDate.toLocaleDateString()}`, pageWidth / 2, yOffset, { align: 'center' });
-      yOffset += 13; // Space after subheading
+      yOffset += 13;
 
-      const imgWidth = pageWidth * 0.9; // 90% of PDF width
+      const imgWidth = pageWidth * 0.9;
       const imgHeight = (imgProps.height * imgWidth) / imgProps.width;
-      const imgX = (pageWidth - imgWidth) / 2; // Center the image
+      const imgX = (pageWidth - imgWidth) / 2;
 
       pdf.addImage(imgData, 'PNG', imgX, yOffset, imgWidth, imgHeight);
       pdf.save("Items_Line_Chart.pdf");
@@ -296,7 +358,7 @@ const ItemsLineChart = forwardRef<ItemsLineChartHandle>((_props, ref) => {
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={groupedData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="date" />
+              <XAxis {...xAxisProps} />
               {yAxisConfigs.map((config) => (
                 <YAxis
                   key={config.yAxisId}
@@ -306,13 +368,13 @@ const ItemsLineChart = forwardRef<ItemsLineChartHandle>((_props, ref) => {
                     value: config.label,
                     angle: -90,
                     position: config.orientation === "left" ? 'outerLeft' : 'outerRight',
-                    dx: config.orientation === "right" ? 5 : -5, // Increased horizontal adjustment
-                    dy: 0, // Keep vertical position at 0, let position handle it
+                    dx: config.orientation === "right" ? 5 : -5,
+                    dy: 0,
                   }}
                   allowDecimals={false}
                 />
               ))}
-              <Tooltip />
+              <Tooltip labelFormatter={tooltipLabelFormatter!} />
               <Legend />
               {lineConfigs.map((config) => (
                 <Line
