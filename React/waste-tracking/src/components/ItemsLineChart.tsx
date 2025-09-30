@@ -45,6 +45,37 @@ export interface ItemsLineChartHandle {
   getDates: () => { startDate: Date; endDate: Date; };
 }
 
+const CustomTooltip = ({ active, payload, label }: any) => {
+  if (active && payload && payload.length) {
+    let time = '';
+    if (typeof label === 'number') {
+      time = format(new Date(label), 'HH:mm');
+    } else if (typeof label === 'string' && label.includes(':')) {
+      time = label;
+    }
+
+    return (
+      <div className="custom-tooltip" style={{ backgroundColor: 'rgba(255, 255, 255, 0.8)', padding: '10px', border: '1px solid #ccc' }}>
+        {payload.map((pld: any) => {
+          const parts = pld.dataKey.split('_');
+          parts.pop(); // remove unit
+          const itemName = parts.join('_');
+          
+          const entryLabel = `${itemName}_count: ${pld.value}`;
+
+          return (
+            <p key={pld.dataKey} style={{ color: pld.stroke }}>
+              {time ? `${entryLabel}, time: ${time}` : entryLabel}
+            </p>
+          );
+        })}
+      </div>
+    );
+  }
+
+  return null;
+};
+
 // ✅ No longer accepts items as a prop
 const ItemsLineChart = forwardRef<ItemsLineChartHandle>((_props, ref) => {
   const [items, setItems] = useState<Item[]>([]); // ✅ New state for fetched data
@@ -58,7 +89,6 @@ const ItemsLineChart = forwardRef<ItemsLineChartHandle>((_props, ref) => {
   const [lineConfigs, setLineConfigs] = useState<{ dataKey: string; stroke: string; yAxisId: string }[]>([]);
   const [yAxisConfigs, setYAxisConfigs] = useState<{ yAxisId: string; orientation: "left" | "right"; label: string }[]>([]);
   const [xAxisProps, setXAxisProps] = useState({ dataKey: "date" });
-  const [tooltipLabelFormatter, setTooltipLabelFormatter] = useState<((label: any) => React.ReactNode) | null>(null);
   const chartRef = useRef<HTMLDivElement>(null);
 
   const handleDateRangeChange = (start: Date, end: Date) => {
@@ -169,7 +199,6 @@ const ItemsLineChart = forwardRef<ItemsLineChartHandle>((_props, ref) => {
       });
 
       setXAxisProps({ dataKey: "date" });
-      setTooltipLabelFormatter(null);
 
     } else if (durationInDays < 10) {
       // Less than 10 days view: group by minute, show days on x-axis
@@ -206,7 +235,6 @@ const ItemsLineChart = forwardRef<ItemsLineChartHandle>((_props, ref) => {
         ticks: dailyTicks,
         tickFormatter: (unixTime) => format(new Date(unixTime), 'MMM d'),
       } as any);
-      setTooltipLabelFormatter(() => (unixTime: number) => format(new Date(unixTime), 'MMM d, HH:mm'));
 
     } else {
       // Default view: 10 days or more, group by day
@@ -234,7 +262,6 @@ const ItemsLineChart = forwardRef<ItemsLineChartHandle>((_props, ref) => {
       });
 
       setXAxisProps({ dataKey: "date" });
-      setTooltipLabelFormatter(null);
     }
 
     setGroupedData(
@@ -374,7 +401,7 @@ const ItemsLineChart = forwardRef<ItemsLineChartHandle>((_props, ref) => {
                   allowDecimals={false}
                 />
               ))}
-              <Tooltip labelFormatter={tooltipLabelFormatter!} />
+              <Tooltip content={<CustomTooltip />} />
               <Legend />
               {lineConfigs.map((config) => (
                 <Line
