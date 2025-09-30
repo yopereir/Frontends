@@ -233,7 +233,7 @@ const ItemsLineChart = forwardRef<ItemsLineChartHandle>((_props, ref) => {
         type: "number",
         domain: ['dataMin', 'dataMax'],
         ticks: dailyTicks,
-        tickFormatter: (unixTime) => format(new Date(unixTime), 'MMM d'),
+        tickFormatter: (unixTime: number) => format(new Date(unixTime), 'MMM d'),
       } as any);
 
     } else {
