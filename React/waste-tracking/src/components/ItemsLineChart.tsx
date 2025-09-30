@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, forwardRef, useImperativeHandle } from "react";
-import { format, subDays, startOfDay, eachDayOfInterval } from "date-fns";
+import { format, subDays, startOfDay, endOfDay, eachDayOfInterval, addDays } from "date-fns";
 import {
   LineChart,
   Line,
@@ -31,8 +31,13 @@ interface WasteEntry {
   id: string;
   created_at: string;
   item_id: string | null;
-  quantity?: number; // Add quantity to WasteEntry interface
-  metadata?: { boxId?: string } | null; // Add metadata to WasteEntry interface
+  quantity?: number;
+  metadata?: { boxId?: string } | null;
+}
+
+interface DailyWasteData {
+  date: string;
+  [key: string]: string | number;
 }
 
 export interface ItemsLineChartHandle {
@@ -48,7 +53,7 @@ const ItemsLineChart = forwardRef<ItemsLineChartHandle>((_props, ref) => {
   const [startDate, setStartDate] = useState<Date>(subDays(new Date(), 30));
   const [endDate, setEndDate] = useState<Date>(new Date());
   const [isDonationFilterActive, setIsDonationFilterActive] = useState(false); // New state for donation filter
-  const [groupedData, setGroupedData] = useState<any[]>([]);
+  const [groupedData, setGroupedData] = useState<DailyWasteData[]>([]);
   const [loading, setLoading] = useState(false); // ✅ New loading state
   const [lineConfigs, setLineConfigs] = useState<{ dataKey: string; stroke: string; yAxisId: string }[]>([]);
   const [yAxisConfigs, setYAxisConfigs] = useState<{ yAxisId: string; orientation: "left" | "right"; label: string }[]>([]);
@@ -72,14 +77,14 @@ const ItemsLineChart = forwardRef<ItemsLineChartHandle>((_props, ref) => {
       let wasteQuery = supabase
         .from("waste_entries")
         .select("id, created_at, item_id, quantity, metadata") // Select quantity and metadata
-        .gte("created_at", startDate.toISOString())
-        .lte("created_at", endDate.toISOString());
+        .gte("created_at", startOfDay(startDate).toISOString())
+        .lte("created_at", endOfDay(endDate).toISOString());
 
       if (isDonationFilterActive) {
         wasteQuery = wasteQuery.filter("metadata->>tags", 'like', '%"donation"%');
       }
 
-      const { data: wasteData, error: wasteError } = await wasteQuery;
+      const { data: wasteData, error: wasteError } = await wasteQuery as { data: WasteEntry[] | null, error: unknown };
 
       if (!wasteError && wasteData) {
         // Fetch only the items associated with the waste entries
@@ -150,13 +155,13 @@ const ItemsLineChart = forwardRef<ItemsLineChartHandle>((_props, ref) => {
     const endOfRange = startOfDay(endDate);
 
     const daysInInterval = eachDayOfInterval({
-      start: startOfRange,
-      end: endOfRange,
+      start: addDays(startOfRange, 1),
+      end: addDays(endOfRange, 1),
     });
 
     const dataPoints = daysInInterval.map((day) => {
       const dateKey = format(day, dateFormat);
-      const dayData: { date: string; [key: string]: any } = { date: format(day, "MMM d") };
+      const dayData: DailyWasteData = { date: format(day, "MMM d") };
       Object.entries(dailyQuantities[dateKey] || {}).forEach(([key, value]) => {
         dayData[key] = value;
       });
