@@ -155,8 +155,8 @@ const ItemsLineChart = forwardRef<ItemsLineChartHandle>((_props, ref) => {
     const endOfRange = startOfDay(endDate);
 
     const daysInInterval = eachDayOfInterval({
-      start: addDays(startOfRange, 1),
-      end: addDays(endOfRange, 1),
+      start: startOfRange,
+      end: endOfRange,
     });
 
     const dataPoints = daysInInterval.map((day) => {

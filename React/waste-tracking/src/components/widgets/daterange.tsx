@@ -18,14 +18,20 @@ const DateRange = ({ onDateRangeChange }: DateRangeProps) => {
       <label>Start Date:</label>
       <input
         type="date"
-        value={startDate.toISOString().split("T")[0]}
-        onChange={(e) => setStartDate(new Date(e.target.value))}
+        value={startDate.toLocaleDateString('en-CA')}
+        onChange={(e) => {
+          const [year, month, day] = e.target.value.split('-').map(Number);
+          setStartDate(new Date(year, month - 1, day));
+        }}
       />
       <label>End Date:</label>
       <input
         type="date"
-        value={endDate.toISOString().split("T")[0]}
-        onChange={(e) => setEndDate(new Date(e.target.value))}
+        value={endDate.toLocaleDateString('en-CA')}
+        onChange={(e) => {
+          const [year, month, day] = e.target.value.split('-').map(Number);
+          setEndDate(new Date(year, month - 1, day));
+        }}
       />
     </div>
   );
